@@ -1,16 +1,5 @@
-import { SignOutButton, SignUp } from "@clerk/nextjs";
-import { Inter } from "next/font/google";
-
-const inter = Inter({ subsets: ["latin"] });
+import { Homepage_v2 } from "@/components/general/homepage/homepage_v2";
 
 export default function Home() {
-  return (
-    <main
-      className={`flex min-h-screen flex-col items-center justify-between p-24 ${inter.className}`}
-    >
-
-      <SignUp path="/login" />
-      <SignOutButton/>
-    </main>
-  );
+  return <Homepage_v2 />;
 }
