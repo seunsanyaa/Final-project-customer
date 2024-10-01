@@ -2,7 +2,7 @@
 export default {
 	providers: [
 		{
-			domain: 'https://above-goat-67.clerk.accounts.dev',
+			domain: 'https://strong-dassie-47.clerk.accounts.dev',
 			applicationID: 'convex',
 		},
 	],

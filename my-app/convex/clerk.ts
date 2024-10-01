@@ -12,7 +12,7 @@ export const fulfill = internalAction({
     handler: async (ctx, args) => {
         // Create a new Webhook instance with the Clerk webhook secret
         
-        const wh = new Webhook('whsec_txjKbKzGKMsHTJt/hXC9OwKs+exk47XM');
+        const wh = new Webhook('whsec_JhzHsLxjzEHoBnVZau1W4gFjzVqtJcPI');
         
         // Verify the webhook payload using the provided headers
         // This ensures the webhook is authentic and came from Clerk
