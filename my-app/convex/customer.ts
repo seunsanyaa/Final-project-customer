@@ -57,7 +57,7 @@ export const updateCustomer = mutation({
 	args: {
 		userId: v.string(),
 		nationality: v.optional(v.string()),
-		age: v.optional(v.string()), // Changed to optional string
+		age: v.optional(v.number()), // Changed to optional string
 		phoneNumber: v.optional(v.string()), // Changed to optional string
 		licenseNumber: v.optional(v.string()), // Changed to optional string
 		address: v.optional(v.string()), // Changed to optional string
@@ -78,7 +78,7 @@ export const updateCustomer = mutation({
 			...args,
 		};
 
-		await ctx.db.update(existingCustomer._id, updatedData);
+		await ctx.db.patch(existingCustomer._id, updatedData);
 		return `Customer with ID ${args.userId} has been updated.`;
 	},
 });
