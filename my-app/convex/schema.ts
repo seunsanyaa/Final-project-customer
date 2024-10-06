@@ -27,8 +27,21 @@ export default defineSchema({
 		carId: v.string(),
 		model: v.string(),
 		maker: v.string(),
+		fleetId: v.string(), // Reference to the fleet this car belongs to
+		plateNumber: v.string(), // Unique plate number for the individual car
 	})
 		.index('by_carId', ['carId'])
+		.index('by_model', ['model'])
+		.index('by_maker', ['maker'])
+		.index('by_fleetId', ['fleetId']), // Index for querying by fleetId
+
+	fleets: defineTable({
+		fleetId: v.string(),
+		model: v.string(),
+		maker: v.string(),
+		plateNumbers: v.array(v.string()), // Array to hold different plate numbers for the same model
+	})
+		.index('by_fleetId', ['fleetId'])
 		.index('by_model', ['model'])
 		.index('by_maker', ['maker']),
 });
