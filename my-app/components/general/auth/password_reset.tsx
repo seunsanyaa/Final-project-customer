@@ -10,6 +10,7 @@ export default function ResetComponent() {
   const handleEmail = (email: string) => {
     setEmail(email);
     setEmailSent(true);
+    // TODO: Implement actual password reset email sending logic here
   };
 
   return (
@@ -25,30 +26,23 @@ export default function ResetComponent() {
         {/* ... (SVG content remains unchanged) ... */}
       </svg>
 
-      {/* Conditional rendering based on emailSent state */}
-      {emailSent ? (
-        // Content to show after email is sent
-        <>
-          <h2 className="paragraph-color pt-8 text-2xl font-semibold">
-            Password reset link sent
-          </h2>
-          <p className="paragraph-muted mt-2 pb-4 text-base font-normal">
-            The link to reset your password has been sent to <b>{email}</b>. Please follow the instructions provided.
-          </p>
-        </>
-      ) : (
-        // Content to show before email is sent
-        <>
-          <h2 className="paragraph-color pt-8 text-2xl font-semibold">
-            Reset Password
-          </h2>
-          <p className="paragraph-muted pb-4 text-base font-normal">
-            Enter your user account's verified email address and we will send you a password reset link.
-          </p>
-          {/* Render ResetForm only if email hasn't been sent */}
-          <ResetForm func={handleEmail} />gtbbbt
-        </>
-      )}
+      {/* Main content */}
+      <div className="mt-8">
+        <h2 className="paragraph-color text-2xl font-semibold">
+          {emailSent ? "Password reset link sent" : "Reset Password"}
+        </h2>
+        <p className="paragraph-muted mt-2 text-base font-normal">
+          {emailSent ? (
+            <>
+              The link to reset your password has been sent to <b>{email}</b>. Please follow the instructions provided.
+            </>
+          ) : (
+            "Enter your user account's verified email address and we will send you a password reset link."
+          )}
+        </p>
+        {/* Render ResetForm only if email hasn't been sent */}
+        {!emailSent && <ResetForm func={handleEmail} />}
+      </div>
     </div>
   );
 }
