@@ -4,18 +4,48 @@ import { Separator } from "@/components/ui/separator";
 import { Input } from "@/components/ui/input";
 import { Navi } from '../head/navi';
 import { Footer } from '../head/footer';
+
+// Define interface for booking details
+interface BookingDetail {
+  label: string;
+  value: string | number;
+  className?: string;
+}
+
 export default function BookingDetails() {
+  // Define booking details as an array of objects for easier rendering
+  const bookingDetails: BookingDetail[] = [
+    { label: "Booking ID", value: "ABC123" },
+    { label: "Rental Dates", value: "June 1, 2023 - June 8, 2023" },
+    { label: "Original Booking Cost", value: "$500.00" },
+    { label: "Rewards Discount", value: "-$50.00", className: "text-green-500" },
+    { label: "Final Price", value: "$450.00" },
+    { label: "Rewards Points Earned", value: "150 points" },
+    { label: "Car Details", value: "Toyota Camry 2023" },
+    { label: "Pickup & Dropoff Location", value: "Airport Terminal 1" },
+    { label: "Rewards Points Used", value: "50 points" },
+    { label: "Rewards Points Credited", value: "June 15, 2023" },
+    { label: "Booking Status", value: "Confirmed", className: "text-yellow-500" },
+    { label: "Cancellation Policy", value: "Free cancellation up to 24 hours before pickup" },
+  ];
+
+  // Function to render a booking detail
+  const renderBookingDetail = ({ label, value, className }: BookingDetail) => (
+    <div key={label}>
+      <div className="text-sm font-medium text-muted-foreground">{label}</div>
+      <div className={`text-base font-semibold ${className || ''}`}>{value}</div>
+    </div>
+  );
 
   return (
     <div>
-      <Navi/>
-
-
+      <Navi />
       <Separator />
 
       <div className="max-w-4xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
         <div className="grid gap-8">
           <div className="bg-background rounded-lg shadow-sm overflow-hidden">
+            {/* Header section */}
             <div className="px-6 py-5 bg-muted">
               <div className="flex items-center justify-between">
                 <h1 className="text-2xl font-semibold">Booking Details</h1>
@@ -24,96 +54,22 @@ export default function BookingDetails() {
                 </Button>
               </div>
             </div>
+
+            {/* Booking details section */}
             <div className="px-6 py-5 grid gap-6">
+              {/* Render booking details in a 2-column grid */}
               <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <div className="text-sm font-medium text-muted-foreground">
-                    Booking ID
-                  </div>
-                  <div className="text-base font-semibold">ABC123</div>
-                </div>
-                <div>
-                  <div className="text-sm font-medium text-muted-foreground">
-                    Rental Dates
-                  </div>
-                  <div className="text-base font-semibold">
-                    June 1, 2023 - June 8, 2023
-                  </div>
-                </div>
+                {bookingDetails.slice(0, 8).map(renderBookingDetail)}
               </div>
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <div className="text-sm font-medium text-muted-foreground">
-                    Original Booking Cost
-                  </div>
-                  <div className="text-base font-semibold">$500.00</div>
-                </div>
-                <div>
-                  <div className="text-sm font-medium text-muted-foreground">
-                    Rewards Discount
-                  </div>
-                  <div className="text-base font-semibold text-green-500">
-                    -$50.00
-                  </div>
-                </div>
-              </div>
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <div className="text-sm font-medium text-muted-foreground">
-                    Final Price
-                  </div>
-                  <div className="text-base font-semibold">$450.00</div>
-                </div>
-                <div>
-                  <div className="text-sm font-medium text-muted-foreground">
-                    Rewards Points Earned
-                  </div>
-                  <div className="text-base font-semibold">150 points</div>
-                </div>
-              </div>
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <div className="text-sm font-medium text-muted-foreground">
-                    Car Details
-                  </div>
-                  <div className="text-base font-semibold">Toyota Camry 2023</div>
-                </div>
-                <div>
-                  <div className="text-sm font-medium text-muted-foreground">
-                    Pickup & Dropoff Location
-                  </div>
-                  <div className="text-base font-semibold">Airport Terminal 1</div>
-                </div>
-              </div>
+
               <Separator />
+
+              {/* Render remaining booking details */}
               <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <div className="text-sm font-medium text-muted-foreground">
-                    Rewards Points Used
-                  </div>
-                  <div className="text-base font-semibold">50 points</div>
-                </div>
-                <div>
-                  <div className="text-sm font-medium text-muted-foreground">
-                    Rewards Points Credited
-                  </div>
-                  <div className="text-base font-semibold">June 15, 2023</div>
-                </div>
+                {bookingDetails.slice(8).map(renderBookingDetail)}
               </div>
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <div className="text-sm font-medium text-muted-foreground">
-                    Booking Status
-                  </div>
-                  <div className="text-base font-semibold text-yellow-500">Confirmed</div>
-                </div>
-                <div>
-                  <div className="text-sm font-medium text-muted-foreground">
-                    Cancellation Policy
-                  </div>
-                  <div className="text-base font-semibold">Free cancellation up to 24 hours before pickup</div>
-                </div>
-              </div>
+
+              {/* Modify Rewards Points section */}
               <div className="grid gap-2">
                 <div className="text-sm font-medium text-muted-foreground">
                   Modify Rewards Points
@@ -129,6 +85,7 @@ export default function BookingDetails() {
                     min="0"
                     max="150"
                     defaultValue="50"
+                    aria-label="Rewards points to use"
                   />
                   <Button variant="outline">Update</Button>
                 </div>
@@ -137,9 +94,9 @@ export default function BookingDetails() {
           </div>
         </div>
       </div>
-      <Separator />
 
-      <Footer/>
+      <Separator />
+      <Footer />
     </div>
   );
 }

@@ -17,7 +17,7 @@ import {
 } from "../../../ui/form";
 import { Input } from "../../../ui/input";
 
-
+// Password validation schema (unused in this component, consider removing)
 const passwordValidation = z
   .string()
   .min(6, { message: "Password must be at least 6 characters." })
@@ -32,6 +32,7 @@ const passwordValidation = z
     message: "Password must contain at least one special character.",
   });
 
+// Form schema for email validation
 const ResetFormSchema = z.object({
   email: z.string().email({
     message: "Invalid email address.",
@@ -43,7 +44,7 @@ type ResetFormProps = {
 };
 
 export function ResetForm({ func }: ResetFormProps) {
-  const {toast} = useToast()
+  const { toast } = useToast();
   const resetForm = useForm<z.infer<typeof ResetFormSchema>>({
     resolver: zodResolver(ResetFormSchema),
     defaultValues: {
@@ -52,8 +53,10 @@ export function ResetForm({ func }: ResetFormProps) {
   });
 
   const resetWatchedValues = resetForm.watch();
-  const [isButtonDisabled, setIsButtonDisabled] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  // Simplified button disabled state
+  const isButtonDisabled = !resetWatchedValues.email;
 
   async function onSendResetEmail(data: z.infer<typeof ResetFormSchema>) {
     setIsSubmitting(true);
@@ -69,72 +72,71 @@ export function ResetForm({ func }: ResetFormProps) {
 
       if (response.ok) {
         func(data.email);
+        toast({
+          title: "Success",
+          description: "Password reset email sent successfully.",
+          variant: "default",
+        });
       } else {
         toast({
-          title: "Uh oh! Something went wrong.",
-          description: "This email is not in our database",
+          title: "Error",
+          description: "This email is not in our database.",
           variant: "destructive",
         });
       }
     } catch (err) {
-      console.log("Error:", JSON.stringify(err, null, 2));
+      console.error("Error:", err);
+      toast({
+        title: "Error",
+        description: "An unexpected error occurred. Please try again.",
+        variant: "destructive",
+      });
     } finally {
       setIsSubmitting(false);
     }
   }
 
-  useEffect(() => {
-    setIsButtonDisabled(!resetWatchedValues.email);
-  }, [, resetWatchedValues]);
-
   return (
-    <>
-      <Form {...resetForm}>
-        <form
-          onSubmit={resetForm.handleSubmit(onSendResetEmail)}
-          className="relative mt-4 w-full space-y-6  border-t pt-2"
-          style={{ borderTop: "none" }}
+    <Form {...resetForm}>
+      <form
+        onSubmit={resetForm.handleSubmit(onSendResetEmail)}
+        className="relative mt-4 w-full space-y-6"
+      >
+        <FormField
+          control={resetForm.control}
+          name="email"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel className="paragraph-color">Email</FormLabel>
+              <FormControl>
+                <Input
+                  placeholder="Enter your email address"
+                  {...field}
+                  className="w-full"
+                  type="email"
+                  autoComplete="email"
+                />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
+        <Button
+          type="submit"
+          disabled={isButtonDisabled || isSubmitting}
+          className="background-brand background-active w-full text-sm font-medium"
         >
-          <>
-            <FormField
-              control={resetForm.control}
-              name="email"
-              render={({ field }) => (
-                <>
-                  <FormItem>
-                    <FormLabel className="paragraph-color">Email</FormLabel>
-                    <FormControl>
-                      <Input
-                        placeholder="Enter your email address"
-                        {...field}
-                        className="w-full"
-                        style={{ outline: "none" }}
-                      />
-                    </FormControl>
-
-                    <FormMessage />
-                  </FormItem>
-                </>
-              )}
-            />
-          </>
-
-          <Button
-            type="submit"
-            disabled={isButtonDisabled}
-            className="background-brand background-active w-full text-sm font-medium"
-          >
-            {isSubmitting ? (
-              <>
-                <ReloadIcon className="mr-2 h-4 w-4 animate-spin" />
-
-              </>
-            ) : (
-              "Reset password"
-            )}
-          </Button>
-        </form>
-      </Form>
-    </>
+          {isSubmitting ? (
+            <>
+              <ReloadIcon className="mr-2 h-4 w-4 animate-spin" />
+              Sending...
+            </>
+          ) : (
+            "Reset password"
+          )}
+        </Button>
+      </form>
+    </Form>
   );
 }

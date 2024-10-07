@@ -1,7 +1,5 @@
-
 "use client"
 import Link from "next/link"
-
 import { useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Card, CardHeader, CardContent, CardFooter } from "@/components/ui/card"
@@ -9,8 +7,21 @@ import { Dialog, DialogContent, DialogFooter } from "@/components/ui/dialog";
 import { Separator } from "@/components/ui/separator"
 import { Navi } from '../head/navi';
 import { Footer } from '../head/footer';
+
+// Define the Booking type for better type safety
+type Booking = {
+  id: number;
+  make: string;
+  model: string;
+  color: string;
+  startDate: string;
+  endDate: string;
+  totalCost: number;
+};
+
 export function Mybookings() {
-  const [bookings, setBookings] = useState([
+  // Mock data for bookings
+  const [bookings, setBookings] = useState<Booking[]>([
     {
       id: 1,
       make: "Toyota",
@@ -57,13 +68,17 @@ export function Mybookings() {
       totalCost: 275.0,
     },
   ])
-  const [filteredBookings, setFilteredBookings] = useState(bookings)
-  const [filterStartDate, setFilterStartDate] = useState(null)
-  const [filterEndDate, setFilterEndDate] = useState(null)
+
+  // State for filtered bookings and filter criteria
+  const [filteredBookings, setFilteredBookings] = useState<Booking[]>(bookings)
+  const [filterStartDate, setFilterStartDate] = useState<string | null>(null)
+  const [filterEndDate, setFilterEndDate] = useState<string | null>(null)
   const [filterMake, setFilterMake] = useState("")
   const [filterModel, setFilterModel] = useState("")
   const [filterColor, setFilterColor] = useState("")
-  const [selectedBooking, setSelectedBooking] = useState(null)
+  const [selectedBooking, setSelectedBooking] = useState<Booking | null>(null)
+
+  // Function to handle filtering of bookings
   const handleFilterChange = () => {
     let filtered = bookings
     if (filterStartDate) {
@@ -73,29 +88,32 @@ export function Mybookings() {
       filtered = filtered.filter((booking) => new Date(booking.endDate) <= new Date(filterEndDate))
     }
     if (filterMake) {
-      filtered = filtered.filter((booking) => booking.make === filterMake)
+      filtered = filtered.filter((booking) => booking.make.toLowerCase().includes(filterMake.toLowerCase()))
     }
     if (filterModel) {
-      filtered = filtered.filter((booking) => booking.model === filterModel)
+      filtered = filtered.filter((booking) => booking.model.toLowerCase().includes(filterModel.toLowerCase()))
     }
     if (filterColor) {
-      filtered = filtered.filter((booking) => booking.color === filterColor)
+      filtered = filtered.filter((booking) => booking.color.toLowerCase().includes(filterColor.toLowerCase()))
     }
     setFilteredBookings(filtered)
   }
-  const handleViewDetails = (booking: any) => {
+
+  // Function to handle viewing booking details
+  const handleViewDetails = (booking: Booking) => {
     setSelectedBooking(booking)
   }
+
   return (
-    (
-     
-    
     <div className="max-w-6xl mx-auto px-4 py-8 sm:px-6 md:py-12">
       <Navi/>
       <h1 className="text-3xl font-bold mb-8">Your Car Bookings</h1>
-      <Link href="bookings/currentbooking" className='hover:cursor-pointer'><div className="bg-background border rounded-lg p-6 shadow-sm">
-       <div className="flex items-center justify-between">
-          <div>
+
+      {/* Current Booking Section */}
+      <Link href="bookings/currentbooking" className='hover:cursor-pointer'>
+        <div className="bg-background border rounded-lg p-6 shadow-sm">
+          <div className="flex items-center justify-between">
+            <div>
               <h2 className="text-2xl font-semibold">Current Booking</h2>
               <p className="text-muted-foreground">Rental Dates: June 1 - June 8</p>
             </div>
@@ -123,8 +141,12 @@ export function Mybookings() {
               <p>123 Main St, Anytown USA</p>
             </div>
           </div>
-        </div></Link><Separator className="my-6" />
+        </div>
+      </Link>
+      <Separator className="my-6" />
+
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {/* Filter Section */}
         <div className="bg-background rounded-lg shadow-md p-6 max-w-md">
           <h2 className="text-xl font-bold mb-4">Filter Bookings</h2>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -198,6 +220,8 @@ export function Mybookings() {
             <Button onClick={handleFilterChange}>Filter</Button>
           </div>
         </div>
+
+        {/* Bookings List */}
         <div className="col-span-2 lg:col-span-2">
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
             {filteredBookings.map((booking) => (
@@ -235,10 +259,12 @@ export function Mybookings() {
           </div>
         </div>
       </div>
+
+      {/* Booking Details Dialog */}
       {selectedBooking && (
         <Dialog
           open={!!selectedBooking}
-          onOpenChange={(open) => setSelectedBooking(open ? selectedBooking : null)}>
+          onOpenChange={(open) => !open && setSelectedBooking(null)}>
           <DialogContent className="sm:max-w-[425px]">
             <div className="flex flex-col gap-6">
               <div className="grid grid-cols-2 gap-6">
@@ -269,14 +295,12 @@ export function Mybookings() {
               </div>
             </div>
             <DialogFooter>
-              <div>
-                <Button type="button">Close</Button>
-              </div>
+              <Button onClick={() => setSelectedBooking(null)}>Close</Button>
             </DialogFooter>
           </DialogContent>
         </Dialog>
       )}
       <Footer/>
-    </div>)
+    </div>
   );
 }
