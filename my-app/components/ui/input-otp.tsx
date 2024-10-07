@@ -4,6 +4,7 @@ import { Dot } from "lucide-react"
 
 import { cn } from "@/lib/utils"
 
+// InputOTP component: Wrapper for the main OTP input
 const InputOTP = React.forwardRef<
   React.ElementRef<typeof OTPInput>,
   React.ComponentPropsWithoutRef<typeof OTPInput>
@@ -20,6 +21,7 @@ const InputOTP = React.forwardRef<
 ))
 InputOTP.displayName = "InputOTP"
 
+// InputOTPGroup component: Groups OTP input slots
 const InputOTPGroup = React.forwardRef<
   React.ElementRef<"div">,
   React.ComponentPropsWithoutRef<"div">
@@ -28,6 +30,7 @@ const InputOTPGroup = React.forwardRef<
 ))
 InputOTPGroup.displayName = "InputOTPGroup"
 
+// InputOTPSlot component: Individual input slot for OTP
 const InputOTPSlot = React.forwardRef<
   React.ElementRef<"div">,
   React.ComponentPropsWithoutRef<"div"> & { index: number }
@@ -56,12 +59,13 @@ const InputOTPSlot = React.forwardRef<
 })
 InputOTPSlot.displayName = "InputOTPSlot"
 
+// InputOTPSeparator component: Separator between OTP input slots
 const InputOTPSeparator = React.forwardRef<
   React.ElementRef<"div">,
   React.ComponentPropsWithoutRef<"div">
->(({ ...props }, ref) => (
-  <div ref={ref} role="separator" {...props}>
-    <Dot />
+>(({ className, ...props }, ref) => (
+  <div ref={ref} role="separator" className={cn("mx-1", className)} {...props}>
+    <Dot className="text-slate-400" />
   </div>
 ))
 InputOTPSeparator.displayName = "InputOTPSeparator"

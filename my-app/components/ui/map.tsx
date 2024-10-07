@@ -1,18 +1,17 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
 import L from 'leaflet';
 import axios from 'axios';
 
-
-
+// Set default Leaflet icon options
 L.Icon.Default.mergeOptions({
   iconRetinaUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon-2x.png',
   iconUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon.png',
   shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png',
 });
 
-// Icon definitions
+// Custom icon definitions for different amenities
 const icons = {
   restaurant: new L.Icon({
     iconUrl: 'https://cdn-icons-png.flaticon.com/512/685/685352.png',
@@ -34,6 +33,7 @@ const icons = {
   }),
 };
 
+// Define the structure for a Point of Interest
 interface PointOfInterest {
   lat: number;
   lng: number;
@@ -42,12 +42,13 @@ interface PointOfInterest {
 }
 
 const MapComponent: React.FC = () => {
+  // State declarations
   const [position, setPosition] = useState<[number, number] | null>(null);
   const [pointsOfInterest, setPointsOfInterest] = useState<PointOfInterest[]>([]);
   const [searchQuery, setSearchQuery] = useState<string>('');
-  const [filteredPOIs, setFilteredPOIs] = useState<PointOfInterest[]>([]);
   const [errorMessage, setErrorMessage] = useState<string>('');
 
+  // Watch user's position and update state
   useEffect(() => {
     const watchId = navigator.geolocation.watchPosition(
       (pos) => {
@@ -60,16 +61,12 @@ const MapComponent: React.FC = () => {
       }
     );
 
+    // Cleanup function to stop watching position
     return () => navigator.geolocation.clearWatch(watchId);
   }, []);
 
-  useEffect(() => {
-    if (position) {
-      fetchPointsOfInterest(position[0], position[1]);
-    }
-  }, [position, searchQuery]);
-
-  const fetchPointsOfInterest = async (lat: number, lng: number, radius: number = 1500) => {
+  // Fetch points of interest when position or search query changes
+  const fetchPointsOfInterest = useCallback(async (lat: number, lng: number, radius: number = 1500) => {
     if (!lat || !lng) return;
     
     const query = `
@@ -90,23 +87,30 @@ const MapComponent: React.FC = () => {
         amenity: poi.tags.amenity,
       }));
       setPointsOfInterest(pois);
-      setFilteredPOIs(pois);
       setErrorMessage('');
     } catch (error) {
       console.error('Error fetching points of interest:', error);
       setErrorMessage('Failed to fetch points of interest. Please try again.');
     }
-  };
+  }, [searchQuery]);
 
+  useEffect(() => {
+    if (position) {
+      fetchPointsOfInterest(position[0], position[1]);
+    }
+  }, [position, searchQuery, fetchPointsOfInterest]);
+
+  // Handle search input changes
   const handleSearch = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const query = event.target.value;
-    setSearchQuery(query);
+    setSearchQuery(event.target.value);
   };
 
+  // Get the appropriate icon for an amenity
   const getIcon = (amenity: string): L.Icon => {
     return icons[amenity as keyof typeof icons] || icons.default;
   };
 
+  // Show loading state if position is not yet available
   if (!position) {
     return <div>Loading map...</div>;
   }
@@ -129,7 +133,7 @@ const MapComponent: React.FC = () => {
         <Marker position={position}>
           <Popup>You are here</Popup>
         </Marker>
-        {filteredPOIs.map((poi, index) => (
+        {pointsOfInterest.map((poi, index) => (
           <Marker key={index} position={[poi.lat, poi.lng]} icon={getIcon(poi.amenity)}>
             <Popup>
               {poi.name} - {poi.amenity}

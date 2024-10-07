@@ -2,6 +2,7 @@ import * as React from "react"
 
 import { cn } from "@/lib/utils"
 
+// Card component: The main container for the card
 const Card = React.forwardRef<
   HTMLDivElement,
   React.HTMLAttributes<HTMLDivElement>
@@ -9,7 +10,8 @@ const Card = React.forwardRef<
   <div
     ref={ref}
     className={cn(
-      "rounded-lg border border-slate-200 bg-white text-slate-950 shadow-sm dark:border-slate-800 dark:bg-slate-950 dark:text-slate-50",
+      "rounded-lg border border-slate-200 bg-white text-slate-950 shadow-sm",
+      "dark:border-slate-800 dark:bg-slate-950 dark:text-slate-50",
       className
     )}
     {...props}
@@ -17,6 +19,7 @@ const Card = React.forwardRef<
 ))
 Card.displayName = "Card"
 
+// CardHeader component: Container for the card's header content
 const CardHeader = React.forwardRef<
   HTMLDivElement,
   React.HTMLAttributes<HTMLDivElement>
@@ -29,8 +32,9 @@ const CardHeader = React.forwardRef<
 ))
 CardHeader.displayName = "CardHeader"
 
+// CardTitle component: The title of the card
 const CardTitle = React.forwardRef<
-  HTMLParagraphElement,
+  HTMLHeadingElement,
   React.HTMLAttributes<HTMLHeadingElement>
 >(({ className, ...props }, ref) => (
   <h3
@@ -44,6 +48,7 @@ const CardTitle = React.forwardRef<
 ))
 CardTitle.displayName = "CardTitle"
 
+// CardDescription component: The description or subtitle of the card
 const CardDescription = React.forwardRef<
   HTMLParagraphElement,
   React.HTMLAttributes<HTMLParagraphElement>
@@ -56,6 +61,7 @@ const CardDescription = React.forwardRef<
 ))
 CardDescription.displayName = "CardDescription"
 
+// CardContent component: The main content area of the card
 const CardContent = React.forwardRef<
   HTMLDivElement,
   React.HTMLAttributes<HTMLDivElement>
@@ -64,6 +70,7 @@ const CardContent = React.forwardRef<
 ))
 CardContent.displayName = "CardContent"
 
+// CardFooter component: The footer area of the card
 const CardFooter = React.forwardRef<
   HTMLDivElement,
   React.HTMLAttributes<HTMLDivElement>

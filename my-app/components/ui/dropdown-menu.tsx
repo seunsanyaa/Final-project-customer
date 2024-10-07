@@ -4,18 +4,15 @@ import { Check, ChevronRight, Circle } from "lucide-react"
 
 import { cn } from "@/lib/utils"
 
+// Basic dropdown menu components
 const DropdownMenu = DropdownMenuPrimitive.Root
-
 const DropdownMenuTrigger = DropdownMenuPrimitive.Trigger
-
 const DropdownMenuGroup = DropdownMenuPrimitive.Group
-
 const DropdownMenuPortal = DropdownMenuPrimitive.Portal
-
 const DropdownMenuSub = DropdownMenuPrimitive.Sub
-
 const DropdownMenuRadioGroup = DropdownMenuPrimitive.RadioGroup
 
+// SubTrigger component for nested dropdown menus
 const DropdownMenuSubTrigger = React.forwardRef<
   React.ElementRef<typeof DropdownMenuPrimitive.SubTrigger>,
   React.ComponentPropsWithoutRef<typeof DropdownMenuPrimitive.SubTrigger> & {
@@ -38,6 +35,7 @@ const DropdownMenuSubTrigger = React.forwardRef<
 DropdownMenuSubTrigger.displayName =
   DropdownMenuPrimitive.SubTrigger.displayName
 
+// SubContent component for nested dropdown menus
 const DropdownMenuSubContent = React.forwardRef<
   React.ElementRef<typeof DropdownMenuPrimitive.SubContent>,
   React.ComponentPropsWithoutRef<typeof DropdownMenuPrimitive.SubContent>
@@ -54,6 +52,7 @@ const DropdownMenuSubContent = React.forwardRef<
 DropdownMenuSubContent.displayName =
   DropdownMenuPrimitive.SubContent.displayName
 
+// Main content component for the dropdown menu
 const DropdownMenuContent = React.forwardRef<
   React.ElementRef<typeof DropdownMenuPrimitive.Content>,
   React.ComponentPropsWithoutRef<typeof DropdownMenuPrimitive.Content>
@@ -72,6 +71,7 @@ const DropdownMenuContent = React.forwardRef<
 ))
 DropdownMenuContent.displayName = DropdownMenuPrimitive.Content.displayName
 
+// Individual menu item component
 const DropdownMenuItem = React.forwardRef<
   React.ElementRef<typeof DropdownMenuPrimitive.Item>,
   React.ComponentPropsWithoutRef<typeof DropdownMenuPrimitive.Item> & {
@@ -90,6 +90,7 @@ const DropdownMenuItem = React.forwardRef<
 ))
 DropdownMenuItem.displayName = DropdownMenuPrimitive.Item.displayName
 
+// Checkbox item component
 const DropdownMenuCheckboxItem = React.forwardRef<
   React.ElementRef<typeof DropdownMenuPrimitive.CheckboxItem>,
   React.ComponentPropsWithoutRef<typeof DropdownMenuPrimitive.CheckboxItem>
@@ -114,6 +115,7 @@ const DropdownMenuCheckboxItem = React.forwardRef<
 DropdownMenuCheckboxItem.displayName =
   DropdownMenuPrimitive.CheckboxItem.displayName
 
+// Radio item component
 const DropdownMenuRadioItem = React.forwardRef<
   React.ElementRef<typeof DropdownMenuPrimitive.RadioItem>,
   React.ComponentPropsWithoutRef<typeof DropdownMenuPrimitive.RadioItem>
@@ -136,6 +138,7 @@ const DropdownMenuRadioItem = React.forwardRef<
 ))
 DropdownMenuRadioItem.displayName = DropdownMenuPrimitive.RadioItem.displayName
 
+// Label component for dropdown menu
 const DropdownMenuLabel = React.forwardRef<
   React.ElementRef<typeof DropdownMenuPrimitive.Label>,
   React.ComponentPropsWithoutRef<typeof DropdownMenuPrimitive.Label> & {
@@ -154,6 +157,7 @@ const DropdownMenuLabel = React.forwardRef<
 ))
 DropdownMenuLabel.displayName = DropdownMenuPrimitive.Label.displayName
 
+// Separator component for dropdown menu
 const DropdownMenuSeparator = React.forwardRef<
   React.ElementRef<typeof DropdownMenuPrimitive.Separator>,
   React.ComponentPropsWithoutRef<typeof DropdownMenuPrimitive.Separator>
@@ -166,6 +170,7 @@ const DropdownMenuSeparator = React.forwardRef<
 ))
 DropdownMenuSeparator.displayName = DropdownMenuPrimitive.Separator.displayName
 
+// Shortcut component for displaying keyboard shortcuts
 const DropdownMenuShortcut = ({
   className,
   ...props
@@ -179,6 +184,7 @@ const DropdownMenuShortcut = ({
 }
 DropdownMenuShortcut.displayName = "DropdownMenuShortcut"
 
+// Export all components
 export {
   DropdownMenu,
   DropdownMenuTrigger,

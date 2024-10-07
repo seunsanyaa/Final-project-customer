@@ -3,7 +3,9 @@ import { cva, type VariantProps } from "class-variance-authority"
 
 import { cn } from "@/lib/utils"
 
+// Define the alert variants using class-variance-authority
 const alertVariants = cva(
+  // Base styles for all alerts
   "relative w-full rounded-lg border border-slate-200 p-4 [&>svg~*]:pl-7 [&>svg+div]:translate-y-[-3px] [&>svg]:absolute [&>svg]:left-4 [&>svg]:top-4 [&>svg]:text-slate-950 dark:border-slate-800 dark:[&>svg]:text-slate-50",
   {
     variants: {
@@ -19,6 +21,7 @@ const alertVariants = cva(
   }
 )
 
+// Main Alert component
 const Alert = React.forwardRef<
   HTMLDivElement,
   React.HTMLAttributes<HTMLDivElement> & VariantProps<typeof alertVariants>
@@ -32,8 +35,9 @@ const Alert = React.forwardRef<
 ))
 Alert.displayName = "Alert"
 
+// AlertTitle component
 const AlertTitle = React.forwardRef<
-  HTMLParagraphElement,
+  HTMLHeadingElement, // Changed from HTMLParagraphElement to match the h5 element
   React.HTMLAttributes<HTMLHeadingElement>
 >(({ className, ...props }, ref) => (
   <h5
@@ -44,6 +48,7 @@ const AlertTitle = React.forwardRef<
 ))
 AlertTitle.displayName = "AlertTitle"
 
+// AlertDescription component
 const AlertDescription = React.forwardRef<
   HTMLParagraphElement,
   React.HTMLAttributes<HTMLParagraphElement>

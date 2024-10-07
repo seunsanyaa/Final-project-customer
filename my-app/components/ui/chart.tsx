@@ -3,9 +3,10 @@ import * as RechartsPrimitive from "recharts"
 
 import { cn } from "@/lib/utils"
 
-// Format: { THEME_NAME: CSS_SELECTOR }
+// Define theme selectors for light and dark modes
 const THEMES = { light: "", dark: ".dark" } as const
 
+// Define the structure for chart configuration
 export type ChartConfig = {
   [k in string]: {
     label?: React.ReactNode
@@ -16,12 +17,15 @@ export type ChartConfig = {
   )
 }
 
+// Context type for sharing chart configuration
 type ChartContextProps = {
   config: ChartConfig
 }
 
+// Create a context for sharing chart configuration
 const ChartContext = React.createContext<ChartContextProps | null>(null)
 
+// Custom hook to access chart context
 function useChart() {
   const context = React.useContext(ChartContext)
 
@@ -32,6 +36,7 @@ function useChart() {
   return context
 }
 
+// Main chart container component
 const ChartContainer = React.forwardRef<
   HTMLDivElement,
   React.ComponentProps<"div"> & {
@@ -50,7 +55,20 @@ const ChartContainer = React.forwardRef<
         data-chart={chartId}
         ref={ref}
         className={cn(
-          "flex aspect-video justify-center text-xs [&_.recharts-cartesian-axis-tick_text]:fill-muted-foreground [&_.recharts-cartesian-grid_line[stroke='#ccc']]:stroke-border/50 [&_.recharts-curve.recharts-tooltip-cursor]:stroke-border [&_.recharts-dot[stroke='#fff']]:stroke-transparent [&_.recharts-layer]:outline-none [&_.recharts-polar-grid_[stroke='#ccc']]:stroke-border [&_.recharts-radial-bar-background-sector]:fill-muted [&_.recharts-rectangle.recharts-tooltip-cursor]:fill-muted [&_.recharts-reference-line_[stroke='#ccc']]:stroke-border [&_.recharts-sector[stroke='#fff']]:stroke-transparent [&_.recharts-sector]:outline-none [&_.recharts-surface]:outline-none",
+          "flex aspect-video justify-center text-xs",
+          // Add Recharts-specific styles
+          "[&_.recharts-cartesian-axis-tick_text]:fill-muted-foreground",
+          "[&_.recharts-cartesian-grid_line[stroke='#ccc']]:stroke-border/50",
+          "[&_.recharts-curve.recharts-tooltip-cursor]:stroke-border",
+          "[&_.recharts-dot[stroke='#fff']]:stroke-transparent",
+          "[&_.recharts-layer]:outline-none",
+          "[&_.recharts-polar-grid_[stroke='#ccc']]:stroke-border",
+          "[&_.recharts-radial-bar-background-sector]:fill-muted",
+          "[&_.recharts-rectangle.recharts-tooltip-cursor]:fill-muted",
+          "[&_.recharts-reference-line_[stroke='#ccc']]:stroke-border",
+          "[&_.recharts-sector[stroke='#fff']]:stroke-transparent",
+          "[&_.recharts-sector]:outline-none",
+          "[&_.recharts-surface]:outline-none",
           className
         )}
         {...props}
@@ -65,6 +83,7 @@ const ChartContainer = React.forwardRef<
 })
 ChartContainer.displayName = "Chart"
 
+// Component to generate dynamic styles based on chart configuration
 const ChartStyle = ({ id, config }: { id: string; config: ChartConfig }) => {
   const colorConfig = Object.entries(config).filter(
     ([_, config]) => config.theme || config.color
@@ -74,12 +93,8 @@ const ChartStyle = ({ id, config }: { id: string; config: ChartConfig }) => {
     return null
   }
 
-  return (
-    <style
-      dangerouslySetInnerHTML={{
-        __html: Object.entries(THEMES)
-          .map(
-            ([theme, prefix]) => `
+  // Generate CSS variables for chart colors
+  const generateColorVariables = (theme: string, prefix: string) => `
 ${prefix} [data-chart=${id}] {
 ${colorConfig
   .map(([key, itemConfig]) => {
@@ -88,18 +103,26 @@ ${colorConfig
       itemConfig.color
     return color ? `  --color-${key}: ${color};` : null
   })
+  .filter(Boolean)
   .join("\n")}
 }
 `
-          )
+
+  return (
+    <style
+      dangerouslySetInnerHTML={{
+        __html: Object.entries(THEMES)
+          .map(([theme, prefix]) => generateColorVariables(theme, prefix))
           .join("\n"),
       }}
     />
   )
 }
 
+// Re-export Recharts Tooltip component
 const ChartTooltip = RechartsPrimitive.Tooltip
 
+// Custom tooltip content component
 const ChartTooltipContent = React.forwardRef<
   HTMLDivElement,
   React.ComponentProps<typeof RechartsPrimitive.Tooltip> &
@@ -131,6 +154,7 @@ const ChartTooltipContent = React.forwardRef<
   ) => {
     const { config } = useChart()
 
+    // Memoized tooltip label
     const tooltipLabel = React.useMemo(() => {
       if (hideLabel || !payload?.length) {
         return null
@@ -254,8 +278,10 @@ const ChartTooltipContent = React.forwardRef<
 )
 ChartTooltipContent.displayName = "ChartTooltip"
 
+// Re-export Recharts Legend component
 const ChartLegend = RechartsPrimitive.Legend
 
+// Custom legend content component
 const ChartLegendContent = React.forwardRef<
   HTMLDivElement,
   React.ComponentProps<"div"> &
@@ -314,7 +340,7 @@ const ChartLegendContent = React.forwardRef<
 )
 ChartLegendContent.displayName = "ChartLegend"
 
-// Helper to extract item config from a payload.
+// Helper function to extract item config from a payload
 function getPayloadConfigFromPayload(
   config: ChartConfig,
   payload: unknown,

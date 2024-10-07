@@ -13,8 +13,10 @@ import {
 import { cn } from "@/lib/utils"
 import { Label } from "@/components/ui/label"
 
+// Alias for FormProvider to simplify usage
 const Form = FormProvider
 
+// Define the shape of the form field context
 type FormFieldContextValue<
   TFieldValues extends FieldValues = FieldValues,
   TName extends FieldPath<TFieldValues> = FieldPath<TFieldValues>
@@ -22,10 +24,12 @@ type FormFieldContextValue<
   name: TName
 }
 
+// Create a context for form fields
 const FormFieldContext = React.createContext<FormFieldContextValue>(
   {} as FormFieldContextValue
 )
 
+// FormField component to wrap form controls
 const FormField = <
   TFieldValues extends FieldValues = FieldValues,
   TName extends FieldPath<TFieldValues> = FieldPath<TFieldValues>
@@ -39,16 +43,17 @@ const FormField = <
   )
 }
 
+// Custom hook to access form field properties
 const useFormField = () => {
   const fieldContext = React.useContext(FormFieldContext)
   const itemContext = React.useContext(FormItemContext)
   const { getFieldState, formState } = useFormContext()
 
-  const fieldState = getFieldState(fieldContext.name, formState)
-
   if (!fieldContext) {
     throw new Error("useFormField should be used within <FormField>")
   }
+
+  const fieldState = getFieldState(fieldContext.name, formState)
 
   const { id } = itemContext
 
@@ -62,14 +67,17 @@ const useFormField = () => {
   }
 }
 
+// Define the shape of the form item context
 type FormItemContextValue = {
   id: string
 }
 
+// Create a context for form items
 const FormItemContext = React.createContext<FormItemContextValue>(
   {} as FormItemContextValue
 )
 
+// FormItem component to group form elements
 const FormItem = React.forwardRef<
   HTMLDivElement,
   React.HTMLAttributes<HTMLDivElement>
@@ -84,6 +92,7 @@ const FormItem = React.forwardRef<
 })
 FormItem.displayName = "FormItem"
 
+// FormLabel component for form labels
 const FormLabel = React.forwardRef<
   React.ElementRef<typeof LabelPrimitive.Root>,
   React.ComponentPropsWithoutRef<typeof LabelPrimitive.Root>
@@ -93,7 +102,7 @@ const FormLabel = React.forwardRef<
   return (
     <Label
       ref={ref}
-      className={cn(error && "text-red-500 dark:text-red-900", className)}
+      className={cn(error && "text-destructive", className)}
       htmlFor={formItemId}
       {...props}
     />
@@ -101,6 +110,7 @@ const FormLabel = React.forwardRef<
 })
 FormLabel.displayName = "FormLabel"
 
+// FormControl component to wrap form inputs
 const FormControl = React.forwardRef<
   React.ElementRef<typeof Slot>,
   React.ComponentPropsWithoutRef<typeof Slot>
@@ -123,6 +133,7 @@ const FormControl = React.forwardRef<
 })
 FormControl.displayName = "FormControl"
 
+// FormDescription component for additional form field information
 const FormDescription = React.forwardRef<
   HTMLParagraphElement,
   React.HTMLAttributes<HTMLParagraphElement>
@@ -133,13 +144,14 @@ const FormDescription = React.forwardRef<
     <p
       ref={ref}
       id={formDescriptionId}
-      className={cn("text-sm text-slate-500 dark:text-slate-400", className)}
+      className={cn("text-sm text-muted-foreground", className)}
       {...props}
     />
   )
 })
 FormDescription.displayName = "FormDescription"
 
+// FormMessage component to display form validation messages
 const FormMessage = React.forwardRef<
   HTMLParagraphElement,
   React.HTMLAttributes<HTMLParagraphElement>
@@ -155,7 +167,7 @@ const FormMessage = React.forwardRef<
     <p
       ref={ref}
       id={formMessageId}
-      className={cn("text-sm font-medium text-red-500 dark:text-red-900", className)}
+      className={cn("text-sm font-medium text-destructive", className)}
       {...props}
     >
       {body}
