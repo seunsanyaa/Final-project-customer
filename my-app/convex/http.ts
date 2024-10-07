@@ -34,6 +34,11 @@ http.route({
 					await ctx.runMutation(internal.users.createUser, {
 						email: result.data?.email_addresses[0]?.email_address ?? '',
 						userId: result.data.id,
+						firstName: '', // Add placeholder or extract from result if available
+						lastName: '', // Add placeholder or extract from result if available
+						password: '', // Add placeholder or generate a temporary password
+						role: 'user', // Set a default role or extract from result if available
+						phoneNumber: '', // Add placeholder or extract from result if available
 					});
 					break;
 

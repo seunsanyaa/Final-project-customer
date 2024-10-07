@@ -13,8 +13,7 @@ export const getUser = query({
 		const userId = await getUserId(ctx);
 
 		if (!userId) {
-			throw new Error('User is not aunthicated');
-
+			throw new Error('User is not authenticated'); // Fixed typo in 'authenticated'
 		}
 
 		return getFullUser(ctx, userId);
@@ -26,14 +25,20 @@ export const createUser = internalMutation({
 		email: v.string(),
 		userId: v.string(),
 		firstName: v.string(),
-		lastName: v.string()
+		lastName: v.string(),
+		password: v.string(), // Add this
+		role: v.string(), // Add this
+		phoneNumber: v.string(), // Add this
 	},
 	handler: async (ctx, args) => {
 		await ctx.db.insert('users', {
 			email: args.email,
 			userId: args.userId,
 			firstName: args.firstName,
-			lastName: args.lastName
+			lastName: args.lastName,
+			password: args.password, // Add this
+			role: args.role, // Add this
+			phoneNumber: args.phoneNumber, // Add this
 		});
 	},
 });
@@ -46,7 +51,7 @@ export const deleteUser = internalMutation({
 	handler: async (ctx, args) => {
 		// Ensure at least one identifier is provided
 		if (!args.userId) {
-			throw new Error('Either email or userId must be provided');
+			throw new Error('userId must be provided');
 		}
 
 		let userToDelete;

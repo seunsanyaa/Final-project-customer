@@ -14,9 +14,16 @@ import type {
   FilterApi,
   FunctionReference,
 } from "convex/server";
+import type * as analyticalReport from "../analyticalReport.js";
+import type * as bookings from "../bookings.js";
 import type * as car from "../car.js";
 import type * as clerk from "../clerk.js";
 import type * as http from "../http.js";
+import type * as insurance from "../insurance.js";
+import type * as maintenance from "../maintenance.js";
+import type * as payments from "../payments.js";
+import type * as promotion from "../promotion.js";
+import type * as reviews from "../reviews.js";
 import type * as users from "../users.js";
 import type * as util from "../util.js";
 
@@ -29,9 +36,16 @@ import type * as util from "../util.js";
  * ```
  */
 declare const fullApi: ApiFromModules<{
+  analyticalReport: typeof analyticalReport;
+  bookings: typeof bookings;
   car: typeof car;
   clerk: typeof clerk;
   http: typeof http;
+  insurance: typeof insurance;
+  maintenance: typeof maintenance;
+  payments: typeof payments;
+  promotion: typeof promotion;
+  reviews: typeof reviews;
   users: typeof users;
   util: typeof util;
 }>;

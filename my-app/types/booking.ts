@@ -1,9 +1,14 @@
 export type Booking = {
-  name: string;
-  category: string;
-  duration: string;
+  bookingId: string;
+  customerId: string;
+  carId: string;
   startDate: string;
-  price: number;
-  image: string;
-  customerEmail:string
+  endDate: string;
+  totalCost: number;
+  paidAmount: number;
+  status: string;
+  pickupLocation: string;
+  dropoffLocation: string;
+  customerInsurancetype: string;
+  customerInsuranceNumber: string;
 };
