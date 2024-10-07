@@ -1,11 +1,12 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Star, User, Search } from "lucide-react";
 
+// Mock data for recent ratings
 const allRecentRatings = [
   { id: 1, user: "Alice Johnson", carName: "Toyota Camry", rating: 5, date: "2023-06-15" },
   { id: 2, user: "Bob Smith", carName: "Honda Civic", rating: 4, date: "2023-06-14" },
@@ -17,6 +18,7 @@ const allRecentRatings = [
   { id: 8, user: "Henry Wilson", carName: "Volkswagen Golf", rating: 3, date: "2023-06-08" },
 ];
 
+// Component to display star ratings
 const StarRating = ({ rating }: { rating: number }) => {
   return (
     <div className="flex">
@@ -31,19 +33,23 @@ const StarRating = ({ rating }: { rating: number }) => {
 };
 
 export function RecentRatings() {
+  // State for search term and rating filter
   const [searchTerm, setSearchTerm] = useState('');
   const [ratingFilter, setRatingFilter] = useState('all');
 
-  const filteredRatings = allRecentRatings.filter(rating => {
-    const matchesSearch = rating.user.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                          rating.carName.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesRating = ratingFilter === 'all' || 
-      (ratingFilter === '5' && rating.rating === 5) ||
-      (ratingFilter === '4' && rating.rating === 4) ||
-      (ratingFilter === '3' && rating.rating === 3) ||
-      (ratingFilter === '1-2' && rating.rating <= 2);
-    return matchesSearch && matchesRating;
-  });
+  // Memoized filtered ratings to improve performance
+  const filteredRatings = useMemo(() => {
+    return allRecentRatings.filter(rating => {
+      const matchesSearch = rating.user.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                            rating.carName.toLowerCase().includes(searchTerm.toLowerCase());
+      const matchesRating = ratingFilter === 'all' || 
+        (ratingFilter === '5' && rating.rating === 5) ||
+        (ratingFilter === '4' && rating.rating === 4) ||
+        (ratingFilter === '3' && rating.rating === 3) ||
+        (ratingFilter === '1-2' && rating.rating <= 2);
+      return matchesSearch && matchesRating;
+    });
+  }, [searchTerm, ratingFilter]);
 
   return (
     <div className="min-h-screen bg-gradient-to-r from-blue-400 to-blue-600 flex items-center justify-center p-4">
@@ -52,6 +58,7 @@ export function RecentRatings() {
           <CardTitle className="text-2xl font-bold text-center text-blue-600">Recent Ratings</CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
+          {/* Search and filter controls */}
           <div className="flex flex-col sm:flex-row gap-4">
             <div className="relative flex-grow">
               <Search className="absolute left-2 top-1/2 transform -translate-y-1/2 text-gray-400" />
@@ -78,9 +85,10 @@ export function RecentRatings() {
               </Select>
             </div>
           </div>
+          {/* Display filtered ratings */}
           <div className="grid gap-4">
             {filteredRatings.map((rating) => (
-              <Card key={rating.id} className="bg-white/50 backdrop-blur-sm">
+              <Card key={rating.id} className="bg-white/50 backdrop-blur-sm hover:bg-white/70 transition-colors">
                 <CardContent className="p-4">
                   <div className="flex items-center justify-between">
                     <div className="flex items-center space-x-2">
@@ -97,6 +105,7 @@ export function RecentRatings() {
               </Card>
             ))}
           </div>
+          {/* Display message when no ratings are found */}
           {filteredRatings.length === 0 && (
             <p className="text-center text-blue-700">No ratings found matching your criteria.</p>
           )}

@@ -1,11 +1,12 @@
 'use client'
-import { useState } from 'react'
+import { useState, useMemo } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Star, Car, Search } from "lucide-react"
 import Image from "next/image"
 
+// Mock data for rated cars
 const allRatedCars = [
   { id: 1, name: "Toyota Camry", image: "/placeholder.svg", averageRating: 4.7, totalRatings: 253 },
   { id: 2, name: "Honda Civic", image: "/placeholder.svg", averageRating: 4.5, totalRatings: 201 },
@@ -17,6 +18,7 @@ const allRatedCars = [
   { id: 8, name: "Volkswagen Golf", image: "/placeholder.svg", averageRating: 4.3, totalRatings: 132 },
 ]
 
+// Component to display star rating
 const StarRating = ({ rating }: { rating: number }) => {
   return (
     <div className="flex items-center">
@@ -27,17 +29,21 @@ const StarRating = ({ rating }: { rating: number }) => {
 }
 
 export function MostRatedCars() {
+  // State for search term and rating filter
   const [searchTerm, setSearchTerm] = useState('')
   const [ratingFilter, setRatingFilter] = useState('all')
 
-  const filteredCars = allRatedCars.filter(car => {
-    const matchesSearch = car.name.toLowerCase().includes(searchTerm.toLowerCase())
-    const matchesRating = ratingFilter === 'all' || 
-      (ratingFilter === '4.5+' && car.averageRating >= 4.5) ||
-      (ratingFilter === '4.0-4.4' && car.averageRating >= 4.0 && car.averageRating < 4.5) ||
-      (ratingFilter === 'below4' && car.averageRating < 4.0)
-    return matchesSearch && matchesRating
-  })
+  // Memoized filtered cars list
+  const filteredCars = useMemo(() => {
+    return allRatedCars.filter(car => {
+      const matchesSearch = car.name.toLowerCase().includes(searchTerm.toLowerCase())
+      const matchesRating = ratingFilter === 'all' || 
+        (ratingFilter === '4.5+' && car.averageRating >= 4.5) ||
+        (ratingFilter === '4.0-4.4' && car.averageRating >= 4.0 && car.averageRating < 4.5) ||
+        (ratingFilter === 'below4' && car.averageRating < 4.0)
+      return matchesSearch && matchesRating
+    })
+  }, [searchTerm, ratingFilter])
 
   return (
     <div className="min-h-screen bg-gradient-to-r from-blue-400 to-blue-600 flex items-center justify-center p-4">
@@ -46,6 +52,7 @@ export function MostRatedCars() {
           <CardTitle className="text-2xl font-bold text-center text-blue-600">Most Rated Cars</CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
+          {/* Search and filter controls */}
           <div className="flex flex-col sm:flex-row gap-4">
             <div className="relative flex-grow">
               <Search className="absolute left-2 top-1/2 transform -translate-y-1/2 text-gray-400" />
@@ -71,9 +78,11 @@ export function MostRatedCars() {
               </Select>
             </div>
           </div>
+          
+          {/* List of filtered cars */}
           <div className="grid gap-4">
             {filteredCars.map((car) => (
-              <Card key={car.id} className="bg-white/50 backdrop-blur-sm">
+              <Card key={car.id} className="bg-white/50 backdrop-blur-sm hover:bg-white/70 transition-colors">
                 <CardContent className="p-4">
                   <div className="flex items-center space-x-4">
                     <Image
@@ -98,6 +107,8 @@ export function MostRatedCars() {
               </Card>
             ))}
           </div>
+          
+          {/* Message when no cars match the criteria */}
           {filteredCars.length === 0 && (
             <p className="text-center text-blue-700">No cars found matching your criteria.</p>
           )}

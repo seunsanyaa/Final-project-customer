@@ -1,4 +1,3 @@
-
 import { Input } from "@/components/ui/input"
 import Link from "next/link"
 import { Card, CardContent } from "@/components/ui/card"
@@ -18,15 +17,19 @@ export function ReviewsPage() {
     <Separator/>
     <div className="flex min-h-screen w-full bg-muted/40">
     
+      {/* Sidebar */}
       <aside className="fixed inset-y-30 left-0 z-10 hidden w-64 flex-col border-r border-t bg-background p-4 sm:flex">
+        {/* Search input */}
         <div className="mb-6">
           <Input
             type="search"
-            placeholder="Search FAQs..."
+            placeholder="Search reviews..."
             className="w-full rounded-lg bg-background pl-8"
           />
         </div>
+        {/* Navigation links */}
         <nav className="flex flex-col gap-4">
+          {/* TODO: Consider extracting these links into a separate component for reusability */}
           <Link
             href="/Rating_Reviews/recentrev"
             className="flex items-center gap-2 rounded-lg bg-accent p-2 text-accent-foreground"
@@ -53,13 +56,17 @@ export function ReviewsPage() {
           </Link>
         </nav>
       </aside>
+      {/* Main content */}
       <div className="flex flex-1 flex-col sm:pl-64">
         <main className="p-4 sm:p-6">
+          {/* Top Rated Cars section */}
           <section className="mb-8">
             <h2 className="mb-4 text-2xl font-bold">Top Rated Cars</h2>
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
+              {/* TODO: Extract this card into a separate CarCard component */}
               <Card>
                 <CardContent className="flex flex-col items-center gap-4 p-6">
+                  {/* TODO: Replace placeholder with actual car images */}
                   <img
                     src="/placeholder.svg"
                     alt="Car Image"
@@ -68,6 +75,7 @@ export function ReviewsPage() {
                     className="rounded-lg"
                     style={{ aspectRatio: "200/150", objectFit: "cover" }}
                   />
+                  {/* TODO: Create a reusable StarRating component */}
                   <div className="flex items-center gap-1">
                     <StarIcon className="h-5 w-5 fill-primary" />
                     <StarIcon className="h-5 w-5 fill-primary" />
@@ -144,11 +152,14 @@ export function ReviewsPage() {
               </Card>
             </div>
           </section>
+          {/* Write a Review section */}
           <section>
             <h2 className="mb-4 text-2xl font-bold">Write a Review</h2>
             <Card>
               <CardContent className="p-6">
+                {/* TODO: Extract this form into a separate ReviewForm component */}
                 <form className="grid gap-4">
+                  {/* Car selection */}
                   <div className="grid gap-2">
                     <Label htmlFor="car">Car</Label>
                     <Select name="car">
@@ -156,6 +167,7 @@ export function ReviewsPage() {
                         <SelectValue placeholder="Select a car" />
                       </SelectTrigger>
                       <SelectContent>
+                        {/* TODO: Populate this list dynamically from an API or config */}
                         <SelectItem value="toyota-camry">Toyota Camry</SelectItem>
                         <SelectItem value="honda-civic">Honda Civic</SelectItem>
                         <SelectItem value="ford-mustang">Ford Mustang</SelectItem>
@@ -163,10 +175,12 @@ export function ReviewsPage() {
                       </SelectContent>
                     </Select>
                   </div>
+                  {/* Rating selection */}
                   <div className="grid gap-2">
                     <Label htmlFor="rating">Rating</Label>
                     <RadioGroup id="rating" defaultValue="4">
                       <div className="flex items-center gap-2">
+                        {/* TODO: Generate these radio items programmatically */}
                         <RadioGroupItem id="rating-1" value="1" />
                         <StarIcon className="h-5 w-5 fill-primary" />
                         <RadioGroupItem id="rating-2" value="2" />
@@ -180,6 +194,7 @@ export function ReviewsPage() {
                       </div>
                     </RadioGroup>
                   </div>
+                  {/* Review text area */}
                   <div className="grid gap-2">
                     <Label htmlFor="review">Review</Label>
                     <Textarea id="review" rows={4} />

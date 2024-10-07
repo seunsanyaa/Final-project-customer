@@ -1,4 +1,3 @@
-
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
@@ -16,13 +15,39 @@ import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator"; // Assuming this is imported correctly from your components
 import { Navi } from "../head/navi";
 import { Footer } from "../head/footer";
+
+// TODO: Create an interface for promotion data
+interface Promotion {
+  id: string;
+  title: string;
+  description: string;
+  expirationDate: string;
+  type: 'Discount' | 'Upgrade' | 'Free Rental';
+  terms: string;
+  imageUrl: string;
+}
+
+// TODO: Move this data to a separate file or fetch from an API
+const promotions: Promotion[] = [
+  // ... Add promotion objects here
+];
+
 export function PromotionsPage() {
+  // TODO: Implement state management for filtering and sorting
+  // const [filter, setFilter] = useState('all');
+  // const [sort, setSort] = useState('newest');
+
+  // TODO: Implement filtering and sorting logic
+  // const filteredAndSortedPromotions = useMemo(() => {
+  //   return promotions.filter(...).sort(...);
+  // }, [promotions, filter, sort]);
 
   return (
     <>
-      <Navi/>
+      <Navi />
       <Separator />
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+        {/* Featured Promotion Section */}
         <div className="bg-primary rounded-lg overflow-hidden mb-8">
           <div className="grid grid-cols-1 md:grid-cols-2 items-center">
             <div className="p-8">
@@ -50,7 +75,9 @@ export function PromotionsPage() {
           </div>
         </div>
 
+        {/* Promotions List Section */}
         <div className="mb-8">
+          {/* Filter and Sort Controls */}
           <div className="flex justify-between items-center mb-4">
             <h2 className="text-2xl font-bold">Current Promotions</h2>
             <div className="flex items-center gap-4">
@@ -82,174 +109,42 @@ export function PromotionsPage() {
             </div>
           </div>
 
+          {/* Promotion Cards Grid */}
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-            {/* Repeat for each card */}
-            <Card>
-              <img
-                src="/placeholder.svg"
-                width={400}
-                height={200}
-                alt="Promotion Image"
-                className="rounded-t-lg object-cover"
-                style={{ aspectRatio: "400/200", objectFit: "cover" }}
-              />
-              <CardContent className="p-6">
-                <h3 className="text-xl font-bold mb-2">
-                  20% Off Compact Car Rentals
-                </h3>
-                <p className="text-muted-foreground mb-4">
-                  Rent a compact car and save 20% on your next booking.
-                </p>
-                <div className="flex justify-between items-center mb-4">
-                  <div>
-                    <CalendarDaysIcon className="mr-2 h-4 w-4" />
-                    <span className="text-sm text-muted-foreground">
-                      Expires: 2024-09-30
-                    </span>
+            {/* TODO: Replace this with a map function over filteredAndSortedPromotions */}
+            {promotions.map((promotion) => (
+              <Card key={promotion.id}>
+                <img
+                  src={promotion.imageUrl}
+                  width={400}
+                  height={200}
+                  alt={`${promotion.title} Image`}
+                  className="rounded-t-lg object-cover"
+                  style={{ aspectRatio: "400/200", objectFit: "cover" }}
+                />
+                <CardContent className="p-6">
+                  <h3 className="text-xl font-bold mb-2">{promotion.title}</h3>
+                  <p className="text-muted-foreground mb-4">{promotion.description}</p>
+                  <div className="flex justify-between items-center mb-4">
+                    <div className="flex items-center">
+                      <CalendarDaysIcon className="mr-2 h-4 w-4" />
+                      <span className="text-sm text-muted-foreground">
+                        Expires: {promotion.expirationDate}
+                      </span>
+                    </div>
+                    <Badge variant="secondary">{promotion.type}</Badge>
                   </div>
-                  <Badge variant="secondary">Discount</Badge>
-                </div>
-                <div className="text-sm text-muted-foreground">
-                  <p>
-                    Offer valid for new members only. Minimum rental period of 3
-                    days. See terms and conditions for details.
-                  </p>
-                </div>
-              </CardContent>
-            </Card>
-            <Card>
-            <img
-              src="/placeholder.svg"
-              width={400}
-              height={200}
-              alt="Promotion Image"
-              className="rounded-t-lg object-cover"
-              style={{ aspectRatio: "400/200", objectFit: "cover" }} />
-            <CardContent className="p-6">
-              <h3 className="text-xl font-bold mb-2">Complimentary Upgrade to Midsize</h3>
-              <p className="text-muted-foreground mb-4">Rent a midsize car at the price of a compact.</p>
-              <div className="flex justify-between items-center mb-4">
-                <div>
-                  <CalendarDaysIcon className="mr-2 h-4 w-4" />
-                  <span className="text-sm text-muted-foreground">Expires: 2024-11-15</span>
-                </div>
-                <Badge variant="secondary">Upgrade</Badge>
-              </div>
-              <div className="text-sm text-muted-foreground">
-                <p>Offer valid for members with 6 or more rentals in the past year. Blackout dates may apply.</p>
-              </div>
-            </CardContent>
-          </Card>
-          <Card>
-            <img
-              src="/placeholder.svg"
-              width={400}
-              height={200}
-              alt="Promotion Image"
-              className="rounded-t-lg object-cover"
-              style={{ aspectRatio: "400/200", objectFit: "cover" }} />
-            <CardContent className="p-6">
-              <h3 className="text-xl font-bold mb-2">Free Weekend Rental for New Members</h3>
-              <p className="text-muted-foreground mb-4">
-                Enjoy a free weekend rental when you sign up for our rewards program.
-              </p>
-              <div className="flex justify-between items-center mb-4">
-                <div>
-                  <CalendarDaysIcon className="mr-2 h-4 w-4" />
-                  <span className="text-sm text-muted-foreground">Expires: 2024-12-31</span>
-                </div>
-                <Badge variant="secondary">Free Rental</Badge>
-              </div>
-              <div className="text-sm text-muted-foreground">
-                <p>
-                  Offer valid for new members only. Minimum rental period of 2 days. See terms and conditions for
-                  details.
-                </p>
-              </div>
-            </CardContent>
-          </Card>
-          <Card>
-            <img
-              src="/placeholder.svg"
-              width={400}
-              height={200}
-              alt="Promotion Image"
-              className="rounded-t-lg object-cover"
-              style={{ aspectRatio: "400/200", objectFit: "cover" }} />
-            <CardContent className="p-6">
-              <h3 className="text-xl font-bold mb-2">10% Off SUV Rentals for Members</h3>
-              <p className="text-muted-foreground mb-4">Rent an SUV and save 10% on your next booking.</p>
-              <div className="flex justify-between items-center mb-4">
-                <div>
-                  <CalendarDaysIcon className="mr-2 h-4 w-4" />
-                  <span className="text-sm text-muted-foreground">Expires: 2025-03-31</span>
-                </div>
-                <Badge variant="secondary">Discount</Badge>
-              </div>
-              <div className="text-sm text-muted-foreground">
-                <p>Offer valid for members with 3 or more rentals in the past year. Blackout dates may apply.</p>
-              </div>
-            </CardContent>
-          </Card>
-          <Card>
-            <img
-              src="/placeholder.svg"
-              width={400}
-              height={200}
-              alt="Promotion Image"
-              className="rounded-t-lg object-cover"
-              style={{ aspectRatio: "400/200", objectFit: "cover" }} />
-            <CardContent className="p-6">
-              <h3 className="text-xl font-bold mb-2">Free Rental Day for Loyalty Members</h3>
-              <p className="text-muted-foreground mb-4">Earn a free rental day for every 5 rentals.</p>
-              <div className="flex justify-between items-center mb-4">
-                <div>
-                  <CalendarDaysIcon className="mr-2 h-4 w-4" />
-                  <span className="text-sm text-muted-foreground">Expires: 2025-06-30</span>
-                </div>
-                <Badge variant="secondary">Free Rental</Badge>
-              </div>
-              <div className="text-sm text-muted-foreground">
-                <p>
-                  Offer valid for members with 10 or more rentals in the past year. See terms and conditions for
-                  details.
-                </p>
-              </div>
-            </CardContent>
-          </Card>
-          <Card>
-            <img
-              src="/placeholder.svg"
-              width={400}
-              height={200}
-              alt="Promotion Image"
-              className="rounded-t-lg object-cover"
-              style={{ aspectRatio: "400/200", objectFit: "cover" }} />
-            <CardContent className="p-6">
-              <h3 className="text-xl font-bold mb-2">15% Off Luxury Car Rentals</h3>
-              <p className="text-muted-foreground mb-4">Treat yourself to a luxury car rental and save 15%.</p>
-              <div className="flex justify-between items-center mb-4">
-                <div>
-                  <CalendarDaysIcon className="mr-2 h-4 w-4" />
-                  <span className="text-sm text-muted-foreground">Expires: 2025-09-30</span>
-                </div>
-                <Badge variant="secondary">Discount</Badge>
-              </div>
-              <div className="text-sm text-muted-foreground">
-                <p>Offer valid for members with 15 or more rentals in the past year. Blackout dates may apply.</p>
-              </div>
-            </CardContent>
-          </Card>
+                  <div className="text-sm text-muted-foreground">
+                    <p>{promotion.terms}</p>
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
           </div>
         </div>
       </div>
-  
-<Separator />
-<Footer/>
-</>
-);
+      <Separator />
+      <Footer />
+    </>
+  );
 }
-
-
-
-

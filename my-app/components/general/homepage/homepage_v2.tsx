@@ -1,12 +1,10 @@
-
 'use client'
 import Link from "next/link"
-import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator } from "@/components/ui/dropdown-menu"
-import { Button } from "@/components/ui/button"
 import { useInView } from 'react-intersection-observer';
 import { Carousel, CarouselContent, CarouselItem, CarouselPrevious, CarouselNext } from "@/components/ui/carousel"
-import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card"
+import { Card, CardContent } from "@/components/ui/card"
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar"
+import { Button } from "@/components/ui/button"
 import carImage from '@/components/ui/car.png';
 import StarIcon from '@/svgs/StarIcon';
 import CarIcon from '@/svgs/Caricon';
@@ -17,42 +15,95 @@ import ChevronLeftIcon from '@/svgs/ChevronLeftIcon';
 import ChevronRightIcon from '@/svgs/ChevronRightIcon';
 import { Navi } from "../head/navi";
 import { Footer } from "../head/footer";
-export function Homepage_v2() {
-  const [ref1, inView1] = useInView({ threshold: 0.6, triggerOnce: true });
-const [ref2, inView2] = useInView({ threshold: 0.6,triggerOnce: true  });
-const [ref3, inView3] = useInView({ threshold: 0.3,triggerOnce: true });
-const [ref4, inView4] = useInView({ threshold: 0.3,triggerOnce: true });
-  return (
-    (<div className="flex flex-col min-h-dvh">
-      <Navi/>
-      <main className="flex-1">
-      <section  ref={ref1}className={`relative top-0 md:py-16 h-[400px] px-4 md:px-6 lg:px-10 bg-cover bg-center bg-no-repeat ${
-        inView1 ? 'animate-fadeInUp' : 'opacity-0'
-       }`}
-       style={{ backgroundImage: `url(${carImage.src})` }}
-    >
-      <div className="absolute top-0 left-[45vw] flex flex-col  gap-4 p-2 w-[45vw]">
-        <div>
-          <h1 className="text-5xl font-bold tracking-tight ">Find your perfect ride</h1>
-          
-          <form className="flex gap-2 mt-6">
-            <input
-              type="text"
-              placeholder="Search by location or vehicle"
-              className="flex-1 p-2 border border-gray-300 rounded-lg w-full"
-            />
-            <Button type="submit" className="whitespace-nowrap p-4">
-              Search
-            </Button>
-          </form>
-        </div>
-      </div>
-    </section>
 
-       
-        <section ref={ref2 }className={`relative  w-full h-[400px] md:h-[500px] lg:h-[500px] overflow-hidden bg-muted ${
-        inView2 ? 'animate-fadeInUp' : 'opacity-0'
-       }`}>
+// Define interface for vehicle card props
+interface VehicleCardProps {
+  icon: React.ReactNode;
+  title: string;
+  description: string;
+}
+
+// Define interface for testimonial card props
+interface TestimonialCardProps {
+  name: string;
+  initials: string;
+  content: string;
+}
+
+export function Homepage_v2() {
+  // Use intersection observer hooks for animation triggers
+  const [ref1, inView1] = useInView({ threshold: 0.6, triggerOnce: true });
+  const [ref2, inView2] = useInView({ threshold: 0.6, triggerOnce: true });
+  const [ref3, inView3] = useInView({ threshold: 0.3, triggerOnce: true });
+  const [ref4, inView4] = useInView({ threshold: 0.3, triggerOnce: true });
+
+  // Vehicle card component
+  const VehicleCard: React.FC<VehicleCardProps> = ({ icon, title, description }) => (
+    <Card className="rounded-xl border-foreground hover:border-background transition-colors">
+      <CardContent className="rounded-xl bg-customgrey flex flex-col items-center justify-center gap-4 p-6">
+        {icon}
+        <div className="text-center">
+          <h3 className="text-4xl font-semibold text-background">{title}</h3>
+          <p className="text-background">{description}</p>
+        </div>
+        <Link href="/Search"><Button variant="outline">Rent Now</Button></Link>
+      </CardContent>
+    </Card>
+  );
+
+  // Testimonial card component
+  const TestimonialCard: React.FC<TestimonialCardProps> = ({ name, initials, content }) => (
+    <Card>
+      <CardContent className="p-6">
+        <div className="flex items-start gap-4">
+          <Avatar className="border w-12 h-12">
+            <AvatarImage src="/placeholder-user.jpg" />
+            <AvatarFallback>{initials}</AvatarFallback>
+          </Avatar>
+          <div className="space-y-1">
+            <div className="font-semibold">{name}</div>
+            <div className="flex items-center gap-1 text-xs font-medium">
+              {[...Array(5)].map((_, i) => (
+                <StarIcon key={i} className="w-4 h-4 fill-primary" />
+              ))}
+            </div>
+          </div>
+        </div>
+        <p className="mt-4 text-muted-foreground">{content}</p>
+      </CardContent>
+    </Card>
+  );
+
+  return (
+    <div className="flex flex-col min-h-dvh">
+      <Navi />
+      <main className="flex-1">
+        {/* Hero Section */}
+        <section ref={ref1} className={`relative top-0 md:py-16 h-[400px] px-4 md:px-6 lg:px-10 bg-cover bg-center bg-no-repeat ${
+          inView1 ? 'animate-fadeInUp' : 'opacity-0'
+        }`} style={{ backgroundImage: `url(${carImage.src})` }}>
+          <div className="absolute top-0 left-[45vw] flex flex-col  gap-4 p-2 w-[45vw]">
+            <div>
+              <h1 className="text-5xl font-bold tracking-tight ">Find your perfect ride</h1>
+              
+              <form className="flex gap-2 mt-6">
+                <input
+                  type="text"
+                  placeholder="Search by location or vehicle"
+                  className="flex-1 p-2 border border-gray-300 rounded-lg w-full"
+                />
+                <Button type="submit" className="whitespace-nowrap p-4">
+                  Search
+                </Button>
+              </form>
+            </div>
+          </div>
+        </section>
+
+        {/* Special Offers Section */}
+        <section ref={ref2} className={`relative w-full h-[400px] md:h-[500px] lg:h-[500px] overflow-hidden bg-muted ${
+          inView2 ? 'animate-fadeInUp' : 'opacity-0'
+        }`}>
           <div className="w-full mx-auto space-y-6 pt-5 pb-5 md:space-y-8 lg:space-y-10 bg-muted">
             <div className="text-center">
               <h2 className="text-2xl md:text-3xl lg:text-4xl font-bold">Special Offers</h2>
@@ -139,10 +190,12 @@ const [ref4, inView4] = useInView({ threshold: 0.3,triggerOnce: true });
               <ChevronRightIcon className="w-6 h-6" />
             </CarouselNext>
           </Carousel>
-          
         </section>
-        <section ref={ref3 }className={`relative py-12 md:py-16 lg:py-20 px-4 md:px-6 lg:px-10 bg-primary ${ 
-          inView3 ? 'animate-fadeInUp' : "opacity-0"}`}>
+
+        {/* Fleet Section */}
+        <section ref={ref3} className={`relative py-12 md:py-16 lg:py-20 px-4 md:px-6 lg:px-10 bg-primary ${
+          inView3 ? 'animate-fadeInUp' : "opacity-0"
+        }`}>
           <div className="max-w-3xl mx-auto space-y-6 md:space-y-8 lg:space-y-10">
             <div className="space-y-6 md:space-y-8">
               <div className="text-center">
@@ -151,53 +204,36 @@ const [ref4, inView4] = useInView({ threshold: 0.3,triggerOnce: true });
                   Choose from a wide range of vehicles to fit your needs.
                 </p>
               </div>
-              <div className="grid gap-6 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 ">
-                <Card className="rounded-xl  border-foreground hover:border-background transition-colors" >
-                  <CardContent className=" rounded-xl bg-customgrey flex flex-col items-center justify-center gap-4 p-6  ">
-                  <CarIcon className="w-[200px] h-[150px] rounded-lg  py-3"/>
-                    <div className="text-center">
-                      <h3 className="text-4xl font-bold text-background ">Sedans</h3>
-                      <p className="text-background">Comfortable <br/>and efficient.</p>
-                    </div>
-                    <Link href="/Search"><Button variant="outline">Rent Now</Button></Link>
-                  </CardContent>
-                </Card>
-                <Card className="rounded-xl border-foreground hover:border-background transition-colors " >
-                  <CardContent className=" rounded-xl flex flex-col items-center justify-center gap-4 p-6 bg-customgrey ">
-                  <SUVIcon className="w-[150px] h-[150px] rounded-lg  py-3"/>
-                    <div className="text-center">
-                      <h3 className="text-4xl font-semibold text-background">SUVs</h3>
-                      <p className="text-background">Spacious <br/>and versatile.</p>
-                    </div>
-                    <Link href="/Search"><Button variant="outline">Rent Now</Button></Link>
-                  </CardContent>
-                </Card>
-                <Card className="rounded-xl border-foreground hover:border-background transition-colors" >
-                  <CardContent className=" rounded-xl flex flex-col items-center justify-center gap-4 p-6 bg-customgrey ">
-                  <LimoIcon className="w-[150px] h-[150px]  py-3"/>
-                    <div className="text-center">
-                      <h3 className="text-4xl font-semibold text-background">Luxury </h3>
-                      <p className="text-background">Indulge in style and comfort.</p>
-                    </div>
-                    <Link href="/Search"><Button variant="outline">Rent Now</Button></Link>
-                  </CardContent>
-                </Card>
-                <Card className="rounded-xl border-foreground hover:border-background transition-colors" >
-                  <CardContent className=" rounded-xl flex flex-col items-center justify-center gap-4 p-6 bg-customgrey ">
-                  <CaravanIcon className="w-[200px] h-[150px] rounded-lg text- py-3"/>
-                    <div className="text-center">
-                      <h3 className="text-4xl font-semibold text-background">Vans</h3>
-                      <p className=" text-background">Spacious and practical.</p>
-                    </div>
-                    <Link href="/Search"><Button variant="outline">Rent Now</Button></Link>
-                  </CardContent>
-                </Card>
+              <div className="grid gap-6 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
+                <VehicleCard
+                  icon={<CarIcon className="w-[200px] h-[150px] rounded-lg py-3" />}
+                  title="Sedans"
+                  description="Comfortable and efficient."
+                />
+                <VehicleCard
+                  icon={<SUVIcon className="w-[150px] h-[150px] rounded-lg py-3" />}
+                  title="SUVs"
+                  description="Spacious and versatile."
+                />
+                <VehicleCard
+                  icon={<LimoIcon className="w-[150px] h-[150px] py-3" />}
+                  title="Luxury"
+                  description="Indulge in style and comfort."
+                />
+                <VehicleCard
+                  icon={<CaravanIcon className="w-[200px] h-[150px] rounded-lg py-3" />}
+                  title="Vans"
+                  description="Spacious and practical."
+                />
               </div>
             </div>
           </div>
         </section>
-        <section ref={ref4 } className={`relative bg-muted py-12 md:py-16 lg:py-20 px-4 md:px-6 lg:px-10 ${ 
-          inView4 ? 'animate-fadeInUp' : "opacity-0"}`}>
+
+        {/* Testimonials Section */}
+        <section ref={ref4} className={`relative bg-muted py-12 md:py-16 lg:py-20 px-4 md:px-6 lg:px-10 ${
+          inView4 ? 'animate-fadeInUp' : "opacity-0"
+        }`}>
           <div className="max-w-10xl mx-auto space-y-6 md:space-y-8 lg:space-y-10">
             <div className="space-y-6 md:space-y-8">
               <div className="text-center">
@@ -205,106 +241,27 @@ const [ref4, inView4] = useInView({ threshold: 0.3,triggerOnce: true });
                 <p className="text-muted-foreground md:text-lg">Hear from real people who have rented with us.</p>
               </div>
               <div className="grid gap-6 sm:grid-cols-2 md:grid-cols-3">
-                <Card>
-                  <CardContent className="p-6">
-                    <div className="flex items-start gap-4">
-                      <Avatar className="border w-12 h-12">
-                        <AvatarImage src="/placeholder-user.jpg" />
-                        <AvatarFallback>JD</AvatarFallback>
-                      </Avatar>
-                      <div className="space-y-1">
-                        <div className="font-semibold">John Doe</div>
-                        <div className="flex items-center gap-1 text-xs font-medium">
-                          <StarIcon className="w-4 h-4 fill-primary" />
-                          <StarIcon className="w-4 h-4 fill-primary" />
-                          <StarIcon className="w-4 h-4 fill-primary" />
-                          <StarIcon className="w-4 h-4 fill-primary" />
-                          <StarIcon className="w-4 h-4 fill-primary" />
-                        </div>
-                      </div>
-                    </div>
-                    <p className="mt-4 text-muted-foreground">
-                    &quot;I had a great experience renting with this company. The\n process was smooth and the car was in
-                      excellent\n condition.&quot;
-                    </p>
-                  </CardContent>
-                </Card>
-                <Card>
-                  <CardContent className="p-6">
-                    <div className="flex items-start gap-4">
-                      <Avatar className="border w-12 h-12">
-                        <AvatarImage src="/placeholder-user.jpg" />
-                        <AvatarFallback>SM</AvatarFallback>
-                      </Avatar>
-                      <div className="space-y-1">
-                        <div className="font-semibold">Sarah Miller</div>
-                        <div className="flex items-center gap-1 text-xs font-medium">
-                          <StarIcon className="w-4 h-4 fill-primary" />
-                          <StarIcon className="w-4 h-4 fill-primary" />
-                          <StarIcon className="w-4 h-4 fill-primary" />
-                          <StarIcon className="w-4 h-4 fill-primary" />
-                          <StarIcon className="w-4 h-4 fill-primary" />
-                        </div>
-                      </div>
-                    </div>
-                    <p className="mt-4 text-muted-foreground">
-                    &quot;I was impressed by the wide selection of vehicles and\n the competitive prices. I&apos;ll definitely
-                      be renting from\n them again.&quot;
-                    </p>
-                  </CardContent>
-                </Card>
-                <Card>
-                  <CardContent className="p-6">
-                    <div className="flex items-start gap-4">
-                      <Avatar className="border w-12 h-12">
-                        <AvatarImage src="/placeholder-user.jpg" />
-                        <AvatarFallback>MJ</AvatarFallback>
-                      </Avatar>
-                      <div className="space-y-1">
-                        <div className="font-semibold">Michael Johnson</div>
-                        <div className="flex items-center gap-1 text-xs font-medium">
-                          <StarIcon className="w-4 h-4 fill-primary" />
-                          <StarIcon className="w-4 h-4 fill-primary" />
-                          <StarIcon className="w-4 h-4 fill-primary" />
-                          <StarIcon className="w-4 h-4 fill-primary" />
-                          <StarIcon className="w-4 h-4 fill-primary" />
-                        </div>
-                      </div>
-                    </div>
-                    <p className="mt-4 text-muted-foreground">
-                    &quot;The rental process was quick and easy, and the staff\n was very helpful. I would definitely
-                      recommend this\n company to anyone looking to rent a car.&quot;
-                    </p>
-                  </CardContent>
-                </Card>
+                <TestimonialCard
+                  name="John Doe"
+                  initials="JD"
+                  content="I had a great experience renting with this company. The process was smooth and the car was in excellent condition."
+                />
+                <TestimonialCard
+                  name="Sarah Miller"
+                  initials="SM"
+                  content="I was impressed by the wide selection of vehicles and the competitive prices. I'll definitely be renting from them again."
+                />
+                <TestimonialCard
+                  name="Michael Johnson"
+                  initials="MJ"
+                  content="The rental process was quick and easy, and the staff was very helpful. I would definitely recommend this company to anyone looking to rent a car."
+                />
               </div>
             </div>
           </div>
         </section>
       </main>
-      <Footer/>
-    </div>)
+      <Footer />
+    </div>
   );
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

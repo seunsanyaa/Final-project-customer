@@ -1,4 +1,3 @@
-
 import Link from "next/link";
 import { Separator } from "@/components/ui/separator";
 import PlayIcon from "@/svgs/Playicon";
@@ -6,22 +5,35 @@ import EyeIcon from "@/svgs/EyeIcon";
 import VolumeIcon from "@/svgs/VolumeIcon";
 import { Navi } from "../head/navi";
 import { Footer } from '../head/footer';
+
+// TODO: Consider moving car data to a separate file or fetching from an API
+const carData = {
+  name: "2023 Acme Roadster",
+  description: "A thrilling sports car with exceptional performance.",
+  price: 70000,
+  // Add more car details here
+};
+
 export function Carinfo() {
   return (
     <>
-    <Navi/>
-    <Separator/>
+      <Navi />
+      <Separator />
       <div className="flex flex-col items-center justify-center min-h-screen bg-background text-foreground">
         <main className="container max-w-4xl px-4 py-12 sm:px-6 lg:px-8">
+          {/* Car information grid */}
           <div className="grid gap-8 md:grid-cols-2 items-start">
+            {/* Left column: Car images and basic info */}
             <div>
               <h1 className="text-3xl font-bold tracking-tight">
-                2023 Acme Roadster
+                {carData.name}
               </h1>
               <p className="text-muted-foreground text-lg">
-                A thrilling sports car with exceptional performance.
+                {carData.description}
               </p>
+              {/* Car images */}
               <div className="grid gap-4 mt-8">
+                {/* TODO: Replace placeholder images with actual car images */}
                 <img
                   src="/placeholder.svg"
                   alt="Exterior view of the Acme Roadster showing the sleek, aerodynamic design and bold red paint color."
@@ -40,36 +52,22 @@ export function Carinfo() {
                 />
               </div>
             </div>
+            {/* Right column: Specifications, features, and pricing */}
             <div className="space-y-6">
+              {/* Specifications section */}
               <div>
                 <h2 className="text-2xl font-bold">Specifications</h2>
                 <ul className="mt-4 space-y-2 text-muted-foreground">
-                  <li>
-                    <span className="font-medium">Engine:</span> 3.0L Turbo V6
-                  </li>
-                  <li>
-                    <span className="font-medium">Transmission:</span> 7-speed
-                    automatic
-                  </li>
-                  <li>
-                  <span className="font-medium">Transmission:</span> 7-speed
-                    automatic
-                  </li>
-                  <li>
-                    <span className="font-medium">Horsepower:</span> 400 hp
-                  </li>
-                  <li>
-                    <span className="font-medium">Torque:</span> 350 lb-ft
-                  </li>
-                  <li>
-                    <span className="font-medium">0-60 mph:</span> 3.9 seconds
-                  </li>
-                  <li>
-                    <span className="font-medium">Top Speed:</span> 180 mph
-                  </li>
+                  {/* TODO: Remove duplicate transmission entry */}
+                  <li><span className="font-medium">Engine:</span> 3.0L Turbo V6</li>
+                  <li><span className="font-medium">Transmission:</span> 7-speed automatic</li>
+                  <li><span className="font-medium">Horsepower:</span> 400 hp</li>
+                  <li><span className="font-medium">Torque:</span> 350 lb-ft</li>
+                  <li><span className="font-medium">0-60 mph:</span> 3.9 seconds</li>
+                  <li><span className="font-medium">Top Speed:</span> 180 mph</li>
                 </ul>
               </div>
-
+              {/* Features section */}
               <div>
                 <h2 className="text-2xl font-bold">Features</h2>
                 <ul className="mt-4 space-y-2 text-muted-foreground">
@@ -80,24 +78,27 @@ export function Carinfo() {
                   <li>Panoramic sunroof</li>
                 </ul>
               </div>
-
+              {/* Pricing section */}
               <div>
                 <h2 className="text-2xl font-bold">Pricing</h2>
                 <p className="mt-4 text-muted-foreground text-lg">
-                  Starting at <span className="text-foreground">$70,000</span>
+                  Starting at <span className="text-foreground">${carData.price.toLocaleString()}</span>
                 </p>
               </div>
-
+              {/* Booking button */}
               <div className="mt-8">
                 <Link href="/Newbooking">
-              <button className="px-4 py-2 font-semibold text-white bg-blue-600 hover:bg-blue-500 rounded-md transition-colors border">
-                Book Now
-              </button></Link>
+                  <button className="px-4 py-2 font-semibold text-white bg-blue-600 hover:bg-blue-500 rounded-md transition-colors border">
+                    Book Now
+                  </button>
+                </Link>
               </div>
             </div>
           </div>
 
+          {/* Additional information section */}
           <div className="mt-12 space-y-8">
+            {/* Virtual Tour section */}
             <div>
               <h2 className="text-2xl font-bold">Virtual Tour</h2>
               <p className="mt-2 text-muted-foreground">
@@ -110,7 +111,7 @@ export function Carinfo() {
                 </button>
               </div>
             </div>
-
+            {/* 3D Model section */}
             <div>
               <h2 className="text-2xl font-bold">3D Model</h2>
               <p className="mt-2 text-muted-foreground">
@@ -123,7 +124,7 @@ export function Carinfo() {
                 </button>
               </div>
             </div>
-
+            {/* Audio Description section */}
             <div>
               <h2 className="text-2xl font-bold">Audio Description</h2>
               <p className="mt-2 text-muted-foreground">
@@ -141,9 +142,7 @@ export function Carinfo() {
         </main>
       </div>
       <Separator />
-      <Footer/>
-      
+      <Footer />
     </>
-  );}
-
-
+  );
+}

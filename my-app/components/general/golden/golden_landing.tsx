@@ -9,27 +9,48 @@ import Goldimage from '@/components/ui/GOLD_desk.png';
 import { Navi } from "../head/navi";
 import CheckIcon from '@/svgs/CheckIcon';
 import { Footer } from '../head/footer';
+
+// Define interface for section props to improve type safety
+interface SectionProps {
+  ref: React.RefObject<HTMLElement>;
+  inView: boolean;
+  children: React.ReactNode;
+}
+
+// Create a reusable Section component
+const Section: React.FC<SectionProps> = ({ ref, inView, children }) => (
+  <section
+    ref={ref}
+    className={`w-full py-12 md:py-24 lg:py-32 bg-background/10 ${
+      inView ? 'animate-fadeInUp' : 'opacity-0'
+    }`}
+  >
+    {children}
+  </section>
+);
+
 export function Golden_Landing() {
-  const [ref1, inView1] = useInView({ threshold: 0.6, triggerOnce: true });
-const [ref2, inView2] = useInView({ threshold: 0.6,triggerOnce: true  });
-const [ref3, inView3] = useInView({ threshold: 0.6,triggerOnce: true });
-const [ref4, inView4] = useInView({ threshold: 0.6,triggerOnce: true });
+  // Use custom hook for intersection observer
+  const useInViewWithThreshold = (threshold = 0.6) => useInView({ threshold, triggerOnce: true });
+
+  const [ref1, inView1] = useInViewWithThreshold();
+  const [ref2, inView2] = useInViewWithThreshold();
+  const [ref3, inView3] = useInViewWithThreshold();
+  const [ref4, inView4] = useInViewWithThreshold();
+
   return (
-    (<div className="flex flex-col min-h-[100dvh]">
-      <Navi/>
-      <Separator/>
-      <main className="flex-1 " style={{
-  backgroundImage: `url(${Goldimage.src})`,
-  backgroundRepeat: 'no-repeat',
-  backgroundSize: 'cover',
-  backgroundAttachment: 'fixed',
-  backgroundPosition: 'center'
-}}>
-        <section
-           ref={ref1}
-           className={`w-full py-12 md:py-24 lg:py-32 bg-background/10 ${
-            inView1 ? 'animate-fadeInUp' : 'opacity-0'
-           }`}>
+    <div className="flex flex-col min-h-[100dvh]">
+      <Navi />
+      <Separator />
+      <main className="flex-1" style={{
+        backgroundImage: `url(${Goldimage.src})`,
+        backgroundRepeat: 'no-repeat',
+        backgroundSize: 'cover',
+        backgroundAttachment: 'fixed',
+        backgroundPosition: 'center'
+      }}>
+        {/* Hero Section */}
+        <Section ref={ref1} inView={inView1}>
           <div className="container px-4 md:px-6">
             <div
               className="grid gap-6 lg:grid-cols-[1fr_400px] lg:gap-12 xl:grid-cols-[1fr_600px]">
@@ -52,11 +73,10 @@ const [ref4, inView4] = useInView({ threshold: 0.6,triggerOnce: true });
               </div>
             </div>
           </div>
-        </section>
-        <section  ref={ref2}
-          className={`w-full py-12 md:py-24 lg:py-32 bg-background/10 ${
-            inView2 ? 'animate-fadeInUp' : 'opacity-0'
-          }`}>
+        </Section>
+
+        {/* Exclusive Perks Section */}
+        <Section ref={ref2} inView={inView2}>
           <div className="container px-4 md:px-6">
             <div className="grid gap-10 sm:px-10 md:gap-16 md:grid-cols-2">
               <div className="space-y-4">
@@ -100,11 +120,10 @@ const [ref4, inView4] = useInView({ threshold: 0.6,triggerOnce: true });
               </div>
             </div>
           </div>
-        </section>
-        <section  ref={ref3}
-          className={`w-full py-12 md:py-24 lg:py-32 bg-background/10 ${
-            inView3 ? 'animate-fadeInUp' : 'opacity-0'
-          }`}>
+        </Section>
+
+        {/* Personalized Service Section */}
+        <Section ref={ref3} inView={inView3}>
           <div className="container px-4 md:px-6">
             <div className="grid gap-10 sm:px-10 md:gap-16 md:grid-cols-2">
               <div className="space-y-4">
@@ -148,12 +167,10 @@ const [ref4, inView4] = useInView({ threshold: 0.6,triggerOnce: true });
               </div>
             </div>
           </div>
-        </section>
-        <section
-           ref={ref4}
-           className={`w-full py-12 md:py-24 lg:py-32 bg-background/10 ${
-             inView4 ? 'animate-fadeInUp' : 'opacity-0'
-           }`}>
+        </Section>
+
+        {/* Call to Action Section */}
+        <Section ref={ref4} inView={inView4}>
           <div className="container px-4 md:px-6">
             <div
               className="grid items-center justify-center gap-4 px-4 text-center md:px-6">
@@ -182,15 +199,9 @@ const [ref4, inView4] = useInView({ threshold: 0.6,triggerOnce: true });
               </div>
             </div>
           </div>
-        </section>
+        </Section>
       </main>
-      <Footer/>
-    </div>)
+      <Footer />
+    </div>
   );
 }
-
-
-
-
-
-

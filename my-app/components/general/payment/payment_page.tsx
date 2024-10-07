@@ -6,14 +6,28 @@ import { Input } from "@/components/ui/input";
 import { Separator } from "@/components/ui/separator";
 import { Navi } from "../head/navi";
 import { Footer } from "../head/footer";
+
+// TODO: Import necessary icons from a dedicated icon library or component
+// import { CreditCardIcon, WalletIcon, LockIcon, CarIcon } from "@/components/ui/icons";
+
 export function Payment_Page() {
+  // TODO: Add state management for form inputs and payment method selection
+  // const [paymentMethod, setPaymentMethod] = useState("credit_card");
+  // const [formData, setFormData] = useState({ ... });
+
+  // TODO: Add form submission handler
+  // const handleSubmit = (e: React.FormEvent) => {
+  //   e.preventDefault();
+  //   // Process payment and submit data
+  // };
 
   return (
     <>
-      <Navi/>
+      <Navi />
       <Separator />
       <div className="w-full max-w-4xl mx-auto p-6 sm:p-8 md:p-10">
         <div className="grid md:grid-cols-2 gap-8">
+          {/* Left column: Payment details */}
           <div>
             <div className="mb-6">
               <h1 className="text-3xl font-bold">Complete your booking</h1>
@@ -21,13 +35,16 @@ export function Payment_Page() {
                 Enter your payment details to finalize your car rental.
               </p>
             </div>
+            {/* TODO: Wrap this section in a form element with onSubmit handler */}
             <div className="space-y-4">
+              {/* Payment method selection */}
               <Card>
                 <CardHeader>
                   <CardTitle>Payment Method</CardTitle>
                 </CardHeader>
                 <CardContent>
                   <div className="grid grid-cols-2 gap-4">
+                    {/* TODO: Add onClick handlers to update payment method state */}
                     <Button
                       variant="outline"
                       className="flex flex-col items-center justify-center gap-2 p-4 rounded-lg hover:bg-muted"
@@ -45,6 +62,7 @@ export function Payment_Page() {
                   </div>
                 </CardContent>
               </Card>
+              {/* Credit card details */}
               <Card>
                 <CardHeader>
                   <CardTitle>Credit Card</CardTitle>
@@ -56,6 +74,7 @@ export function Payment_Page() {
                       <Input
                         id="card-number"
                         placeholder="1234 5678 9012 3456"
+                        // TODO: Add value and onChange handler
                       />
                     </div>
                     <div className="space-y-2">
@@ -75,20 +94,23 @@ export function Payment_Page() {
                   </div>
                 </CardContent>
               </Card>
+              {/* Security notice */}
               <div className="flex items-center gap-2">
                 <LockIcon className="w-5 h-5 text-primary" />
                 <span className="text-sm text-muted-foreground">
                   Your payment is secured with 256-bit encryption.
                 </span>
               </div>
+              {/* Terms and conditions */}
               <div className="flex items-center space-x-2">
-              <input type="checkbox" id="terms" className="checkbox" />
-              <label htmlFor="terms" className="text-sm">
-                I agree to the <a href="/terms" className="text-primary">terms and conditions</a>.
-              </label>
+                <input type="checkbox" id="terms" className="checkbox" />
+                <label htmlFor="terms" className="text-sm">
+                  I agree to the <Link href="/terms" className="text-primary">terms and conditions</Link>.
+                </label>
               </div>
             </div>
           </div>
+          {/* Right column: Booking summary */}
           <div>
             <div className="mb-6">
               <h2 className="text-2xl font-bold">Booking Summary</h2>
@@ -97,6 +119,7 @@ export function Payment_Page() {
               </p>
             </div>
             <div className="space-y-4">
+              {/* Car details */}
               <Card>
                 <CardHeader>
                   <CardTitle>Car Details</CardTitle>
@@ -110,6 +133,7 @@ export function Payment_Page() {
                   </div>
                 </CardContent>
               </Card>
+              {/* Price breakdown */}
               <Card>
                 <CardHeader>
                   <CardTitle>Price Breakdown</CardTitle>
@@ -129,17 +153,21 @@ export function Payment_Page() {
                   </div>
                 </CardContent>
               </Card>
-              <Link href='/bookings/currentbooking'><Button className="w-full">Complete Booking</Button></Link>
+              {/* Complete booking button */}
+              <Link href='/bookings/currentbooking'>
+                <Button className="w-full">Complete Booking</Button>
+              </Link>
             </div>
           </div>
         </div>
       </div>
       <Separator />
-      <Footer/>
+      <Footer />
     </>
   );
 }
 
+// TODO: Move these icon components to a separate file (e.g., @/components/ui/icons.tsx)
 // SVG Icons as React Components
 const CreditCardIcon = (props: any) => (
   <svg
