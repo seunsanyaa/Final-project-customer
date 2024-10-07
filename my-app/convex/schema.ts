@@ -1,3 +1,4 @@
+import { Description } from '@radix-ui/react-toast';
 import { defineSchema, defineTable } from 'convex/server';
 import { v } from 'convex/values';
 
@@ -6,7 +7,7 @@ export default defineSchema({
 		userId: v.string(),
 		firstName: v.string(),
 		lastName: v.string(),
-		email: v.string(),
+		email: v.string(),//customers use emails to login but not staff
 		password: v.string(), // Added password field
 		role: v.string(), // Added role field
 		phoneNumber: v.string(), // Added phoneNumber field
@@ -15,8 +16,9 @@ export default defineSchema({
 		.index('by_email', ['email']),
 		staff: defineTable({
 			userId: v.string(),
-			username: v.string(),
+			username: v.string(),//username is used in login
 			password: v.string(),
+			salary:v.number(),//used in case we need to calculate salary for profit statistics
 		})
 			.index('by_userId', ['userId'])
 			.index('by_username', ['username']),
@@ -37,20 +39,40 @@ export default defineSchema({
 		carId: v.string(),
 		model: v.string(),
 		make: v.string(),
-		year: v.number(), // Added year field
+		year: v.number(), // Added year created field
 		color: v.string(), // Added color field
 		registrationNumber: v.string(), // Added registrationNumber field
-		availability: v.boolean(), // Added availability field
-		disabled: v.boolean(), // Added disabled field
+		availability: v.boolean(), // Added availability field(booked or not)
+		disabled: v.boolean(), // Added disabled field(disability vehicle or not)
 		lastMaintenanceDate: v.string(), // Added lastMaintenanceDate field
 		companyInsurance: v.string(), // Added companyInsurance field
-		seatNumber: v.number(), // Added seatNumber field
+		fleetId: v.string(), // Reference to the fleet this car belongs to
+
 	})
 		.index('by_carId', ['carId'])
 		.index('by_model', ['model'])
-		.index('by_maker', ['make']),
-
+		.index('by_maker', ['make'])
+		.index('by_fleetId', ['fleetId']),
+		 // Index for querying by fleetId
+		disabledCars: defineTable({
+			type: v.string(),// designates if car is drivable by disabled people or just is disability friendly (allows for wheelchair passengers etc) 
+			carId: v.string(),
+			fleetid: v.string(),	
+			description: v.string(),
+	
+		})
+			.index('by_type', ['type'])
+			.index('by_carId', ['carId']),
 	// New tables based on the diagram
+	fleets: defineTable({
+		fleetId: v.string(),
+		model: v.string(),
+		maker: v.string(),
+		plateNumbers: v.array(v.string()), // Array to hold different plate numbers for the same model
+	})
+		.index('by_fleetId', ['fleetId'])
+		.index('by_model', ['model'])
+		.index('by_maker', ['maker']),
 
 	bookings: defineTable({
 		bookingId: v.string(),
