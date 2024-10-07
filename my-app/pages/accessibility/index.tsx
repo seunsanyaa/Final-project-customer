@@ -1,7 +1,11 @@
 import { Access1 } from "@/components/general/accessibilty/access1";
 
-export default function Accessibiltypage() {
+// Define the AccessibilityPage component
+export default function AccessibilityPage() {
   return (
-    <Access1/>
+    <main>
+      <h1>Accessibility Page</h1>
+      <Access1 />
+    </main>
   );
 }
