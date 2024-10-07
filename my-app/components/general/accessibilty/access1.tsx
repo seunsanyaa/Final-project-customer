@@ -1,4 +1,3 @@
-
 "use client"
 import React from 'react';
 
@@ -10,14 +9,36 @@ import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "@
 import { Input } from "@/components/ui/input"
 import { Navi } from '../head/navi';
 import { Footer } from '../head/footer';
+
+// Define types for better type safety
+type AccessibilityFeature = string;
+type Vehicle = {
+  id: number;
+  make: string;
+  model: string;
+  features: AccessibilityFeature[];
+  price: number;
+  image: string;
+};
+
+type Filters = {
+  accessibility: AccessibilityFeature[];
+  make: string;
+  model: string;
+  location: string;
+};
+
 export  function Access1() {
-  const [filters, setFilters] = useState({
+  // State for filters
+  const [filters, setFilters] = useState<Filters>({
     accessibility: [],
     make: "",
     model: "",
     location: "",
   })
-  const accessibleVehicles = [
+
+  // Mock data for accessible vehicles
+  const accessibleVehicles: Vehicle[] = [
     {
       id: 1,
       make: "Toyota",
@@ -99,44 +120,65 @@ export  function Access1() {
       image: "/placeholder.svg",
     },
   ]
+
+  // Filter vehicles based on selected filters
   const filteredVehicles = useMemo(() => {
     return accessibleVehicles.filter((vehicle) => {
+      // Check if all selected accessibility features are present in the vehicle
       if (
         filters.accessibility.length > 0 &&
         !filters.accessibility.every((feature) => vehicle.features.includes(feature))
       ) {
         return false
       }
+      // Filter by make
       if (filters.make && vehicle.make !== filters.make) {
         return false
       }
+      // Filter by model
       if (filters.model && vehicle.model !== filters.model) {
         return false
       }
+      // Filter by location (if location property exists)
       if (filters.location && 'location' in vehicle && vehicle.location !== filters.location) {
         return false
       }
       return true
     })
   }, [filters])
-  const handleFilterChange = (type: string, value: string) => {
+
+  // Handle filter changes
+  const handleFilterChange = (type: keyof Filters, value: string | AccessibilityFeature[]) => {
     setFilters((prevFilters) => ({
       ...prevFilters,
       [type]: value,
     }))
   }
+
+  // Handle checkbox changes for accessibility features
+  const handleAccessibilityChange = (feature: AccessibilityFeature, checked: boolean) => {
+    setFilters((prevFilters) => ({
+      ...prevFilters,
+      accessibility: checked
+        ? [...prevFilters.accessibility, feature]
+        : prevFilters.accessibility.filter((f) => f !== feature),
+    }))
+  }
+
   return (
     <div className="flex flex-col min-h-screen">
       <Navi/>
       <main className="flex-1 bg-background text-foreground py-8 px-6">
         <div className="container mx-auto">
+          {/* Vehicle Browse Section */}
           <section className="mb-8">
             <h2 className="text-2xl font-bold mb-4">Accessible Vehicle Browse</h2>
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
               {filteredVehicles.map((vehicle) => (
                 <div key={vehicle.id} className="bg-card rounded-lg shadow-md overflow-hidden">
+                  {/* Vehicle image */}
                   <img
-                    src="/placeholder.svg"
+                    src={vehicle.image}
                     alt={`${vehicle.make} ${vehicle.model}`}
                     width={300}
                     height={200}
@@ -144,6 +186,7 @@ export  function Access1() {
                     style={{ aspectRatio: "300/200", objectFit: "cover" }}
                   />
                   <div className="p-4">
+                    {/* Vehicle details */}
                     <h3 className="text-lg font-bold mb-2">
                       {vehicle.make} {vehicle.model}
                     </h3>
@@ -163,6 +206,8 @@ export  function Access1() {
               ))}
             </div>
           </section>
+
+          {/* Filter and Search Section */}
           <section className="mb-8">
             <h2 className="text-2xl font-bold mb-4">Accessible Vehicle Filter and Search</h2>
             <div className="bg-card rounded-lg shadow-md p-6">
