@@ -10,6 +10,24 @@ import VerifyComponent from "./verify_code";
 export default function AuthLayout() {
   const router = useRouter();
 
+  // Helper function to determine which component to render based on the current route
+  const renderAuthComponent = () => {
+    switch (router.pathname) {
+      case "/onboarding":
+        // TODO: Uncomment and implement OnboardComponent
+        // return <OnboardComponent />;
+        return <></>;
+      case "/reset-password":
+        return <ResetComponent />;
+      case "/change-password":
+        return <ChangePasswordComponent />;
+      case "/verify-account":
+        return <VerifyComponent />;
+      default:
+        return <LoginComponent />;
+    }
+  };
+
   return (
     // Main container with full height and width, using flexbox
     <div className="flex h-screen w-full flex-row gap-10 p-4">
@@ -21,26 +39,13 @@ export default function AuthLayout() {
           src="https://res.cloudinary.com/seunsanyaa/image/upload/v1727820662/unnamed_1_u3udcb.png"
           width={686}
           height={992}
+          priority // Add priority to improve loading performance
         />
       </div>
 
       {/* Right side - Authentication components container */}
       <div className="no-scrollbar w-2/4 overflow-y-auto overflow-x-hidden">
-        {/* Render different components based on the current route */}
-        {router.pathname === "/onboarding" ? (
-          <></>
-          // TODO: Uncomment and implement OnboardComponent
-          // <OnboardComponent />
-        ) : router.pathname === "/reset-password" ? (
-          <ResetComponent />
-        ) : router.pathname === "/change-password" ? (
-          <ChangePasswordComponent />
-        ) : router.pathname === "/verify-account" ? (
-          <VerifyComponent />
-        ) : (
-          // Default to LoginComponent if no other route matches
-          <LoginComponent />
-        )}
+        {renderAuthComponent()}
       </div>
     </div>
   );
