@@ -22,7 +22,7 @@ import { useToast } from "@/hooks/use-toast";
 import { ReloadIcon } from "@radix-ui/react-icons";
 import { Input } from "../../../ui/input";
 
-
+// Password validation schema
 const passwordValidation = z
   .string()
   .min(6, { message: "Password must be at least 6 characters." })
@@ -37,27 +37,20 @@ const passwordValidation = z
     message: "Password must contain at least one special character.",
   });
 
+// Form schema for authentication
 const AuthFormSchema = z.object({
   email: z.string().email({
     message: "Invalid email address.",
   }),
-  password: z.string()
-  .min(6, { message: "Password must be at least 6 characters." })
-  .regex(/[a-z]/, {
-    message: "Password must contain at least one lowercase letter.",
-  })
-  .regex(/[A-Z]/, {
-    message: "Password must contain at least one uppercase letter.",
-  })
-  .regex(/[0-9]/, { message: "Password must contain at least one number." })
-  .regex(/[^a-zA-Z0-9]/, {
-    message: "Password must contain at least one special character.",
-  }),
+  password: passwordValidation, // Use the password validation schema
 });
 
+// Custom error interface for type checking
 interface CustomError {
   errors: { message: string }[];
 }
+
+// Main InputForm component
 export function InputForm({
   passwordField = true,
   buttonText = "Continue",
@@ -84,6 +77,7 @@ export function InputForm({
 
   const authWatchedValues = authForm.watch();
 
+  // Function to sign up with email
   const signUpWithEmail = async ({
     emailAddress,
     password,
@@ -124,6 +118,7 @@ export function InputForm({
     }
   };
 
+  // Function to sign in with email
   const signInWithEmail = async ({
     emailAddress,
     password,
@@ -171,8 +166,8 @@ export function InputForm({
     }
   };
 
+  // Form submission handler
   async function onSubmit(data: z.infer<typeof AuthFormSchema>) {
-
     setIsSubmitting(true);
     try {
       if (router.pathname === "/login") {
@@ -187,12 +182,13 @@ export function InputForm({
         });
       }
     } catch (err) {
-      setIsSubmitting(false);
+      console.error("Error during form submission:", err);
     } finally {
       setIsSubmitting(false);
     }
   }
 
+  // Type guard for custom error
   function isCustomError(err: unknown): err is CustomError {
     if (
       typeof err === "object" &&
@@ -211,55 +207,54 @@ export function InputForm({
     return false;
   }
 
+  // Effect to disable button based on form values
   useEffect(() => {
     setIsButtonDisabled(
       !authWatchedValues.email || (passwordField && !authWatchedValues.password)
     );
   }, [authWatchedValues, passwordField]);
+
   return (
     <Form {...authForm}>
       <form
-  onSubmit={(event) => authForm.handleSubmit(onSubmit)(event)}
-        className="relative mt-4 w-full space-y-6  pt-2"
+        onSubmit={authForm.handleSubmit(onSubmit)}
+        className="relative mt-4 w-full space-y-6 pt-2"
         style={
           router.pathname === "/login" || router.pathname === "/create-account"
             ? {}
             : { borderTop: "none" }
         }
       >
-        {router.pathname === "/login" ||
-        router.pathname === "/create-account" ? (
-          <div
-            className="absolute left-0 right-0 flex justify-center "
-            style={{ top: "-1rem" }}
-          >
+        {/* Conditional rendering for "or continue with" text */}
+        {(router.pathname === "/login" || router.pathname === "/create-account") && (
+          <div className="absolute left-0 right-0 flex justify-center" style={{ top: "-1rem" }}>
             <p className="paragraph-muted bg-white p-5 py-1 text-sm font-normal">
               or continue with
             </p>
           </div>
-        ) : null}
+        )}
 
+        {/* Email input field */}
         <FormField
           control={authForm.control}
           name="email"
           render={({ field }) => (
-            <>
-              <FormItem>
-                <FormLabel className="paragraph-color">Email</FormLabel>
-                <FormControl>
-                  <Input
-                    placeholder="Enter your email address"
-                    {...field}
-                    className="w-full"
-                    style={{ outline: "none" }}
-                  />
-                </FormControl>
-
-                <FormMessage />
-              </FormItem>
-            </>
+            <FormItem>
+              <FormLabel className="paragraph-color">Email</FormLabel>
+              <FormControl>
+                <Input
+                  placeholder="Enter your email address"
+                  {...field}
+                  className="w-full"
+                  style={{ outline: "none" }}
+                />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
           )}
         />
+
+        {/* Password input field */}
         {passwordField && (
           <FormField
             control={authForm.control}
@@ -268,18 +263,16 @@ export function InputForm({
               <FormItem>
                 <FormLabel className="paragraph-color">
                   <div className="flex items-center justify-between">
-                    <span>Password </span>
-
-                    {router.pathname === "/login" ? (
-                      <Link href={"/reset-password"}>
+                    <span>Password</span>
+                    {router.pathname === "/login" && (
+                      <Link href="/reset-password">
                         <p className="paragraph-color text-right text-sm font-normal underline">
                           Forgot password?
                         </p>
                       </Link>
-                    ) : null}
+                    )}
                   </div>
                 </FormLabel>
-
                 <FormControl>
                   <div className="relative">
                     <Input
@@ -305,54 +298,45 @@ export function InputForm({
                     </button>
                   </div>
                 </FormControl>
-
                 <FormMessage />
               </FormItem>
             )}
           />
         )}
 
+        {/* Submit button */}
         <Button
           type="submit"
           disabled={isButtonDisabled}
           className="background-brand background-active relative z-50 w-full text-sm font-medium"
         >
           {isSubmitting ? (
-            <>
-              <ReloadIcon className="mr-2 h-4 w-4 animate-spin" />
-            </>
+            <ReloadIcon className="mr-2 h-4 w-4 animate-spin" />
           ) : (
             buttonText
           )}
         </Button>
 
-        {showOption ? (
-          <>
+        {/* Conditional rendering for login/signup options */}
+        {showOption && (
+          <p className="text-center text-sm font-normal">
             {router.pathname === "/login" ? (
-              <p className="text-center text-sm font-normal">
-                {" "}
-                Don’t have an account?
-                <Link href={"/create-account"}>
-                  <span className="text-brand text-sm font-medium">
-                    {" "}
-                    Create an account{" "}
-                  </span>{" "}
+              <>
+                Don't have an account?
+                <Link href="/create-account">
+                  <span className="text-brand text-sm font-medium"> Create an account </span>
                 </Link>
-              </p>
+              </>
             ) : (
-              <p className="text-center text-sm font-normal">
-                {" "}
-                Already have an account?{" "}
-                <Link href={"/login"}>
-                  <span className="text-brand text-sm font-medium">
-                    {" "}
-                    Sign in{" "}
-                  </span>{" "}
+              <>
+                Already have an account?
+                <Link href="/login">
+                  <span className="text-brand text-sm font-medium"> Sign in </span>
                 </Link>
-              </p>
+              </>
             )}
-          </>
-        ) : null}
+          </p>
+        )}
       </form>
     </Form>
   );
