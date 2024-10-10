@@ -7,17 +7,16 @@ export default defineSchema({
 		firstName: v.string(),
 		lastName: v.string(),
 		email: v.string(),
+		staff:v.optional(v.boolean()),
 	})
 		.index('by_userId', ['userId'])
 		.index('by_email', ['email']),
 
 	staff: defineTable({
-		userId: v.string(),
-		username: v.string(), //username is used in login
-		password: v.string(),
+		email: v.string(), //username is used in login
+	 	role: v.string(),
 	})
-		.index('by_userId', ['userId'])
-		.index('by_username', ['username']),
+		.index('by_email', ['email']),
 
 	customers: defineTable({
 		userId: v.string(),

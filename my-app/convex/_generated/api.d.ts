@@ -19,6 +19,7 @@ import type * as car from "../car.js";
 import type * as clerk from "../clerk.js";
 import type * as customer from "../customer.js";
 import type * as http from "../http.js";
+import type * as staff from "../staff.js";
 import type * as users from "../users.js";
 import type * as util from "../util.js";
 
@@ -36,6 +37,7 @@ declare const fullApi: ApiFromModules<{
   clerk: typeof clerk;
   customer: typeof customer;
   http: typeof http;
+  staff: typeof staff;
   users: typeof users;
   util: typeof util;
 }>;

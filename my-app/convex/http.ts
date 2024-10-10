@@ -36,6 +36,7 @@ http.route({
 						userId: result.data.id,
 						firstName: result.data.first_name ?? '',
 						lastName: result.data.last_name ?? '',
+						staff: false, // Add this line
 					});
 					break;
 

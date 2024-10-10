@@ -26,14 +26,16 @@ export const createUser = internalMutation({
 		email: v.string(),
 		userId: v.string(),
 		firstName: v.string(),
-		lastName: v.string()
+		lastName: v.string(),
+		staff: v.boolean(),
 	},
 	handler: async (ctx, args) => {
 		await ctx.db.insert('users', {
 			email: args.email,
 			userId: args.userId,
 			firstName: args.firstName,
-			lastName: args.lastName
+			lastName: args.lastName,
+			staff: args.staff,
 		});
 	},
 });
@@ -80,6 +82,22 @@ export const getAllUsers = query({
 	args: {},
 	handler: async (ctx) => {
 		return await ctx.db.query('users').collect();
+	},
+});
+
+export const getUserByEmail = query({
+	args: { email: v.string() },
+	handler: async (ctx, args) => {
+		const user = await ctx.db
+			.query('users')
+			.withIndex('by_email', (q) => q.eq('email', args.email))
+			.first();
+
+		if (!user) {
+			throw new Error('User not found');
+		}
+
+		return user;
 	},
 });
 
