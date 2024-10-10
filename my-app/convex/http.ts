@@ -34,6 +34,8 @@ http.route({
 					await ctx.runMutation(internal.users.createUser, {
 						email: result.data?.email_addresses[0]?.email_address ?? '',
 						userId: result.data.id,
+						firstName: result.data.first_name ?? '',
+						lastName: result.data.last_name ?? '',
 					});
 					break;
 

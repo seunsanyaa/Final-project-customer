@@ -75,3 +75,12 @@ export function getFullUser(ctx: QueryCtx | MutationCtx, userId: string) {
 		.withIndex('by_userId', (q) => q.eq('userId', userId))
 		.first();
 }
+
+export const getAllUsers = query({
+	args: {},
+	handler: async (ctx) => {
+		return await ctx.db.query('users').collect();
+	},
+});
+
+
