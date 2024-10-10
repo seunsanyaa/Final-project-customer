@@ -10,24 +10,25 @@ const fontSans = FontSans({
 	weight: ['100', '200', '300', '400', '500', '600'],
 });
 
+import { Toaster } from '@/components/ui/toaster';
 import { ConvexReactClient } from 'convex/react';
 import { ConvexProviderWithClerk } from 'convex/react-clerk';
 import { AppProps } from 'next/app';
-import { Toaster } from '@/components/ui/toaster';
 
 const PUBLISHABLE_KEY = process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY;
 if (!PUBLISHABLE_KEY) {
 	throw new Error('Missing Publishable Key');
 }
 
-const convex = new ConvexReactClient('https://terrific-bee-97.convex.cloud');
+const convex = new ConvexReactClient('https://third-elk-244.convex.cloud');
 
 export default function App({ Component, pageProps }: AppProps) {
 	return (
 		// clerk is authentication
 		<ClerkProvider
-			publishableKey={'pk_test_YWJvdmUtZ29hdC02Ny5jbGVyay5hY2NvdW50cy5kZXYk'}
+			publishableKey={'pk_test_c3Ryb25nLWRhc3NpZS00Ny5jbGVyay5hY2NvdW50cy5kZXYk'}
 		>
+
 			{/* convex is Database */}
 			<ConvexProviderWithClerk client={convex} useAuth={useAuth}>
 				<main

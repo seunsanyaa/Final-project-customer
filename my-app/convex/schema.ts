@@ -39,8 +39,8 @@ export default defineSchema({
 		available: v.boolean(),
 		year: v.number(),
 		disabled: v.boolean(),
-		// fleetId: v.string(), // Reference to the fleet this car belongs to
 		registrationNumber: v.string(), // Unique plate number for the individual car
+		pictures: v.array(v.string()), // Array of picture URLs
 	})
 		.index('by_model', ['model'])
 		.index('by_maker', ['maker'])

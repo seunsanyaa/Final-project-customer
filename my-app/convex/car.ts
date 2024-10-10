@@ -10,6 +10,7 @@ export const createCar = mutation({
 		available: v.boolean(),
 		year: v.number(),
 		registrationNumber: v.string(),
+		pictures: v.array(v.string()),
 	},
 	handler: async (ctx, args) => {
 		const existingCar = await ctx.db
@@ -44,7 +45,7 @@ export const deleteCar = mutation({
 			.first();
 
 		if (!existingCar) {
-			return `Car with registration number ${args.registrationNumber} does not exist.`;
+			throw new Error(`Car with registration number ${args.registrationNumber} does not exist.`);
 		}
 
 		await ctx.db.delete(existingCar._id);
