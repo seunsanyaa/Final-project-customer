@@ -5,7 +5,7 @@ import { mutation, query } from './_generated/server';
 export const createBooking = mutation({
 	args: {
 		customerId: v.string(),
-		carId: v.string(),
+		carId: v.string( ),
 		startDate: v.string(),
 		endDate: v.string(),
 		totalCost: v.number(),
