@@ -129,7 +129,11 @@ export function Payment_Page() {
                   </div>
                 </CardContent>
               </Card>
-              <Link href='/bookings/currentbooking'><Button className="w-full">Complete Booking</Button></Link>
+              <div className="flex justify-center">
+                <Link href='/bookings/currentbooking' className="w-full flex justify-center">
+                  <Button className="w-auto border-2 hover:bg-muted">Complete Booking</Button>
+                </Link>
+              </div>
             </div>
           </div>
         </div>

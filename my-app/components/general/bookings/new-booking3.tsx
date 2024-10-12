@@ -1,4 +1,3 @@
-
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
@@ -25,120 +24,7 @@ export function NewBooking3() {
             <p className="text-muted-foreground">Choose your extras, and complete your booking.</p>
           </div>
           <div className="space-y-6">
-            <div>  {/* MAKE THIS MODULAR SO THAT WHEN A USER IS BOOKING FROM PROMOTIONS HE CAN SELECT CAR OTHERWISE THE CAR HE CHOSE IS SPECIFIED INSTEAD */}
-              <h2 className="text-2xl font-semibold">Select Car</h2>
-              <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                <Card className="group">
-                  <CardContent>
-                    <img
-                      src="/placeholder.svg"
-                      width={300}
-                      height={200}
-                      alt="Car"
-                      className="rounded-lg object-cover aspect-video" />
-                    <div className="mt-4 space-y-1">
-                      <h3 className="text-lg font-semibold">Toyota Corolla</h3>
-                      <p className="text-muted-foreground">Compact</p>
-                      <p className="font-semibold">$50/day</p>
-                    </div>
-                  </CardContent>
-                  <CardFooter>
-                    <Button variant="outline" className="w-full">
-                      Select
-                    </Button>
-                  </CardFooter>
-                </Card>
-                <Card className="group">
-                  <CardContent>
-                    <img
-                      src="/placeholder.svg"
-                      width={300}
-                      height={200}
-                      alt="Car"
-                      className="rounded-lg object-cover aspect-video" />
-                    <div className="mt-4 space-y-1">
-                      <h3 className="text-lg font-semibold">Honda Civic</h3>
-                      <p className="text-muted-foreground">Compact</p>
-                      <p className="font-semibold">$55/day</p>
-                    </div>
-                  </CardContent>
-                  <CardFooter>
-                    <Button variant="outline" className="w-full">
-                      Select
-                    </Button>
-                  </CardFooter>
-                </Card>
-                <Card className="group">
-                  <CardContent>
-                    <img
-                      src="/placeholder.svg"
-                      width={300}
-                      height={200}
-                      alt="Car"
-                      className="rounded-lg object-cover aspect-video" />
-                    <div className="mt-4 space-y-1">
-                      <h3 className="text-lg font-semibold">Ford Mustang</h3>
-                      <p className="text-muted-foreground">Midsize</p>
-                      <p className="font-semibold">$75/day</p>
-                    </div>
-                  </CardContent>
-                  <CardFooter>
-                    <Button variant="outline" className="w-full">
-                      Select
-                    </Button>
-                  </CardFooter>
-                </Card>
-                <Card className="group">
-                  <CardContent>
-                    <img
-                      src="/placeholder.svg"
-                      width={300}
-                      height={200}
-                      alt="Car"
-                      className="rounded-lg object-cover aspect-video" />
-                    <div className="mt-4 space-y-1">
-                      <h3 className="text-lg font-semibold">Kia Sportage</h3>
-                      <p className="text-muted-foreground">Midsize</p>
-                      <p className="font-semibold">$65/day</p>
-                    </div>
-                  </CardContent>
-                  <CardFooter>
-                    <Button variant="outline" className="w-full">
-                      Select
-                    </Button>
-                  </CardFooter>
-                </Card>
-              </div>
-              <div className="mt-6 flex justify-between items-center">
-                <div className="flex items-center gap-2">
-                  <Label htmlFor="filter">Filter by:</Label>
-                  <Select name="filter">
-                    <SelectTrigger className="w-40">
-                      <SelectValue placeholder="Select" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="size">Size</SelectItem>
-                      <SelectItem value="features">Features</SelectItem>
-                      <SelectItem value="price">Price</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-                <div className="flex items-center gap-2">
-                  <Label htmlFor="duration">Rental Duration:</Label>
-                  <Select name="duration">
-                    <SelectTrigger className="w-40">
-                      <SelectValue placeholder="Select" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="1">1 day</SelectItem>
-                      <SelectItem value="3">3 days</SelectItem>
-                      <SelectItem value="7">7 days</SelectItem>
-                      <SelectItem value="14">14 days</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-              </div>
-            </div>
+
             <div className="mt-6 grid gap-4 md:grid-cols-2">
             <div>
               <Label htmlFor="pickup-date">Pickup Date & Time</Label>
@@ -147,6 +33,14 @@ export function NewBooking3() {
             <div>
               <Label htmlFor="dropoff-date">Drop-off Date & Time</Label>
               <Input type="datetime-local" id="dropoff-date" className="mt-1 w-full" />
+            </div>
+            <div>
+              <Label htmlFor="pickup">Pickup Location</Label>
+              <Input id="pickup" placeholder="Enter location" />
+            </div>
+            <div>
+              <Label htmlFor="dropoff">Drop-off Location</Label>
+              <Input id="dropoff" placeholder="Enter location" />
             </div>
             </div>
             </div>
@@ -232,26 +126,172 @@ export function NewBooking3() {
             </CardContent>
             <CardFooter>
               <div className="flex gap-2">
-                <Button variant="outline" className="flex-1">
+                <Button variant="outline" className="border-2 hover:bg-muted">
                   Go Back
                 </Button>
-                <Link href="/Newbooking/payment"><Button className="flex-1">Continue</Button></Link>
+                <Link href="/Newbooking/payment"><Button className="border-2 hover:bg-muted">Continue</Button></Link>
               </div>
             </CardFooter>
           </Card>
-          <div className="grid gap-4">
-            <div className="flex items-center gap-2">
-              <Label htmlFor="pickup">Pickup Location</Label>
-              <Input id="pickup" placeholder="Enter location" />
-            </div>
-            <div className="flex items-center gap-2">
-              <Label htmlFor="dropoff">Drop-off Location</Label>
-              <Input id="dropoff" placeholder="Enter location" />
-            </div>
-          </div>
+          
         </div>
       </div>
     </div>
+    <div>  {/* MAKE THIS MODULAR SO THAT WHEN A USER IS BOOKING FROM PROMOTIONS HE CAN SELECT CAR OTHERWISE THE CAR HE CHOSE IS SPECIFIED INSTEAD */}
+              <h2 className="text-2xl font-semibold">Similar Cars</h2>
+              <div className="flex overflow-x-auto gap-4">  {/* Changed to flex and added overflow-x-auto for horizontal scrolling */}
+                <Card className="group min-w-[300px]">  {/* Added min-width to ensure cards maintain size */}
+                  <CardContent>
+                    <img
+                      src="/placeholder.svg"
+                      width={300}
+                      height={200}
+                      alt="Car"
+                      className="rounded-lg object-cover aspect-video" />
+                    <div className="mt-4 space-y-1">
+                      <h3 className="text-lg font-semibold">Toyota Corolla</h3>
+                      <p className="text-muted-foreground">Compact</p>
+                      <p className="font-semibold">$50/day</p>
+                    </div>
+                  </CardContent>
+                  <CardFooter>
+                    <Button variant="outline" className="w-full hover:bg-muted">
+                      Select
+                    </Button>
+                  </CardFooter>
+                </Card>
+                <Card className="group min-w-[300px]">  {/* Added min-width to ensure cards maintain size */}
+                  <CardContent>
+                    <img
+                      src="/placeholder.svg"
+                      width={300}
+                      height={200}
+                      alt="Car"
+                      className="rounded-lg object-cover aspect-video" />
+                    <div className="mt-4 space-y-1">
+                      <h3 className="text-lg font-semibold">Honda Civic</h3>
+                      <p className="text-muted-foreground">Compact</p>
+                      <p className="font-semibold">$55/day</p>
+                    </div>
+                  </CardContent>
+                  <CardFooter>
+                    <Button variant="outline" className="w-full hover:bg-muted">
+                      Select
+                    </Button>
+                  </CardFooter>
+                </Card>
+                <Card className="group min-w-[300px]">  {/* Added min-width to ensure cards maintain size */}
+                  <CardContent>
+                    <img
+                      src="/placeholder.svg"
+                      width={300}
+                      height={200}
+                      alt="Car"
+                      className="rounded-lg object-cover aspect-video" />
+                    <div className="mt-4 space-y-1">
+                      <h3 className="text-lg font-semibold">Ford Mustang</h3>
+                      <p className="text-muted-foreground">Midsize</p>
+                      <p className="font-semibold">$75/day</p>
+                    </div>
+                  </CardContent>
+                  
+                  <CardFooter>
+                    <Button variant="outline" className="w-full hover:bg-muted">
+                      Select
+                    </Button>
+                  </CardFooter>
+                </Card>
+                <Card className="group min-w-[300px]">  {/* Added min-width to ensure cards maintain size */}
+                  <CardContent>
+                    <img
+                      src="/placeholder.svg"
+                      width={300}
+                      height={200}
+                      alt="Car"
+                      className="rounded-lg object-cover aspect-video" />
+                    <div className="mt-4 space-y-1">
+                      <h3 className="text-lg font-semibold">Kia Sportage</h3>
+                      <p className="text-muted-foreground">Midsize</p>
+                      <p className="font-semibold">$65/day</p>
+                    </div>
+                  </CardContent>
+                  <CardFooter>
+                    <Button variant="outline" className="w-full hover:bg-muted">
+                      Select
+                    </Button>
+                  </CardFooter>
+                </Card>
+                <Card className="group min-w-[300px]">  {/* Added min-width to ensure cards maintain size */}
+                  <CardContent>
+                    <img
+                      src="/placeholder.svg"
+                      width={300}
+                      height={200}
+                      alt="Car"
+                      className="rounded-lg object-cover aspect-video" />
+                    <div className="mt-4 space-y-1">
+                      <h3 className="text-lg font-semibold">Kia Sportage</h3>
+                      <p className="text-muted-foreground">Midsize</p>
+                      <p className="font-semibold">$65/day</p>
+                    </div>
+                  </CardContent>
+                  <CardFooter>
+                    <Button variant="outline" className="w-full hover:bg-muted">
+                      Select
+                    </Button>
+                  </CardFooter>
+                </Card>
+                <Card className="group min-w-[300px]">  {/* Added min-width to ensure cards maintain size */}
+                  <CardContent>
+                    <img
+                      src="/placeholder.svg"
+                      width={300}
+                      height={200}
+                      alt="Car"
+                      className="rounded-lg object-cover aspect-video" />
+                    <div className="mt-4 space-y-1">
+                      <h3 className="text-lg font-semibold">Kia Sportage</h3>
+                      <p className="text-muted-foreground">Midsize</p>
+                      <p className="font-semibold">$65/day</p>
+                    </div>
+                  </CardContent>
+                  <CardFooter>
+                    <Button variant="outline" className="w-full hover:bg-muted">
+                      Select
+                    </Button>
+                  </CardFooter>
+                </Card>
+              </div>
+              <div className="mt-6 flex justify-between items-center">
+                {/* <div className="flex items-center gap-2">
+                  <Label htmlFor="filter">Filter by:</Label>
+                  <Select name="filter">
+                    <SelectTrigger className="w-40">
+                      <SelectValue placeholder="Select" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="size">Size</SelectItem>
+                      <SelectItem value="features">Features</SelectItem>
+                      <SelectItem value="price">Price</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="flex items-center gap-2">
+                  <Label htmlFor="duration">Rental Duration:</Label>
+                  <Select name="duration">
+                    <SelectTrigger className="w-40">
+                      <SelectValue placeholder="Select" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="1">1 day</SelectItem>
+                      <SelectItem value="3">3 days</SelectItem>
+                      <SelectItem value="7">7 days</SelectItem>
+                      <SelectItem value="14">14 days</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div> */}
+              </div>
+            </div>
     <Separator />
 
 <Footer/>

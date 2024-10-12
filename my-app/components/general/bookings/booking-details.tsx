@@ -19,7 +19,7 @@ export default function BookingDetails() {
             <div className="px-6 py-5 bg-muted">
               <div className="flex items-center justify-between">
                 <h1 className="text-2xl font-semibold">Booking Details</h1>
-                <Button variant="outline" size="sm">
+                <Button variant="outline" size="sm" className='hover:bg-muted'>
                   Modify Booking
                 </Button>
               </div>
@@ -130,7 +130,7 @@ export default function BookingDetails() {
                     max="150"
                     defaultValue="50"
                   />
-                  <Button variant="outline">Update</Button>
+                  <Button variant="outline" className='hover:bg-muted'>Update</Button>
                 </div>
               </div>
             </div>

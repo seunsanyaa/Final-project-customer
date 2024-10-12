@@ -57,32 +57,28 @@ export default function AllVehicles() {
                 value={searchModel}
                 onChange={(e) => setSearchModel(e.target.value)}
               />
-              <Input
-                placeholder="Year"
-                type="number"
-                min="1990"
-                max="2024"
-                value={searchYear}
-                onChange={(e) =>
-                  setSearchYear(
-                    e.target.value ? parseInt(e.target.value) : undefined
-                  )
-                }
-              />
-            </div>
-            <div className="flex justify-center items-center mb-4 mx-auto">
-              <Button className="w-full md:w-auto mr-2">
-                <Search className="w-4 h-4 mr-2" />
-                Search
-              </Button>
-              {/* <Button size="icon" className="rounded-s-lg">
-                <Mic className="w-4 h-4" />
-                <span className="sr-only">Voice Search</span>
-              </Button> */}
+              <div className="flex items-center"> 
+                <Input
+                  placeholder="Year"
+                  type="number"
+                  min="1990"
+                  max="2024"
+                  value={searchYear}
+                  onChange={(e) =>
+                    setSearchYear(
+                      e.target.value ? parseInt(e.target.value) : undefined
+                    )
+                  }
+                />
+                <Button className="md:w-auto border-2 ml-2 hover:bg-muted"> 
+                  <Search className="w-4 h-4 mr-2" />
+                  Search
+                </Button>
+              </div>
             </div>
 
             <div className="text-center">
-              <Button variant="link" className="text-blue-500 hover:text-blue-700">
+              <Button className="text-blue-500 hover:bg-muted border-2">
                 Advanced Search
               </Button>
             </div>
@@ -96,15 +92,15 @@ export default function AllVehicles() {
                   alt={`${car.maker} ${car.model}`}
                   width={400}
                   height={200}
-                  className="w-full h-48 object-cover"
+                  className="w-full h-48 object-cover "
                 />
-                <CardContent className="p-4">
+                <CardContent className="p-4 text-center">
                   <h2 className="text-xl font-semibold mb-2">
                     {car.maker} {car.model}
                   </h2>
                   <p className="text-muted-foreground mb-4">Year: {car.year}</p>
-                  <Link href="/carinfo">
-                    <Button className="w-full">Book Now</Button>
+                  <Link href={`/carinfo?id=${car.registrationNumber}`}>
+                    <Button className="w-auto border-2 hover:bg-muted">Book Now</Button>
                   </Link>
                 </CardContent>
               </Card>

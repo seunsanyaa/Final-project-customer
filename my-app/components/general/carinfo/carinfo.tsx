@@ -1,4 +1,6 @@
-
+import { useRouter } from 'next/router'; // Import useRouter to access URL parameters
+import { useQuery } from "convex/react"; // Ensure useQuery is imported
+import { api } from "@/convex/_generated/api"; // Import the API
 import Link from "next/link";
 import { Separator } from "@/components/ui/separator";
 import PlayIcon from "@/svgs/Playicon";
@@ -6,33 +8,38 @@ import EyeIcon from "@/svgs/EyeIcon";
 import VolumeIcon from "@/svgs/VolumeIcon";
 import { Navi } from "../head/navi";
 import { Footer } from '../head/footer';
+import { Car } from "@/types/car"; // Import the Car type
+
 export function Carinfo() {
+  const router = useRouter();
+  // Ensure registrationNumber is a string before using it
+  const registrationNumber = typeof router.query.id === 'string' ? router.query.id : '';
+
+  // Fetch car details using the registration number
+  const car = useQuery(api.car.getCar, { registrationNumber }) as Car; // Assert type to Car | undefined
+
+  if (!car) {
+    return <div>Loading...</div>; // Show loading state while fetching
+  }
+
   return (
     <>
-    <Navi/>
-    <Separator/>
+      <Navi />
+      <Separator />
       <div className="flex flex-col items-center justify-center min-h-screen bg-background text-foreground">
         <main className="container max-w-4xl px-4 py-12 sm:px-6 lg:px-8">
-          <div className="grid gap-8 md:grid-cols-2 items-start">
+          <div className="grid gap-8 md:grid-cols-2 items-start border-2 rounded-md p-4"> {/* Added padding for margin effect */}
             <div>
-              <h1 className="text-3xl font-bold tracking-tight">
-                2023 Acme Roadster
+              <h1 className="text-3xl font-bold tracking-tight text-center">
+                {car.model || "Lorem ipsum"} {/* Display model or placeholder */}
               </h1>
-              <p className="text-muted-foreground text-lg">
-                A thrilling sports car with exceptional performance.
+              <p className="text-muted-foreground text-lg text-center">
+                {car.maker || "Lorem ipsum"} {/* Display maker or placeholder */}
               </p>
               <div className="grid gap-4 mt-8">
                 <img
-                  src="/placeholder.svg"
-                  alt="Exterior view of the Acme Roadster showing the sleek, aerodynamic design and bold red paint color."
-                  width={800}
-                  height={450}
-                  className="rounded-lg object-cover"
-                  style={{ aspectRatio: "800/450", objectFit: "cover" }}
-                />
-                <img
-                  src="/placeholder.svg"
-                  alt="Interior view of the Acme Roadster showing the luxurious leather seats, digital instrument cluster, and premium audio system."
+                  src={car.pictures[0] || ""} // Use first picture or placeholder
+                  alt={`Exterior view of the ${car.model || "Lorem ipsum"}`}
                   width={800}
                   height={450}
                   className="rounded-lg object-cover"
@@ -45,27 +52,22 @@ export function Carinfo() {
                 <h2 className="text-2xl font-bold">Specifications</h2>
                 <ul className="mt-4 space-y-2 text-muted-foreground">
                   <li>
-                    <span className="font-medium">Engine:</span> 3.0L Turbo V6
+                    <span className="font-medium">Engine:</span> { "Lorem ipsum"}
                   </li>
                   <li>
-                    <span className="font-medium">Transmission:</span> 7-speed
-                    automatic
+                    <span className="font-medium">Transmission:</span> {"Lorem ipsum"}
                   </li>
                   <li>
-                  <span className="font-medium">Transmission:</span> 7-speed
-                    automatic
+                    <span className="font-medium">Horsepower:</span> { "Lorem ipsum"}
                   </li>
                   <li>
-                    <span className="font-medium">Horsepower:</span> 400 hp
+                    <span className="font-medium">Torque:</span> { "Lorem ipsum"}
                   </li>
                   <li>
-                    <span className="font-medium">Torque:</span> 350 lb-ft
+                    <span className="font-medium">0-60 mph:</span> { "Lorem ipsum"}
                   </li>
                   <li>
-                    <span className="font-medium">0-60 mph:</span> 3.9 seconds
-                  </li>
-                  <li>
-                    <span className="font-medium">Top Speed:</span> 180 mph
+                    <span className="font-medium">Top Speed:</span> { "Lorem ipsum"}
                   </li>
                 </ul>
               </div>
@@ -90,7 +92,7 @@ export function Carinfo() {
 
               <div className="mt-8">
                 <Link href="/Newbooking">
-              <button className="px-4 py-2 font-semibold text-white bg-blue-600 hover:bg-blue-500 rounded-md transition-colors border">
+              <button className="px-4 py-2 font-semibold text-white bg-blue-600 hover:bg-blue-500 rounded-md transition-colors border hover:bg-muted">
                 Book Now
               </button></Link>
               </div>
@@ -105,7 +107,7 @@ export function Carinfo() {
                 exterior, interior, and features in more detail.
               </p>
               <div className="mt-4">
-                <button className="inline-flex items-center px-4 py-2 font-semibold text-white bg-blue-600 hover:bg-blue-500 rounded-md transition-colors border">
+                <button className="inline-flex items-center px-4 py-2 font-semibold text-white bg-blue-600 hover:bg-blue-500 rounded-md transition-colors border hover:bg-muted">
                   <PlayIcon className="mr-2" />Start Tour
                 </button>
               </div>
@@ -117,7 +119,7 @@ export function Carinfo() {
                 View the Acme Roadster in 3D to examine every angle and detail.
               </p>
               <div className="mt-4">
-                <button className="inline-flex items-center px-4 py-2 font-semibold text-white bg-blue-600 hover:bg-blue-500 rounded-md transition-colors border">
+                <button className="inline-flex items-center px-4 py-2 font-semibold text-white bg-blue-600 hover:bg-blue-500 rounded-md transition-colors border hover:bg-muted">
                   <EyeIcon className="mr-2" />
                   View 3D Model
                 </button>
@@ -131,7 +133,7 @@ export function Carinfo() {
                 all key aspects of the car's design, features, and performance.
               </p>
               <div className="mt-4">
-                <button className="inline-flex items-center px-4 py-2 font-semibold text-white bg-blue-600 hover:bg-blue-500 rounded-md transition-colors border">
+                <button className="inline-flex items-center px-4 py-2 font-semibold text-white bg-blue-600 hover:bg-blue-500 rounded-md transition-colors border hover:bg-muted">
                   <VolumeIcon className="mr-2" />
                   Play Audio
                 </button>
@@ -141,9 +143,7 @@ export function Carinfo() {
         </main>
       </div>
       <Separator />
-      <Footer/>
-      
+      <Footer />
     </>
-  );}
-
-
+  );
+}

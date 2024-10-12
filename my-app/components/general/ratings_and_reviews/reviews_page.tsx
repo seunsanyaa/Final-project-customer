@@ -193,7 +193,10 @@ export function ReviewsPage() {
           </section>
         </main>
       </div>
-      <Footer/>
-    </div></>)}
+      
+    </div>
+    <Footer/>
+    </>
+    )}
 
 
