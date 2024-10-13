@@ -61,12 +61,12 @@ export function NewBooking3() {
       <Separator />
 
       <div className="w-full max-w-6xl mx-auto px-2 md:px-6 py-12 md:py-16">
+        <div>
+          <h1 className="text-3xl font-bold tracking-tight">New Booking</h1>
+          <p className="text-muted-foreground">Choose your extras, and complete your booking.</p>
+        </div>
         <div className="grid md:grid-cols-[2fr_1fr] gap-8 md:gap-5 pl-0 pr-0">
-          <div className="space-y-8">
-            <div>
-              <h1 className="text-3xl font-bold tracking-tight">New Booking</h1>
-              <p className="text-muted-foreground">Choose your extras, and complete your booking.</p>
-            </div>
+          <div className="mt-2 mb-2 space-y-2">
             <div className="space-y-6">
               <div className="mt-6 grid gap-4 md:grid-cols-2">
                 <div>
@@ -165,6 +165,86 @@ export function NewBooking3() {
                 </Card>
               </div>
             </div>
+            <div className="mt-2" ref={bookingSummaryRef}>
+              <Card>
+                <CardHeader>
+                  <CardTitle>Booking Summary</CardTitle>
+                </CardHeader>
+                <CardContent>
+
+                  <div className="space-y-1">
+                    <div className="flex flex-row space-x-60 gap-x-10">
+                    <div className="flex flex-col space-y-1">
+                      <p className="font-semibold">Pickup:</p>
+                      <p>{pickupDateTime ? new Date(pickupDateTime).toLocaleString() : 'Not set'}</p>
+                      <p>{pickupLocation || 'Location not set'}</p>
+                    </div>
+                    <div className="flex flex-col space-y-2">
+                      <p className="font-semibold">Drop-off:</p>
+                      <p>{dropoffDateTime ? new Date(dropoffDateTime).toLocaleString() : 'Not set'}</p>
+                      <p>{dropoffLocation || 'Location not set'}</p>
+                    </div>
+                    </div>
+                    <Separator />
+                    <div className="flex items-center justify-between">
+                      <p>Car Rental</p>
+                      <p className="font-semibold">$50/day</p>
+                    </div>
+                    {extras.insurance && (
+                      <div className="flex items-center justify-between">
+                        <p>Insurance</p>
+                        <p className="font-semibold">$10/day</p>
+                      </div>
+                    )}
+                    {extras.gps && (
+                      <div className="flex items-center justify-between">
+                        <p>GPS</p>
+                        <p className="font-semibold">$5/day</p>
+                      </div>
+                    )}
+                    {extras.childSeat && (
+                      <div className="flex items-center justify-between">
+                        <p>Child Seat</p>
+                        <p className="font-semibold">$8/day</p>
+                      </div>
+                    )}
+                    <Separator />
+                    <div className="flex items-center justify-between">
+                      <p className="text-lg font-semibold">Total</p>
+                      <p className="text-lg font-semibold">
+                        ${50 + 
+                          (extras.insurance ? 10 : 0) + 
+                          (extras.gps ? 5 : 0) + 
+                          (extras.childSeat ? 8 : 0)
+                        }/day
+                      </p>
+                    </div>
+                    {paymentMethod && (
+                      <div className="flex items-center justify-between">
+                        <p className="text-lg font-semibold">Payment Method</p>
+                        <p className="text-lg font-semibold">
+                          {paymentMethod === 'full' ? 'Full Payment' : 'Installment Plan'}
+                        </p>
+                      </div>
+                    )}
+                  </div>
+                </CardContent>
+                <CardFooter>
+                  <div className="flex gap-2">
+                    <Button variant="outline" className="border-2 hover:bg-muted">
+                      Go Back
+                    </Button>
+                    <Button 
+                      className="border-2 hover:bg-muted" 
+                      disabled={!paymentMethod}
+                      onClick={handleContinue}
+                    >
+                      Continue
+                    </Button>
+                  </div>
+                </CardFooter>
+              </Card>
+            </div>
           </div>
           <div className="space-y-6">
             <Card className="w-full mx-auto">
@@ -211,83 +291,6 @@ export function NewBooking3() {
               </CardContent>
             </Card>
           </div>
-        </div>
-        <div className="space-y-2 w-1/2 max-w-6xl ml-0 mt-0" ref={bookingSummaryRef}>
-          <Card>
-            <CardHeader>
-              <CardTitle>Booking Summary</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-4">
-                <div className="flex flex-col space-y-2">
-                  <p className="font-semibold">Pickup:</p>
-                  <p>{pickupDateTime ? new Date(pickupDateTime).toLocaleString() : 'Not set'}</p>
-                  <p>{pickupLocation || 'Location not set'}</p>
-                </div>
-                <div className="flex flex-col space-y-2">
-                  <p className="font-semibold">Drop-off:</p>
-                  <p>{dropoffDateTime ? new Date(dropoffDateTime).toLocaleString() : 'Not set'}</p>
-                  <p>{dropoffLocation || 'Location not set'}</p>
-                </div>
-                <Separator />
-                <div className="flex items-center justify-between">
-                  <p>Car Rental</p>
-                  <p className="font-semibold">$50/day</p>
-                </div>
-                {extras.insurance && (
-                  <div className="flex items-center justify-between">
-                    <p>Insurance</p>
-                    <p className="font-semibold">$10/day</p>
-                  </div>
-                )}
-                {extras.gps && (
-                  <div className="flex items-center justify-between">
-                    <p>GPS</p>
-                    <p className="font-semibold">$5/day</p>
-                  </div>
-                )}
-                {extras.childSeat && (
-                  <div className="flex items-center justify-between">
-                    <p>Child Seat</p>
-                    <p className="font-semibold">$8/day</p>
-                  </div>
-                )}
-                <Separator />
-                <div className="flex items-center justify-between">
-                  <p className="text-lg font-semibold">Total</p>
-                  <p className="text-lg font-semibold">
-                    ${50 + 
-                      (extras.insurance ? 10 : 0) + 
-                      (extras.gps ? 5 : 0) + 
-                      (extras.childSeat ? 8 : 0)
-                    }/day
-                  </p>
-                </div>
-                {paymentMethod && (
-                  <div className="flex items-center justify-between">
-                    <p className="text-lg font-semibold">Payment Method</p>
-                    <p className="text-lg font-semibold">
-                      {paymentMethod === 'full' ? 'Full Payment' : 'Installment Plan'}
-                    </p>
-                  </div>
-                )}
-              </div>
-            </CardContent>
-            <CardFooter>
-              <div className="flex gap-2">
-                <Button variant="outline" className="border-2 hover:bg-muted">
-                  Go Back
-                </Button>
-                <Button 
-                  className="border-2 hover:bg-muted" 
-                  disabled={!paymentMethod}
-                  onClick={handleContinue}
-                >
-                  Continue
-                </Button>
-              </div>
-            </CardFooter>
-          </Card>
         </div>
         
       </div>
@@ -367,7 +370,7 @@ export function NewBooking3() {
                       <div className="mt-4 space-y-1">
                         <h3 className="text-lg font-semibold">Kia Sportage</h3>
                         <p className="text-muted-foreground">Midsize</p>
-                        <p className="font-semibold">$65/day</p>
+                        <p className="font-sembold">$65/day</p>
                       </div>
                     </CardContent>
                     <CardFooter>
