@@ -1,4 +1,4 @@
-import React, { useRef } from "react";
+import React, { useRef, useState } from "react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
@@ -11,9 +11,24 @@ import { Navi } from '../head/navi';
 import { Footer } from '../head/footer';
 export function NewBooking3() {
   const bookingSummaryRef = useRef<HTMLDivElement>(null);
+  const [paymentMethod, setPaymentMethod] = useState<string | null>(null);
+  const [extras, setExtras] = useState({
+    insurance: false,
+    gps: false,
+    childSeat: false
+  });
 
   const scrollToBookingSummary = () => {
     bookingSummaryRef.current?.scrollIntoView({ behavior: 'smooth' });
+  };
+
+  const handlePaymentSelection = (method: string) => {
+    setPaymentMethod(method);
+    scrollToBookingSummary();
+  };
+
+  const handleExtraChange = (extra: keyof typeof extras) => {
+    setExtras(prev => ({ ...prev, [extra]: !prev[extra] }));
   };
 
   return (
@@ -49,7 +64,7 @@ export function NewBooking3() {
                 </div>
               </div>
             </div>
-            <div>
+            <div className="space-y-6">
               <h2 className="text-2xl font-semibold">Choose Extras</h2>
               <div className="grid gap-4">
                 <Card>
@@ -61,7 +76,10 @@ export function NewBooking3() {
                       </div>
                       <div className="text-right">
                         <p className="font-semibold">$10/day</p>
-                        <Checkbox />
+                        <Checkbox 
+                          checked={extras.insurance}
+                          onCheckedChange={() => handleExtraChange('insurance')}
+                        />
                       </div>
                     </div>
                   </CardContent>
@@ -75,7 +93,10 @@ export function NewBooking3() {
                       </div>
                       <div className="text-right">
                         <p className="font-semibold">$5/day</p>
-                        <Checkbox />
+                        <Checkbox 
+                          checked={extras.gps}
+                          onCheckedChange={() => handleExtraChange('gps')}
+                        />
                       </div>
                     </div>
                   </CardContent>
@@ -89,7 +110,10 @@ export function NewBooking3() {
                       </div>
                       <div className="text-right">
                         <p className="font-semibold">$8/day</p>
-                        <Checkbox />
+                        <Checkbox 
+                          checked={extras.childSeat}
+                          onCheckedChange={() => handleExtraChange('childSeat')}
+                        />
                       </div>
                     </div>
                   </CardContent>
@@ -111,7 +135,12 @@ export function NewBooking3() {
                       <li>No additional interest or hidden fees.</li>
                       <li>Choose from flexible plans that suit your budget.</li>
                     </ul>
-                    <Button className="w-fit border-2 hover:bg-muted" onClick={scrollToBookingSummary}>Choose Installment Plan</Button>
+                    <Button 
+                      className="w-fit border-2 hover:bg-muted" 
+                      onClick={() => handlePaymentSelection('installment')}
+                    >
+                      Choose Installment Plan
+                    </Button>
                   </div>
                   <div className="my-8 border-t border-gray-200" /> {/* Custom separator */}
                   <div>
@@ -127,7 +156,12 @@ export function NewBooking3() {
                   </div>
                 </div>
                 <div className="grid gap-4 mt-6">
-                  <Button className="w-fit border-2 hover:bg-muted" onClick={scrollToBookingSummary}>Pay Now</Button>
+                  <Button 
+                    className="w-fit border-2 hover:bg-muted" 
+                    onClick={() => handlePaymentSelection('full')}
+                  >
+                    Pay Now
+                  </Button>
                 </div>
               </CardContent>
             </Card>
@@ -144,23 +178,43 @@ export function NewBooking3() {
                   <p>Car Rental</p>
                   <p className="font-semibold">$50/day</p>
                 </div>
-                <div className="flex items-center justify-between">
-                  <p>Insurance</p>
-                  <p className="font-semibold">$10/day</p>
-                </div>
-                <div className="flex items-center justify-between">
-                  <p>GPS</p>
-                  <p className="font-semibold">$5/day</p>
-                </div>
-                <div className="flex items-center justify-between">
-                  <p>Child Seat</p>
-                  <p className="font-semibold">$8/day</p>
-                </div>
+                {extras.insurance && (
+                  <div className="flex items-center justify-between">
+                    <p>Insurance</p>
+                    <p className="font-semibold">$10/day</p>
+                  </div>
+                )}
+                {extras.gps && (
+                  <div className="flex items-center justify-between">
+                    <p>GPS</p>
+                    <p className="font-semibold">$5/day</p>
+                  </div>
+                )}
+                {extras.childSeat && (
+                  <div className="flex items-center justify-between">
+                    <p>Child Seat</p>
+                    <p className="font-semibold">$8/day</p>
+                  </div>
+                )}
                 <Separator />
                 <div className="flex items-center justify-between">
                   <p className="text-lg font-semibold">Total</p>
-                  <p className="text-lg font-semibold">$73/day</p>
+                  <p className="text-lg font-semibold">
+                    ${50 + 
+                      (extras.insurance ? 10 : 0) + 
+                      (extras.gps ? 5 : 0) + 
+                      (extras.childSeat ? 8 : 0)
+                    }/day
+                  </p>
                 </div>
+                {paymentMethod && (
+                  <div className="flex items-center justify-between">
+                    <p className="text-lg font-semibold">Payment Method</p>
+                    <p className="text-lg font-semibold">
+                      {paymentMethod === 'full' ? 'Full Payment' : 'Installment Plan'}
+                    </p>
+                  </div>
+                )}
               </div>
             </CardContent>
             <CardFooter>
@@ -168,7 +222,11 @@ export function NewBooking3() {
                 <Button variant="outline" className="border-2 hover:bg-muted">
                   Go Back
                 </Button>
-                <Link href="/Newbooking/payment"><Button className="border-2 hover:bg-muted">Continue</Button></Link>
+                <Link href="/Newbooking/payment">
+                  <Button className="border-2 hover:bg-muted" disabled={!paymentMethod}>
+                    Continue
+                  </Button>
+                </Link>
               </div>
             </CardFooter>
           </Card>
