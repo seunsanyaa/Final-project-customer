@@ -2,7 +2,7 @@ import { v } from 'convex/values';
 import {
 	MutationCtx,
 	QueryCtx,
-	internalMutation,
+	mutation,
 	query,
 } from './_generated/server';
 import { getUserId } from './util';
@@ -21,7 +21,7 @@ export const getUser = query({
 	},
 });
 
-export const createUser = internalMutation({
+export const createUser = mutation({	
 	args: {
 		email: v.string(),
 		userId: v.string(),
@@ -40,7 +40,7 @@ export const createUser = internalMutation({
 	},
 });
 
-export const deleteUser = internalMutation({
+export const deleteUser = mutation({
 	// Allow either email or userId to be provided, but require at least one
 	args: {
 		userId: v.optional(v.string()),
