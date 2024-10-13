@@ -9,6 +9,7 @@ import { Separator } from "@/components/ui/separator";
 import { Input } from "@/components/ui/input";
 import { Navi } from '../head/navi';
 import { Footer } from '../head/footer';
+import { useRouter } from 'next/router';
 export function NewBooking3() {
   const bookingSummaryRef = useRef<HTMLDivElement>(null);
   const [paymentMethod, setPaymentMethod] = useState<string | null>(null);
@@ -17,6 +18,12 @@ export function NewBooking3() {
     gps: false,
     childSeat: false
   });
+
+  const [pickupDateTime, setPickupDateTime] = useState('');
+  const [dropoffDateTime, setDropoffDateTime] = useState('');
+  const [pickupLocation, setPickupLocation] = useState('');
+  const [dropoffLocation, setDropoffLocation] = useState('');
+  const router = useRouter();
 
   const scrollToBookingSummary = () => {
     bookingSummaryRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -29,6 +36,22 @@ export function NewBooking3() {
 
   const handleExtraChange = (extra: keyof typeof extras) => {
     setExtras(prev => ({ ...prev, [extra]: !prev[extra] }));
+  };
+
+  const calculateTotal = () => {
+    const basePrice = 50;
+    const insurancePrice = extras.insurance ? 10 : 0;
+    const gpsPrice = extras.gps ? 5 : 0;
+    const childSeatPrice = extras.childSeat ? 8 : 0;
+    return basePrice + insurancePrice + gpsPrice + childSeatPrice;
+  };
+
+  const handleContinue = () => {
+    const total = calculateTotal();
+    router.push({
+      pathname: '/Newbooking/payment',
+      query: { total: total },
+    });
   };
 
   return (
@@ -48,19 +71,41 @@ export function NewBooking3() {
               <div className="mt-6 grid gap-4 md:grid-cols-2">
                 <div>
                   <Label htmlFor="pickup-date">Pickup Date & Time</Label>
-                  <Input type="datetime-local" id="pickup-date" className="mt-1 w-full" />
+                  <Input 
+                    type="datetime-local" 
+                    id="pickup-date" 
+                    className="mt-1 w-full" 
+                    value={pickupDateTime}
+                    onChange={(e) => setPickupDateTime(e.target.value)}
+                  />
                 </div>
                 <div>
                   <Label htmlFor="dropoff-date">Drop-off Date & Time</Label>
-                  <Input type="datetime-local" id="dropoff-date" className="mt-1 w-full" />
+                  <Input 
+                    type="datetime-local" 
+                    id="dropoff-date" 
+                    className="mt-1 w-full" 
+                    value={dropoffDateTime}
+                    onChange={(e) => setDropoffDateTime(e.target.value)}
+                  />
                 </div>
                 <div>
                   <Label htmlFor="pickup">Pickup Location</Label>
-                  <Input id="pickup" placeholder="Enter location" />
+                  <Input 
+                    id="pickup" 
+                    placeholder="Enter location" 
+                    value={pickupLocation}
+                    onChange={(e) => setPickupLocation(e.target.value)}
+                  />
                 </div>
                 <div>
                   <Label htmlFor="dropoff">Drop-off Location</Label>
-                  <Input id="dropoff" placeholder="Enter location" />
+                  <Input 
+                    id="dropoff" 
+                    placeholder="Enter location" 
+                    value={dropoffLocation}
+                    onChange={(e) => setDropoffLocation(e.target.value)}
+                  />
                 </div>
               </div>
             </div>
@@ -174,6 +219,17 @@ export function NewBooking3() {
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
+                <div className="flex flex-col space-y-2">
+                  <p className="font-semibold">Pickup:</p>
+                  <p>{pickupDateTime ? new Date(pickupDateTime).toLocaleString() : 'Not set'}</p>
+                  <p>{pickupLocation || 'Location not set'}</p>
+                </div>
+                <div className="flex flex-col space-y-2">
+                  <p className="font-semibold">Drop-off:</p>
+                  <p>{dropoffDateTime ? new Date(dropoffDateTime).toLocaleString() : 'Not set'}</p>
+                  <p>{dropoffLocation || 'Location not set'}</p>
+                </div>
+                <Separator />
                 <div className="flex items-center justify-between">
                   <p>Car Rental</p>
                   <p className="font-semibold">$50/day</p>
@@ -222,11 +278,13 @@ export function NewBooking3() {
                 <Button variant="outline" className="border-2 hover:bg-muted">
                   Go Back
                 </Button>
-                <Link href="/Newbooking/payment">
-                  <Button className="border-2 hover:bg-muted" disabled={!paymentMethod}>
-                    Continue
-                  </Button>
-                </Link>
+                <Button 
+                  className="border-2 hover:bg-muted" 
+                  disabled={!paymentMethod}
+                  onClick={handleContinue}
+                >
+                  Continue
+                </Button>
               </div>
             </CardFooter>
           </Card>

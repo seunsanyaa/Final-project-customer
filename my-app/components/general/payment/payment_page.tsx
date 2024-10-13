@@ -6,7 +6,21 @@ import { Input } from "@/components/ui/input";
 import { Separator } from "@/components/ui/separator";
 import { Navi } from "../head/navi";
 import { Footer } from "../head/footer";
+import { useRouter } from 'next/router';
+import { useEffect, useState } from 'react';
+
 export function Payment_Page() {
+  const router = useRouter();
+  const [total, setTotal] = useState<number | null>(null);
+
+  useEffect(() => {
+    if (router.isReady) {
+      const totalFromQuery = router.query.total;
+      if (totalFromQuery && !Array.isArray(totalFromQuery)) {
+        setTotal(parseFloat(totalFromQuery));
+      }
+    }
+  }, [router.isReady, router.query]);
 
   return (
     <>
@@ -117,15 +131,15 @@ export function Payment_Page() {
                 <CardContent className="space-y-2">
                   <div className="flex justify-between">
                     <span>Base Price:</span>
-                    <span>$200.00</span>
+                    <span>${total ? (total * 0.8).toFixed(2) : '0.00'}</span>
                   </div>
                   <div className="flex justify-between">
                     <span>Taxes & Fees:</span>
-                    <span>$50.00</span>
+                    <span>${total ? (total * 0.2).toFixed(2) : '0.00'}</span>
                   </div>
                   <div className="flex justify-between">
                     <span>Total Price:</span>
-                    <span className="font-bold">$250.00</span>
+                    <span className="font-bold">${total ? total.toFixed(2) : '0.00'}</span>
                   </div>
                 </CardContent>
               </Card>
