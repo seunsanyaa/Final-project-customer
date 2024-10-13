@@ -10,6 +10,7 @@ import { Input } from "@/components/ui/input";
 import { Navi } from '../head/navi';
 import { Footer } from '../head/footer';
 import { useRouter } from 'next/router';
+import CheckoutButton from "../payment/payment_button";
 export function NewBooking3() {
   const bookingSummaryRef = useRef<HTMLDivElement>(null);
   const [paymentMethod, setPaymentMethod] = useState<string | null>(null);
@@ -292,6 +293,7 @@ export function NewBooking3() {
             </Card>
           </div>
         </div>
+       
         
       </div>
       
@@ -370,7 +372,7 @@ export function NewBooking3() {
                       <div className="mt-4 space-y-1">
                         <h3 className="text-lg font-semibold">Kia Sportage</h3>
                         <p className="text-muted-foreground">Midsize</p>
-                        <p className="font-sembold">$65/day</p>
+                        <p className="font-semibold">$65/day</p>
                       </div>
                     </CardContent>
                     <CardFooter>

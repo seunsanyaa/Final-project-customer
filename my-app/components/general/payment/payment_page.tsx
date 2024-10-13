@@ -1,13 +1,12 @@
-import Link from "next/link";
+import { useEffect, useState } from "react";
+import { Elements, PaymentElement, useStripe, useElements } from "@stripe/react-stripe-js";
+import { loadStripe } from "@stripe/stripe-js";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Label } from "@/components/ui/label";
-import { Input } from "@/components/ui/input";
 import { Separator } from "@/components/ui/separator";
 import { Navi } from "../head/navi";
 import { Footer } from "../head/footer";
 import { useRouter } from 'next/router';
-import { useEffect, useState } from 'react';
 
 export function Payment_Page() {
   const router = useRouter();
@@ -24,12 +23,81 @@ export function Payment_Page() {
     }
   }, [router.isReady, router.query]);
 
+const stripePromise = loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY);
+
+
+  const [clientSecret, setClientSecret] = useState<string | null>(null);
+  
+  useEffect(() => {
+    fetch("/api/create-payment-intent", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ amount: 25000 }), // Example amount in cents (i.e., $250.00)
+    })
+      .then((res) => res.json())
+      .then((data) => setClientSecret(data.clientSecret))
+      .catch((error) => console.error("Error fetching client secret:", error));
+  }, []);
+
+  const appearance = {
+    theme: 'stripe',
+  };
+
+  const options = {
+    clientSecret,
+    appearance,
+  };
+
   return (
     <>
-      <Navi/>
+      {clientSecret ? (
+        <Elements stripe={stripePromise} options={options}>
+          <PaymentForm />
+        </Elements>
+      ) : (
+        <p>Loading payment details...</p>
+      )}
+    </>
+  );
+
+
+function PaymentForm() {
+  const stripe = useStripe();
+  const elements = useElements();
+  const [isProcessing, setIsProcessing] = useState(false);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
+
+  const handleSubmit = async () => {
+    if (!stripe || !elements) return;
+
+    setIsProcessing(true);
+    setErrorMessage(null);
+
+    const { error } = await stripe.confirmPayment({
+      elements,
+      confirmParams: {
+        return_url: `${window.location.origin}/bookings/currentbooking/success`, // Optional redirect after success
+      },
+    });
+
+    if (error) {
+      setErrorMessage(error.message || "Something went wrong with your payment.");
+      
+      setIsProcessing(false);
+    } else {
+      setIsProcessing(false);
+    }
+  };
+
+  return (
+    <>
+      <Navi />
       <Separator />
       <div className="w-full max-w-4xl mx-auto p-6 sm:p-8 md:p-10">
         <div className="grid md:grid-cols-2 gap-8">
+          {/* Payment Form Section */}
           <div>
             <div className="mb-6">
               <h1 className="text-3xl font-bold">Complete your booking</h1>
@@ -43,52 +111,7 @@ export function Payment_Page() {
                   <CardTitle>Payment Method</CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <div className="grid grid-cols-2 gap-4">
-                    <Button
-                      variant="outline"
-                      className="flex flex-col items-center justify-center gap-2 p-4 rounded-lg hover:bg-muted"
-                    >
-                      <CreditCardIcon className="w-8 h-8" />
-                      <span>Credit Card</span>
-                    </Button>
-                    <Button
-                      variant="outline"
-                      className="flex flex-col items-center justify-center gap-2 p-4 rounded-lg hover:bg-muted"
-                    >
-                      <WalletIcon className="w-8 h-8" />
-                      <span>PayPal</span>
-                    </Button>
-                  </div>
-                </CardContent>
-              </Card>
-              <Card>
-                <CardHeader>
-                  <CardTitle>Credit Card</CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <div className="grid grid-cols-2 gap-4">
-                    <div className="space-y-2">
-                      <Label htmlFor="card-number">Card Number</Label>
-                      <Input
-                        id="card-number"
-                        placeholder="1234 5678 9012 3456"
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="card-expiry">Expiry Date</Label>
-                      <Input id="card-expiry" placeholder="MM/YY" />
-                    </div>
-                  </div>
-                  <div className="grid grid-cols-2 gap-4">
-                    <div className="space-y-2">
-                      <Label htmlFor="card-name">Name on Card</Label>
-                      <Input id="card-name" placeholder="John Doe" />
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="card-cvc">CVC</Label>
-                      <Input id="card-cvc" placeholder="123" />
-                    </div>
-                  </div>
+                  <PaymentElement />
                 </CardContent>
               </Card>
               <div className="flex items-center gap-2">
@@ -109,8 +132,13 @@ export function Payment_Page() {
                   I agree to the <a href="/terms" className="text-primary">terms and conditions</a>.
                 </label>
               </div>
+              {errorMessage && (
+                <p className="text-red-500 text-sm mt-2">{errorMessage}</p>
+              )}
             </div>
           </div>
+
+          {/* Booking Summary Section */}
           <div>
             <div className="mb-6">
               <h2 className="text-2xl font-bold">Booking Summary</h2>
@@ -152,68 +180,25 @@ export function Payment_Page() {
                 </CardContent>
               </Card>
               <div className="flex justify-center">
-                <Link
-                  href={agreedToTerms ? '/bookings/currentbooking' : '#'}
-                  className={`w-full flex justify-center ${!agreedToTerms ? 'pointer-events-none' : ''}`}
-                >
-                  <Button
-                    className={`w-auto border-2 ${
-                      agreedToTerms ? 'hover:bg-muted' : 'opacity-50 cursor-not-allowed'
-                    }`}
-                    disabled={!agreedToTerms}
-                  >
-                    Complete Booking
-                  </Button>
-                </Link>
+                <Button
+                  onClick={agreedToTerms ? handleSubmit : undefined} // Fixed the syntax
+                  disabled={isProcessing}
+                  className={"w-full flex justify-center ${!agreedToTerms ? 'pointer-events-none' : ''}"}
+              >
+                  {isProcessing ? "Processing..." : "Complete Booking"}
+                </Button>
               </div>
             </div>
           </div>
         </div>
       </div>
       <Separator />
-      <Footer/>
+      <Footer />
     </>
   );
-}
+}}
 
 // SVG Icons as React Components
-const CreditCardIcon = (props: any) => (
-  <svg
-    xmlns="http://www.w3.org/2000/svg"
-    width="24"
-    height="24"
-    viewBox="0 0 24 24"
-    fill="none"
-    stroke="currentColor"
-    strokeWidth="2"
-    strokeLinecap="round"
-    strokeLinejoin="round"
-    className="feather feather-credit-card"
-    {...props}
-  >
-    <rect x="1" y="4" width="22" height="16" rx="2" ry="2" />
-    <line x1="1" y1="10" x2="23" y2="10" />
-  </svg>
-);
-
-const WalletIcon = (props: any) => (
-  <svg
-    xmlns="http://www.w3.org/2000/svg"
-    width="24"
-    height="24"
-    viewBox="0 0 24 24"
-    fill="none"
-    stroke="currentColor"
-    strokeWidth="2"
-    strokeLinecap="round"
-    strokeLinejoin="round"
-    className="feather feather-credit-card"
-    {...props}
-  >
-    <rect x="1" y="4" width="22" height="16" rx="2" ry="2" />
-    <line x1="1" y1="10" x2="23" y2="10" />
-  </svg>
-);
 
 const LockIcon = (props: any) => (
   <svg
