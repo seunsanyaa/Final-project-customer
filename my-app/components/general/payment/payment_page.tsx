@@ -12,6 +12,8 @@ import { useEffect, useState } from 'react';
 export function Payment_Page() {
   const router = useRouter();
   const [total, setTotal] = useState<number | null>(null);
+  // Add this new state
+  const [agreedToTerms, setAgreedToTerms] = useState(false);
 
   useEffect(() => {
     if (router.isReady) {
@@ -96,10 +98,16 @@ export function Payment_Page() {
                 </span>
               </div>
               <div className="flex items-center space-x-2">
-              <input type="checkbox" id="terms" className="checkbox" />
-              <label htmlFor="terms" className="text-sm">
-                I agree to the <a href="/terms" className="text-primary">terms and conditions</a>.
-              </label>
+                <input
+                  type="checkbox"
+                  id="terms"
+                  className="checkbox"
+                  checked={agreedToTerms}
+                  onChange={(e) => setAgreedToTerms(e.target.checked)}
+                />
+                <label htmlFor="terms" className="text-sm">
+                  I agree to the <a href="/terms" className="text-primary">terms and conditions</a>.
+                </label>
               </div>
             </div>
           </div>
@@ -131,7 +139,7 @@ export function Payment_Page() {
                 <CardContent className="space-y-2">
                   <div className="flex justify-between">
                     <span>Base Price:</span>
-                    <span>${total ? (total * 0.8).toFixed(2) : '0.00'}</span>
+                    <span>${total ? (total).toFixed(2) : '0.00'}</span>
                   </div>
                   <div className="flex justify-between">
                     <span>Taxes & Fees:</span>
@@ -139,13 +147,23 @@ export function Payment_Page() {
                   </div>
                   <div className="flex justify-between">
                     <span>Total Price:</span>
-                    <span className="font-bold">${total ? total.toFixed(2) : '0.00'}</span>
+                    <span className="font-bold">${total ? (total * 0.2 + total).toFixed(2) : '0.00'}</span>
                   </div>
                 </CardContent>
               </Card>
               <div className="flex justify-center">
-                <Link href='/bookings/currentbooking' className="w-full flex justify-center">
-                  <Button className="w-auto border-2 hover:bg-muted">Complete Booking</Button>
+                <Link
+                  href={agreedToTerms ? '/bookings/currentbooking' : '#'}
+                  className={`w-full flex justify-center ${!agreedToTerms ? 'pointer-events-none' : ''}`}
+                >
+                  <Button
+                    className={`w-auto border-2 ${
+                      agreedToTerms ? 'hover:bg-muted' : 'opacity-50 cursor-not-allowed'
+                    }`}
+                    disabled={!agreedToTerms}
+                  >
+                    Complete Booking
+                  </Button>
                 </Link>
               </div>
             </div>

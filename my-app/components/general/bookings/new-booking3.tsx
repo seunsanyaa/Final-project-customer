@@ -212,7 +212,7 @@ export function NewBooking3() {
             </Card>
           </div>
         </div>
-        <div className="space-y-6" ref={bookingSummaryRef}>
+        <div className="space-y-2 w-1/2 max-w-6xl ml-0 mt-0" ref={bookingSummaryRef}>
           <Card>
             <CardHeader>
               <CardTitle>Booking Summary</CardTitle>
