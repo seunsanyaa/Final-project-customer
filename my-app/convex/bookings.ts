@@ -90,3 +90,34 @@ export const getBookingsByCar = query({
 			.collect();
 	},
 });
+
+
+  
+// Update booking with total paid amount
+export const updateBookingWithTotalPaid = mutation({
+	args: {
+	  id: v.id('bookings'), // Booking ID
+	},
+	handler: async (ctx, args) => {
+	  // Manually call the query to fetch payments by booking ID
+	  const payments = await ctx.db
+		.query('payments')
+		.withIndex('by_bookingId', (q) => q.eq('bookingId', args.id))
+		.collect();
+  
+	  // Handle case where no payments exist
+	  if (!payments || payments.length === 0) {
+		return `No payments found for booking ID ${args.id}.`;
+	  }
+  
+	  // Sum the paid amounts
+	  const totalPaidAmount = payments.reduce((sum, payment) => sum + payment.amount, 0);
+  
+	  // Update the booking with the new total paid amount
+	  await ctx.db.patch(args.id, { paidAmount: totalPaidAmount });
+  
+	  return `Booking with ID ${args.id} has been updated with total paid amount: ${totalPaidAmount}.`;
+	},
+  });
+  
+  
