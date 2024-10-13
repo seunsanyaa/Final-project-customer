@@ -180,13 +180,18 @@ function PaymentForm() {
                 </CardContent>
               </Card>
               <div className="flex justify-center">
+                <div className="w-full flex justify-center ${!agreedToTerms ? 'pointer-events-none' : ''}">
                 <Button
+                className={`w-auto border-2 ${
+                  agreedToTerms ? 'hover:bg-muted' : 'opacity-50 cursor-not-allowed'
+                }`}
+                disabled={!agreedToTerms}
+
                   onClick={agreedToTerms ? handleSubmit : undefined} // Fixed the syntax
                   disabled={isProcessing}
-                  className={"w-full flex justify-center ${!agreedToTerms ? 'pointer-events-none' : ''}"}
               >
                   {isProcessing ? "Processing..." : "Complete Booking"}
-                </Button>
+                </Button></div>
               </div>
             </div>
           </div>
