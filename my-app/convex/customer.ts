@@ -1,6 +1,6 @@
 import { v } from 'convex/values';
 
-import { mutation } from './_generated/server';
+import { mutation, query } from './_generated/server';
 
 export const createCustomer = mutation({
 	args: {
@@ -80,5 +80,11 @@ export const updateCustomer = mutation({
 
 		await ctx.db.patch(existingCustomer._id, updatedData);
 		return `Customer with ID ${args.userId} has been updated.`;
+	},
+});
+export const getAllCustomers = query({
+	handler: async (ctx) => {
+		const custs = await ctx.db.query('customers').collect();
+		return custs;
 	},
 });
