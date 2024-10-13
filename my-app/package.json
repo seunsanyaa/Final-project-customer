@@ -11,6 +11,7 @@
   "dependencies": {
     "@clerk/clerk-sdk-node": "^5.0.24",
     "@clerk/nextjs": "^5.2.13",
+    "@heroicons/react": "v1",
     "@hookform/resolvers": "^3.9.0",
     "@radix-ui/react-avatar": "^1.1.0",
     "@radix-ui/react-checkbox": "^1.1.1",
@@ -25,6 +26,7 @@
     "@radix-ui/react-switch": "^1.1.0",
     "@radix-ui/react-toast": "^1.2.1",
     "@radix-ui/themes": "^3.1.4",
+    "@stripe/react-stripe-js": "^2.8.1",
     "@stripe/stripe-js": "^4.8.0",
     "@types/leaflet": "^1.9.12",
     "@types/react-leaflet": "^3.0.0",
@@ -44,6 +46,7 @@
     "react-intersection-observer": "^9.13.1",
     "react-leaflet": "^4.2.1",
     "recharts": "^2.12.7",
+    "stripe": "^17.2.0",
     "svix": "^1.28.0",
     "tailwind-merge": "^2.4.0",
     "tailwindcss-animate": "^1.0.7",
