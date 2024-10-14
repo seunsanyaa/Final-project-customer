@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { Elements, PaymentElement, useStripe, useElements } from "@stripe/react-stripe-js";
-import { loadStripe } from "@stripe/stripe-js";
+import { loadStripe, StripeElementsOptions, Appearance } from "@stripe/stripe-js";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
@@ -23,7 +23,7 @@ export function Payment_Page() {
     }
   }, [router.isReady, router.query]);
 
-const stripePromise = loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY);
+const stripePromise = loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY!);
 
 
   const [clientSecret, setClientSecret] = useState<string | null>(null);
@@ -41,29 +41,29 @@ const stripePromise = loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY)
       .catch((error) => console.error("Error fetching client secret:", error));
   }, []);
 
-  const appearance = {
+  const appearance: Appearance = {
     theme: 'stripe',
   };
 
-  const options = {
-    clientSecret,
+  const options: StripeElementsOptions = {
     appearance,
+    ...(clientSecret && { clientSecret }),
   };
 
   return (
     <>
       {clientSecret ? (
         <Elements stripe={stripePromise} options={options}>
-          <PaymentForm />
+          <PaymentForm agreedToTerms={agreedToTerms} setAgreedToTerms={setAgreedToTerms} total={total} />
         </Elements>
       ) : (
         <p>Loading payment details...</p>
       )}
     </>
   );
+}
 
-
-function PaymentForm() {
+function PaymentForm({ agreedToTerms, setAgreedToTerms, total }: { agreedToTerms: boolean, setAgreedToTerms: (agreed: boolean) => void, total: number | null }) {
   const stripe = useStripe();
   const elements = useElements();
   const [isProcessing, setIsProcessing] = useState(false);
@@ -182,16 +182,15 @@ function PaymentForm() {
               <div className="flex justify-center">
                 <div className="w-full flex justify-center ${!agreedToTerms ? 'pointer-events-none' : ''}">
                 <Button
-                className={`w-auto border-2 ${
-                  agreedToTerms ? 'hover:bg-muted' : 'opacity-50 cursor-not-allowed'
-                }`}
-                disabled={!agreedToTerms}
-
-                  onClick={agreedToTerms ? handleSubmit : undefined} // Fixed the syntax
-                  disabled={isProcessing}
-              >
+                  className={`w-auto border-2 ${
+                    agreedToTerms ? 'hover:bg-muted' : 'opacity-50 cursor-not-allowed'
+                  }`}
+                  onClick={agreedToTerms ? handleSubmit : undefined}
+                  disabled={!agreedToTerms || isProcessing}
+                >
                   {isProcessing ? "Processing..." : "Complete Booking"}
-                </Button></div>
+                </Button>
+                </div>
               </div>
             </div>
           </div>
@@ -201,7 +200,7 @@ function PaymentForm() {
       <Footer />
     </>
   );
-}}
+}
 
 // SVG Icons as React Components
 
