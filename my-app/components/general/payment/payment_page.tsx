@@ -11,8 +11,8 @@ import { useRouter } from 'next/router';
 export function Payment_Page() {
   const router = useRouter();
   const [total, setTotal] = useState<number | null>(null);
-  // Add this new state
   const [agreedToTerms, setAgreedToTerms] = useState(false);
+  const [clientSecret, setClientSecret] = useState<string | null>(null);
 
   useEffect(() => {
     if (router.isReady) {
@@ -23,23 +23,22 @@ export function Payment_Page() {
     }
   }, [router.isReady, router.query]);
 
-const stripePromise = loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY!);
+  const stripePromise = loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY!);
 
-
-  const [clientSecret, setClientSecret] = useState<string | null>(null);
-  
   useEffect(() => {
-    fetch("/api/create-payment-intent", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({ amount: 25000 }), // Example amount in cents (i.e., $250.00)
-    })
-      .then((res) => res.json())
-      .then((data) => setClientSecret(data.clientSecret))
-      .catch((error) => console.error("Error fetching client secret:", error));
-  }, []);
+    if (total !== null) {
+      fetch("/api/create-payment-intent", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ amount: Math.round(total * 100) }), // Convert to cents and round
+      })
+        .then((res) => res.json())
+        .then((data) => setClientSecret(data.clientSecret))
+        .catch((error) => console.error("Error fetching client secret:", error));
+    }
+  }, [total]);
 
   const appearance: Appearance = {
     theme: 'stripe',
