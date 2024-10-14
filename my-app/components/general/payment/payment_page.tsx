@@ -68,6 +68,7 @@ function PaymentForm({ agreedToTerms, setAgreedToTerms, total }: { agreedToTerms
   const elements = useElements();
   const [isProcessing, setIsProcessing] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const router = useRouter();
 
   const handleSubmit = async () => {
     if (!stripe || !elements) return;
@@ -84,10 +85,27 @@ function PaymentForm({ agreedToTerms, setAgreedToTerms, total }: { agreedToTerms
 
     if (error) {
       setErrorMessage(error.message || "Something went wrong with your payment.");
-      
       setIsProcessing(false);
     } else {
       setIsProcessing(false);
+      // Pass booking information to the booking details page
+      router.push({
+        pathname: '/bookings/currentbooking',
+        query: {
+          bookingId: 'ABC123', // Generate a unique booking ID
+          rentalDates: 'June 1, 2023 - June 8, 2023',
+          originalCost: total,
+          rewardsDiscount: 50,
+          finalPrice: total ? total - 50 : 0,
+          rewardsPointsEarned: 150,
+          carDetails: 'Toyota Camry 2023',
+          pickupLocation: 'Airport Terminal 1',
+          rewardsPointsUsed: 50,
+          rewardsPointsCredited: 'June 15, 2023',
+          bookingStatus: 'Confirmed',
+          cancellationPolicy: 'Free cancellation up to 24 hours before pickup'
+        }
+      });
     }
   };
 
