@@ -12,12 +12,11 @@ export const createPayment = mutation({
 	handler: async (ctx, args) => {
 		
 		const paymentId = await ctx.db.insert('payments', {
-			...args,
 			recieptNumber: args.receiptNumber,
             bookingId:args.bookingId, 
             amount:args.amount,
             paymentDate:args.paymentDate,
-			paymenttype: args.paymentType,    
+			paymentType: args.paymentType,    
 		});
 		return `Payment with ID ${paymentId} has been created.`;
 	},

@@ -67,7 +67,7 @@ export default defineSchema({
 		bookingId: v.string(),
 		amount: v.number(),
 		paymentDate: v.string(),
-		paymenttype: v.string(),
+		paymentType: v.string(),
 	})
 		.index('by_recieptNumber', ['recieptNumber'])
 		.index('by_bookingId', ['bookingId']),
