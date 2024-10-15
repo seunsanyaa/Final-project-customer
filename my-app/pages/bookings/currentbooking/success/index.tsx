@@ -1,10 +1,25 @@
+'use client'
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Navi } from "@/components/general/head/navi";
 import { Footer } from "@/components/general/head/footer";
 import { CheckCircleIcon } from "@heroicons/react/outline"; // You can also use your own SVG icon
+import { useState } from "react";
+import axios from "axios";
+const API_BASE_URL = 'https://third-elk-244.convex.cloud/api';
 
 export default function PaymentSuccess() {
+ 
+  // const setNewPayment = await axios.post(`${API_BASE_URL}/mutation`, {
+  //   path: "payment:createPayment",
+  //   args: {
+  //     receiptNumber:// make it includetodays date in ddmmyy format aswell as numbers starting from 1
+	// 	bookingId:"",// make it fetch the booking id from the previous page
+	// 	amount:"",// make it get it from stripe
+	// 	paymentDate:"",// date created from convex will suffice
+	// 	paymentType:"",// make it get it from stripe if it is paypal or card payment
+  //   }
+  // });
   return (
     <>
       <Navi />
