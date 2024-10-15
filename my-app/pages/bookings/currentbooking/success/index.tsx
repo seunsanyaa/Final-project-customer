@@ -13,7 +13,7 @@ export default function PaymentSuccess() {
   // const setNewPayment = await axios.post(`${API_BASE_URL}/mutation`, {
   //   path: "payment:createPayment",
   //   args: {
-  //     receiptNumber:// make it includetodays date in ddmmyy format aswell as numbers starting from 1
+  //     receiptNumber:"",// make it includetodays date in ddmmyy format aswell as numbers starting from 1
 	// 	bookingId:"",// make it fetch the booking id from the previous page
 	// 	amount:"",// make it get it from stripe
 	// 	paymentDate:"",// date created from convex will suffice
