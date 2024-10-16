@@ -2,14 +2,14 @@
 import { NextApiRequest, NextApiResponse } from 'next';
 import Stripe from 'stripe';
 
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY, {
-  apiVersion: '2022-11-15',
+const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
+  apiVersion: '2024-09-30.acacia',
 });
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method === 'POST') {
     try {
-      const { amount } = req.body; // Example: Amount should be passed from the frontend.
+      const { amount } = req.body; // Extract amount from request body
 
       // Create a PaymentIntent with the order amount
       const paymentIntent = await stripe.paymentIntents.create({

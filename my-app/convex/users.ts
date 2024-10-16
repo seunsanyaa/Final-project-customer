@@ -18,7 +18,7 @@ export const getUser = query({
 
 		}
 
-		return getFullUser(ctx, userId);
+		return getFullUser(ctx, { userId }); // Pass an object with userId
 	},
 });
 
@@ -72,17 +72,31 @@ export const deleteUser = mutation({
 	},
 });
 
-export function getFullUser(ctx: QueryCtx | MutationCtx, userId: string) {
-	return ctx.db
-		.query('users')
-		.withIndex('by_userId', (q) => q.eq('userId', userId))
-		.first();
-}
+export const getFullUser = query({
+	// Corrected the function structure and query handling
+	args: {
+		userId: v.string(),
+	},
+	handler: async (ctx, args) => {
+		const user = await ctx.db
+			.query('users')
+			.withIndex('by_userId', (q) =>
+				q.eq('userId', args.userId)
+			)
+			.first();
+
+		if (!user) {
+			return `user with id ${args.userId} does not exist.`;
+		}
+
+		return user;
+	},
+});
 
 export const getAllUsers = query({
-	args: {},
-	handler: async (ctx) => {
-		return await ctx.db.query('users').collect();
+	args: { id: v.id("users") }, // Changed "User" to "users"
+	handler: async (ctx, args) => {
+		return await ctx.db.get(args.id);
 	},
 });
 
@@ -102,4 +116,31 @@ export const getUserByEmail = query({
 	},
 });
 
+export const editUser = mutation({
+	args: {
+		userId: v.string(),
+		email: v.optional(v.string()),
+		firstName: v.optional(v.string()),
+		lastName: v.optional(v.string()),
+		staff: v.optional(v.boolean()),
+	},
+	handler: async (ctx, args) => {
+		const userToUpdate = await ctx.db
+			.query('users')
+			.withIndex('by_userId', (q) => q.eq('userId', args.userId))
+			.first();
 
+		if (!userToUpdate) {
+			throw new Error('User not found');
+		}
+
+		// Update only the fields that are provided
+		const updates = {};
+		if (args.email !== undefined) updates.email = args.email;
+		if (args.firstName !== undefined) updates.firstName = args.firstName;
+		if (args.lastName !== undefined) updates.lastName = args.lastName;
+		if (args.staff !== undefined) updates.staff = args.staff;
+
+		await ctx.db.patch(userToUpdate._id, updates);
+	},
+});
