@@ -28,7 +28,7 @@ export function NewBooking3() {
   const router = useRouter();
   const { model, maker, pricePerDay } = router.query; // Retrieve car details from query parameters
   const [totalDays, setTotalDays] = useState(1); // Assume a default of 1 day for simplicity
-
+  let sentprice=0;
   const [sentPrice, setSentPrice] = useState<number | null>(null); // Define sentPrice as a state variable
 
   const scrollToBookingSummary = () => {
@@ -55,11 +55,12 @@ export function NewBooking3() {
     total *= totalDays; // Multiply by total days for full payment
     totalcalc=`${total} One time payment`;
       if(paymentMethod==="full")
-      return totalcalc;
+      {sentprice=total;
+      return totalcalc;}
     else if (paymentMethod === 'installment') {
       total = totalDays < 7 ?  totalsum : (totalsum*totalDays)/Math.floor(totalDays / 7)  ;
       total = parseFloat(total.toFixed(3));
-      const sentprice=total;
+      sentprice=total;
     }
 
     return totalDays<7?totalstring=`${total}/day for ${totalDays} days`:totalstring=`${total}/week for ${Math.floor(totalDays / 7)} weeks`
@@ -67,10 +68,9 @@ export function NewBooking3() {
 
   const handleContinue = () => {
     const total = calculateTotal(); // Calculate total here
-    setSentPrice(total); // Update sentPrice state
     router.push({
       pathname: '/Newbooking/payment',
-      query: { total: total }, // Use total directly
+      query: { total: sentprice }, // Use total directly
     });
   };
 
