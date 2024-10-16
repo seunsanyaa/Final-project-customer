@@ -40,6 +40,7 @@ export default defineSchema({
 		disabled: v.boolean(),
 		registrationNumber: v.string(), // Unique plate number for the individual car
 		pictures: v.array(v.string()), // Array of picture URLs
+		pricePerDay: v.number(),
 	})
 		.index('by_model', ['model'])
 		.index('by_maker', ['maker'])
