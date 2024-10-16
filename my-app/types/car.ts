@@ -3,6 +3,11 @@ export interface Car {
   model: string;
   maker: string;
   pictures: string[];
-  
+  registrationNumber: string;
+  lastMaintenanceDate: string;
+  available: boolean;
+  year: number;
+  disabled: boolean;
+  pricePerDay: number;
 }
 

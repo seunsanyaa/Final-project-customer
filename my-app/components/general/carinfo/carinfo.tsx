@@ -9,6 +9,7 @@ import VolumeIcon from "@/svgs/VolumeIcon";
 import { Navi } from "../head/navi";
 import { Footer } from '../head/footer';
 import { Car } from "@/types/car"; // Import the Car type
+import { useState } from 'react'; // Import useState for managing state
 
 export function Carinfo() {
   const router = useRouter();
@@ -21,6 +22,21 @@ export function Carinfo() {
   if (!car) {
     return <div>Loading...</div>; // Show loading state while fetching
   }
+
+  const handleBooking = () => {
+    // Pass car details as query parameters
+    router.push({
+      pathname: '/Newbooking',
+      query: {
+        model: car.model,
+        maker: car.maker,
+        pricePerDay: car.pricePerDay, 
+        year: car.year,
+        disabled: car.disabled,
+        registrationNumber: car.registrationNumber,
+      },
+    });
+  };
 
   return (
     <>
@@ -86,15 +102,17 @@ export function Carinfo() {
               <div>
                 <h2 className="text-2xl font-bold">Pricing</h2>
                 <p className="mt-4 text-muted-foreground text-lg">
-                  Starting at <span className="text-foreground">$70,000</span>
+                  Starting at <span className="text-foreground">${car.pricePerDay}</span>
                 </p>
               </div>
 
               <div className="mt-8">
-                <Link href="/Newbooking">
-              <button className="px-4 py-2 font-semibold text-white bg-blue-600 hover:bg-blue-500 rounded-md transition-colors border hover:bg-muted">
-                Book Now
-              </button></Link>
+                <button 
+                  onClick={handleBooking} 
+                  className="px-4 py-2 font-semibold text-white bg-blue-600 hover:bg-blue-500 rounded-md transition-colors border hover:bg-muted"
+                >
+                  Book Now
+                </button>
               </div>
             </div>
           </div>

@@ -1,3 +1,4 @@
+'use client'
 import React, { useRef, useState } from "react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
@@ -25,6 +26,10 @@ export function NewBooking3() {
   const [pickupLocation, setPickupLocation] = useState('');
   const [dropoffLocation, setDropoffLocation] = useState('');
   const router = useRouter();
+  const { model, maker, pricePerDay } = router.query; // Retrieve car details from query parameters
+  const [totalDays, setTotalDays] = useState(1); // Assume a default of 1 day for simplicity
+
+  const [sentPrice, setSentPrice] = useState<number | null>(null); // Define sentPrice as a state variable
 
   const scrollToBookingSummary = () => {
     bookingSummaryRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -38,21 +43,57 @@ export function NewBooking3() {
   const handleExtraChange = (extra: keyof typeof extras) => {
     setExtras(prev => ({ ...prev, [extra]: !prev[extra] }));
   };
-
+  let totalcalc="";
   const calculateTotal = () => {
-    const basePrice = 50;
+    const basePrice = Number(pricePerDay); // Convert to number
     const insurancePrice = extras.insurance ? 10 : 0;
     const gpsPrice = extras.gps ? 5 : 0;
     const childSeatPrice = extras.childSeat ? 8 : 0;
-    return basePrice + insurancePrice + gpsPrice + childSeatPrice;
+    let totalstring="";
+    let totalsum = basePrice + insurancePrice + gpsPrice + childSeatPrice;
+    let total=totalsum;
+    total *= totalDays; // Multiply by total days for full payment
+    totalcalc=`${total} One time payment`;
+      if(paymentMethod==="full")
+      return totalcalc;
+    else if (paymentMethod === 'installment') {
+      total = totalDays < 7 ?  totalsum : (totalsum*totalDays)/Math.floor(totalDays / 7)  ;
+      total = parseFloat(total.toFixed(3));
+      const sentprice=total;
+    }
+
+    return totalDays<7?totalstring=`${total}/day for ${totalDays} days`:totalstring=`${total}/week for ${Math.floor(totalDays / 7)} weeks`
   };
 
   const handleContinue = () => {
-    const total = calculateTotal();
+    const total = calculateTotal(); // Calculate total here
+    setSentPrice(total); // Update sentPrice state
     router.push({
       pathname: '/Newbooking/payment',
-      query: { total: total },
+      query: { total: total }, // Use total directly
     });
+  };
+
+  const total = calculateTotal(); // Add this line to calculate total
+
+  const handlePickupChange = (date: string) => {
+    setPickupDateTime(date);
+    updateTotalDays(date, dropoffDateTime);
+  };
+
+  const handleDropoffChange = (date: string) => {
+    setDropoffDateTime(date);
+    updateTotalDays(pickupDateTime, date);
+  };
+
+  const updateTotalDays = (pickup: string, dropoff: string) => {
+    if (pickup && dropoff) {
+      const pickupDate = new Date(pickup);
+      const dropoffDate = new Date(dropoff);
+      const differenceInTime = dropoffDate.getTime() - pickupDate.getTime();
+      const differenceInDays = Math.ceil(differenceInTime / (1000 * 3600 * 24)); // Convert milliseconds to days
+      setTotalDays(differenceInDays > 0 ? differenceInDays : 1); // Ensure at least 1 day
+    }
   };
 
   return (
@@ -77,7 +118,7 @@ export function NewBooking3() {
                     id="pickup-date" 
                     className="mt-1 w-full" 
                     value={pickupDateTime}
-                    onChange={(e) => setPickupDateTime(e.target.value)}
+                    onChange={(e) => handlePickupChange(e.target.value)}
                   />
                 </div>
                 <div>
@@ -87,7 +128,7 @@ export function NewBooking3() {
                     id="dropoff-date" 
                     className="mt-1 w-full" 
                     value={dropoffDateTime}
-                    onChange={(e) => setDropoffDateTime(e.target.value)}
+                    onChange={(e) => handleDropoffChange(e.target.value)}
                   />
                 </div>
                 <div>
@@ -189,7 +230,7 @@ export function NewBooking3() {
                     <Separator />
                     <div className="flex items-center justify-between">
                       <p>Car Rental</p>
-                      <p className="font-semibold">$50/day</p>
+                      <p className="font-semibold">${pricePerDay}/day</p>
                     </div>
                     {extras.insurance && (
                       <div className="flex items-center justify-between">
@@ -213,11 +254,7 @@ export function NewBooking3() {
                     <div className="flex items-center justify-between">
                       <p className="text-lg font-semibold">Total</p>
                       <p className="text-lg font-semibold">
-                        ${50 + 
-                          (extras.insurance ? 10 : 0) + 
-                          (extras.gps ? 5 : 0) + 
-                          (extras.childSeat ? 8 : 0)
-                        }/day
+                        ${total}
                       </p>
                     </div>
                     {paymentMethod && (
@@ -271,7 +308,7 @@ export function NewBooking3() {
                   <div className="my-8 border-t border-gray-200" /> {/* Custom separator */}
                   <div>
                     <h3 className="text-xl font-semibold mb-4">Full Payment</h3>
-                    <p className="text-lg font-semibold mb-4">Pay $65 upfront.</p>
+                    <p className="text-lg font-semibold mb-4">Pay ${totalcalc} upfront.</p>
                     <h4 className="font-semibold mb-2">Advantages of Full Payment:</h4>
                     <ul className="list-disc pl-5 mb-4">
                       <li>Save time with one single payment.</li>
@@ -423,33 +460,7 @@ export function NewBooking3() {
                   </Card>
                 </div>
                 <div className="mt-6 flex justify-between items-center">
-                  {/* <div className="flex items-center gap-2">
-                    <Label htmlFor="filter">Filter by:</Label>
-                    <Select name="filter">
-                      <SelectTrigger className="w-40">
-                        <SelectValue placeholder="Select" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="size">Size</SelectItem>
-                        <SelectItem value="features">Features</SelectItem>
-                        <SelectItem value="price">Price</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <Label htmlFor="duration">Rental Duration:</Label>
-                    <Select name="duration">
-                      <SelectTrigger className="w-40">
-                        <SelectValue placeholder="Select" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="1">1 day</SelectItem>
-                        <SelectItem value="3">3 days</SelectItem>
-                        <SelectItem value="7">7 days</SelectItem>
-                        <SelectItem value="14">14 days</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div> */}
+                  
                 </div>
               </div>
       <Separator />

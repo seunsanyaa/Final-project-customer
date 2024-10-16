@@ -11,6 +11,7 @@ export const createCar = mutation({
 		year: v.number(),
 		registrationNumber: v.string(),
 		pictures: v.array(v.string()),
+		pricePerDay: v.number(), 
 	},
 	handler: async (ctx, args) => {
 		const existingCar = await ctx.db
@@ -22,7 +23,7 @@ export const createCar = mutation({
 
 		if (existingCar) {
 			return `Car with registration number ${args.registrationNumber} already exists.`;
-		}
+			}
 
 		const carId = await ctx.db.insert('cars', {
 			...args,
@@ -63,6 +64,7 @@ export const updateCar = mutation({
 		available: v.optional(v.boolean()),
 		year: v.optional(v.number()),
 		disabled: v.optional(v.boolean()),
+		price: v.optional(v.number()), // Add price here
 	},
 	handler: async (ctx, args) => {
 		const existingCar = await ctx.db
