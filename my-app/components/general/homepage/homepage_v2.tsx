@@ -1,4 +1,3 @@
-
 'use client'
 import Link from "next/link"
 import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator } from "@/components/ui/dropdown-menu"
@@ -25,23 +24,23 @@ const [ref4, inView4] = useInView({ threshold: 0.3,triggerOnce: true });
   return (
     (<div className="flex flex-col min-h-dvh">
       <Navi/>
-      <main className="flex-1">
-      <section  ref={ref1}className={`relative top-0 md:py-16 h-[400px] px-4 md:px-6 lg:px-10 bg-cover bg-center bg-no-repeat ${
+      <main className="flex-1 top-0 mt-0">
+      <section  ref={ref1}className={`relative top-0 md:py-16 w-full h-[610px] px-4 md:px-6 lg:px-10 bg-cover bg-center bg-no-repeat ${
         inView1 ? 'animate-fadeInUp' : 'opacity-0'
        }`}
-       style={{ backgroundImage: `url(${carImage.src})` }}
+       style={{ backgroundImage: `url(https://res.cloudinary.com/dbsxjsktb/image/upload/v1729108115/benjamin-child-7Cdw956mZ4w-unsplash_ted8ag.jpg)`, 
+                backgroundColor: 'rgba(0, 0, 0, 0.5)' }} // Added dark overlay
     >
-      <div className="absolute top-0 left-[45vw] flex flex-col  gap-4 p-2 w-[45vw]">
-        <div>
-          <h1 className="text-5xl font-bold tracking-tight ">Find your perfect ride</h1>
+      <div className="absolute inset-0 flex items-center justify-center">
+        <div className="text-center"> {/* Center text within the div */}
+          <h1 className="text-5xl font-bold tracking-tight text-white drop-shadow-lg">Find your perfect ride</h1> 
           
-          <form className="flex gap-2 mt-6">
+          <form className="flex gap-4 justify-center">
             <input
               type="text"
               placeholder="Search by location or vehicle"
-              className="flex-1 p-2 border border-gray-300 rounded-lg w-full"
-            />
-            <Button type="submit" className="whitespace-nowrap p-4">
+              className="flex-1 p-2 border border-gray-300 rounded-lg w-full max-w-[600px] text-gray-800 " /> {/* Increased width */}
+            <Button type="submit" className="whitespace-nowrap p-4 text-lg">  
               Search
             </Button>
           </form>
@@ -286,6 +285,11 @@ const [ref4, inView4] = useInView({ threshold: 0.3,triggerOnce: true });
     </div>)
   );
 }
+
+
+
+
+
 
 
 
