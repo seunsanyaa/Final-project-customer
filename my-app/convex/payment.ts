@@ -80,3 +80,17 @@ export const getAllPaymentsByBookingId = query({
 		.collect();
 	},
   });
+
+export const getLatestPayment = query({
+	handler: async (ctx) => {
+		const latestPayment = await ctx.db
+			.query('payments')
+			.filter((q) => q.gt('_creationTime', '12:00')) // Filter payments after 12:00
+			.order('desc')
+			.first();
+		if (!latestPayment) {
+			return 0;
+		}
+		return latestPayment;
+	},
+});

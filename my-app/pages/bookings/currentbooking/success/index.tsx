@@ -4,34 +4,54 @@ import { Button } from "@/components/ui/button";
 import { Navi } from "@/components/general/head/navi";
 import { Footer } from "@/components/general/head/footer";
 import { CheckCircleIcon } from "@heroicons/react/outline"; // You can also use your own SVG icon
-import { useEffect, useState } from "react";
-import axios from "axios";
+import { useEffect } from "react";
+import { useMutation } from 'convex/react';
+import { api } from '../../../../convex/_generated/api';
 import { useRouter } from "next/router";
-const API_BASE_URL = 'https://third-elk-244.convex.cloud/api';
+import { Id } from "../../../../convex/_generated/dataModel";
 
 export default function PaymentSuccess() {
-const router=useRouter()
+  const router = useRouter();
+  const createPayment = useMutation(api.payment.createPayment);
+  const updateBookingWithTotalPaid = useMutation(api.bookings.updateBookingWithTotalPaid);
 
+  useEffect(() => {
+    const addPayment = async () => {
+      if (!router.isReady) return;
 
-  useEffect(()=>{
+      const { bookingId, amount, paymentDate, paymentType, paymentIntentId } = router.query;
 
-    const addPayment=async ()=>{
-      await axios.post(`${API_BASE_URL}/mutation`, {
-      path: "payment:createPayment",
-      args: {
-        receiptNumber:"",// make it includetodays date in ddmmyy format aswell as numbers starting from 1
-      bookingId:"",// make it fetch the booking id from the previous page
-      amount:0,// make it get it from stripe
-      paymentDate:"",// date created from convex will suffice
-      paymentType:"",// make it get it from stripe if it is paypal or card payment
+      if (!bookingId || !amount || !paymentDate || !paymentType || !paymentIntentId) {
+        console.error("Missing payment details");
+        return;
       }
-    });
-  void router.push('/bookings/currentbooking')
-  
-  
-  }
+
+      // Generate receipt number (you might want to implement a more robust method)
+      const receiptNumber = `REC-${Date.now()}-${Math.floor(Math.random() * 1000)}`;
+
+      try {
+        // Create payment
+        await createPayment({
+          receiptNumber,
+          bookingId: bookingId as string,
+          amount: parseFloat(amount as string),
+          paymentDate: paymentDate as string,
+          paymentType: paymentType as string,
+        });
+
+        // Update booking with total paid amount
+        await updateBookingWithTotalPaid({
+          id: bookingId as Id<"bookings">,
+        });
+
+        console.log("Payment added and booking updated successfully");
+      } catch (error) {
+        console.error("Error adding payment or updating booking:", error);
+      }
+    };
+
     void addPayment();
-  },[])
+  }, [router.isReady, router.query, createPayment, updateBookingWithTotalPaid]);
 
   return (
     <>
