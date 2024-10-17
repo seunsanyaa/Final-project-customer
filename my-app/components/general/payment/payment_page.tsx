@@ -75,34 +75,28 @@ function PaymentForm({ agreedToTerms, setAgreedToTerms, total }: { agreedToTerms
     setIsProcessing(true);
     setErrorMessage(null);
 
-    const { error } = await stripe.confirmPayment({
+    const { error, paymentIntent } = await stripe.confirmPayment({
       elements,
       confirmParams: {
         return_url: `${window.location.origin}/bookings/currentbooking/success`, // Optional redirect after success
       },
+      redirect: 'if_required',
     });
 
     if (error) {
       setErrorMessage(error.message || "Something went wrong with your payment.");
       setIsProcessing(false);
-    } else {
+    } else if (paymentIntent && paymentIntent.status === 'succeeded') {
       setIsProcessing(false);
-      // Pass booking information to the booking details page
+      // Pass booking information to the success page
       router.push({
-        pathname: '/bookings/currentbooking',
+        pathname: '/bookings/currentbooking/success',
         query: {
-          bookingId: 'ABC123', // Generate a unique booking ID
-          rentalDates: 'June 1, 2023 - June 8, 2023',
-          originalCost: total,
-          rewardsDiscount: 50,
-          finalPrice: total ? total - 50 : 0,
-          rewardsPointsEarned: 150,
-          carDetails: 'Toyota Camry 2023',
-          pickupLocation: 'Airport Terminal 1',
-          rewardsPointsUsed: 50,
-          rewardsPointsCredited: 'June 15, 2023',
-          bookingStatus: 'Confirmed',
-          cancellationPolicy: 'Free cancellation up to 24 hours before pickup'
+          bookingId: router.query.bookingId as string,
+          amount: total,
+          paymentDate: new Date().toISOString(),
+          paymentType: 'credit_card', // Or get this from Stripe response
+          paymentIntentId: paymentIntent.id,
         }
       });
     }

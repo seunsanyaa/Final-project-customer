@@ -12,6 +12,9 @@ import { Navi } from '../head/navi';
 import { Footer } from '../head/footer';
 import { useRouter } from 'next/router';
 import CheckoutButton from "../payment/payment_button";
+import { useMutation } from 'convex/react';
+import { api } from '../../../convex/_generated/api';
+
 export function NewBooking3() {
   const bookingSummaryRef = useRef<HTMLDivElement>(null);
   const [paymentMethod, setPaymentMethod] = useState<string | null>(null);
@@ -26,7 +29,7 @@ export function NewBooking3() {
   const [pickupLocation, setPickupLocation] = useState('');
   const [dropoffLocation, setDropoffLocation] = useState('');
   const router = useRouter();
-  const { model, maker, pricePerDay } = router.query; // Retrieve car details from query parameters
+  const { model, maker, pricePerDay, registrationNumber } = router.query;
   const [totalDays, setTotalDays] = useState(1); // Assume a default of 1 day for simplicity
   let sentprice=0;
   const [sentPrice, setSentPrice] = useState<number | null>(null); // Define sentPrice as a state variable
@@ -66,12 +69,40 @@ export function NewBooking3() {
     return totalDays<7?totalstring=`${total}/day for ${totalDays} days`:totalstring=`${total}/week for ${Math.floor(totalDays / 7)} weeks`
   };
 
-  const handleContinue = () => {
-    const total = calculateTotal(); // Calculate total here
-    router.push({
-      pathname: '/Newbooking/payment',
-      query: { total: sentprice+=sentprice*0.2 }, // Use total directly
-    });
+  const createBooking = useMutation(api.bookings.createBooking);
+
+  const handleContinue = async () => {
+    const total = calculateTotal();
+    
+    const booking = {
+      customerId: 'user123', // Replace with actual user ID
+      carId: registrationNumber as string,
+      startDate: pickupDateTime,
+      endDate: dropoffDateTime,
+      totalCost: sentprice + sentprice * 0.2,
+      paidAmount: 0,
+      status: 'pending',
+      pickupLocation,
+      dropoffLocation,
+      customerInsurancetype: extras.insurance ? 'full' : 'basic',
+      customerInsuranceNumber: 'INS123',
+    };
+
+    try {
+      const bookingId = await createBooking(booking);
+      console.log('Booking created with ID:', bookingId);
+
+      router.push({
+        pathname: '/Newbooking/payment',
+        query: { 
+          total: booking.totalCost,
+          bookingId: bookingId
+        },
+      });
+    } catch (error) {
+      console.error('Error creating booking:', error);
+      // Handle error (e.g., show error message to user)
+    }
   };
 
   const total = calculateTotal(); // Add this line to calculate total
