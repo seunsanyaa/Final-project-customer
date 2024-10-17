@@ -21,6 +21,15 @@ export function Homepage_v2() {
 const [ref2, inView2] = useInView({ threshold: 0.6,triggerOnce: true  });
 const [ref3, inView3] = useInView({ threshold: 0.3,triggerOnce: true });
 const [ref4, inView4] = useInView({ threshold: 0.3,triggerOnce: true });
+
+  const handleMouseMove = (event: React.MouseEvent) => {
+    const carousel = event.currentTarget;
+    const { clientX } = event;
+    const scrollWidth = carousel.scrollWidth - carousel.clientWidth;
+    const scrollPosition = (clientX / window.innerWidth) * scrollWidth;
+    carousel.scrollTo({ left: scrollPosition, behavior: 'smooth' });
+  };
+
   return (
     (<div className="flex flex-col min-h-dvh">
       <Navi/>
@@ -49,41 +58,41 @@ const [ref4, inView4] = useInView({ threshold: 0.3,triggerOnce: true });
     </section>
 
        
-        <section ref={ref2 }className={`relative  w-full h-[400px] md:h-[500px] lg:h-[500px] overflow-hidden bg-muted ${
-        inView2 ? 'animate-fadeInUp' : 'opacity-0'
-       }`}>
+        <section ref={ref2} className={`relative w-full h-screen overflow-hidden bg-muted ${ 
+          inView2 ? 'animate-fadeInUp' : 'opacity-0'
+        }`} onMouseMove={handleMouseMove}> {/* Add mouse move event */}
           <div className="w-full mx-auto space-y-6 pt-5 pb-5 md:space-y-8 lg:space-y-10 bg-muted">
             <div className="text-center">
               <h2 className="text-2xl md:text-3xl lg:text-4xl font-bold">Special Offers</h2>
               <p className="text-muted-foreground text-lg md:text-xl lg:text-2xl">
                 Check out our latest deals and discounts on car rentals.
-              </p></div>
+              </p>
             </div>
-            <Carousel >
-            <CarouselContent >
+          </div>
+          <Carousel interval={5000}> {/* Ensure Carousel accepts 'interval' prop */}
+            <CarouselContent>
               <CarouselItem className='h-full'>
-                <div
-                  className="flex flex-col md:flex-row items-center justify-between h-full px-4 md:px-6 lg:px-10">
+                <div className="flex flex-col md:flex-row items-center justify-between h-full px-4 md:px-6 lg:px-10">
                   <div className="space-y-4 md:space-y-6 lg:space-y-8">
                     <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold">
                       Discover the Perfect Car for Your Next Adventure
                     </h1>
                     <p className="text-lg md:text-xl lg:text-2xl text-muted-foreground">
-                    Rent the car of your dreams and explore the wilderness. 15% off for the summer season on choice* cars.
+                      Rent the car of your dreams and explore the wilderness. 15% off for the summer season on choice* cars.
                     </p>
                     <Link href="/Promotions">
-                    <Button className="bg-customyello text-primary-foreground border-2 border-black" >
-                      Book Now
-                    </Button></Link>
+                      <Button className="bg-customyello text-primary-foreground border-2 border-black">
+                        Book Now
+                      </Button>
+                    </Link>
                   </div>
                   <img
-                  src="https://th.bing.com/th/id/OIP.m9QHgUPLEGoc9Z01TrxDEwHaEi?w=259&h=180&c=7&r=0&o=5&dpr=1.3&pid=1.7"
-                  width="400"
-                  height="300"
-                  alt="Car"
-                  className="w-[400px] h-[300px] object-cover"
+                    src="https://res.cloudinary.com/dbsxjsktb/image/upload/v1729195988/1714578868267_yicf3b.avif"
+                    width="400"
+                    height="300"
+                    alt="Car"
+                    className="w-[600px] h-[500px] object-cover"
                   />
-
                 </div>
               </CarouselItem>
               <CarouselItem>
@@ -100,9 +109,9 @@ const [ref4, inView4] = useInView({ threshold: 0.3,triggerOnce: true });
                     </Button></Link>
                   </div>
                   <img
-                  src="https://th.bing.com/th/id/OIP.52cgWj3WF9wO9DhUnM7QzwHaEK?w=326&h=183&c=7&r=0&o=5&dpr=1.3&pid=1.7"
+                  src="https://res.cloudinary.com/dbsxjsktb/image/upload/v1729196318/1727199981315_ixilao.avif"
                   alt="Car"
-                  className="w-[400px] h-[300px] object-cover"
+                  className="w-[500px] h-[400px] object-cover"
                   />
                 </div>
               </CarouselItem>
@@ -120,23 +129,16 @@ const [ref4, inView4] = useInView({ threshold: 0.3,triggerOnce: true });
                     </Button></Link>
                   </div>
                   <img
-                  src="https://th.bing.com/th/id/OIP.rKo5MDyNlbpf1d6CEltozQHaE8?w=236&h=180&c=7&r=0&o=5&dpr=1.3&pid=1.7"
+                  src="https://res.cloudinary.com/dbsxjsktb/image/upload/v1729196547/1727199981443_oidgif.avif"
                   width="400"
                   height="300"
                   alt="Car"
-                  className="w-[400px] h-[300px] object-cover"
+                  className="w-[500px] h-[400px] object-cover"
                   />
                 </div>
               </CarouselItem>
             </CarouselContent>
-            <CarouselPrevious
-              className="absolute left-4 md:left-6 lg:left-10 top-1/2 -translate-y-1/2 z-10">
-              <ChevronLeftIcon className="w-6 h-6" />
-            </CarouselPrevious>
-            <CarouselNext
-              className="absolute right-4 md:right-6 lg:right-10 top-1/2 -translate-y-1/2 z-10">
-              <ChevronRightIcon className="w-6 h-6" />
-            </CarouselNext>
+            {/* Removed CarouselPrevious and CarouselNext */}
           </Carousel>
           
         </section>
@@ -285,6 +287,14 @@ const [ref4, inView4] = useInView({ threshold: 0.3,triggerOnce: true });
     </div>)
   );
 }
+
+
+
+
+
+
+
+
 
 
 
