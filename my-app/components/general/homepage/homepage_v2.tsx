@@ -58,30 +58,30 @@ const [ref4, inView4] = useInView({ threshold: 0.3,triggerOnce: true });
     </section>
 
        
-        <section ref={ref2} className={`relative w-full h-screen overflow-hidden bg-muted ${ 
+        <section ref={ref2} className={`relative w-full h-screen overflow-hidden bg-gradient-to-b from-gray-200 to-white ${ 
           inView2 ? 'animate-fadeInUp' : 'opacity-0'
         }`} onMouseMove={handleMouseMove}> {/* Add mouse move event */}
-          <div className="w-full mx-auto space-y-6 pt-5 pb-5 md:space-y-8 lg:space-y-10 bg-muted">
+          <div className="w-full mx-auto space-y-6 pt-10 pb-5 md:space-y-8 lg:space-y-10 bg-muted"> 
             <div className="text-center">
               <h2 className="text-2xl md:text-3xl lg:text-4xl font-bold">Special Offers</h2>
-              <p className="text-muted-foreground text-lg md:text-xl lg:text-2xl">
+              <p className="text-gray-600 text-lg md:text-xl lg:text-2xl"> 
                 Check out our latest deals and discounts on car rentals.
               </p>
             </div>
           </div>
-          <Carousel interval={5000}> {/* Ensure Carousel accepts 'interval' prop */}
+          <Carousel interval={5000}>
             <CarouselContent>
               <CarouselItem className='h-full'>
                 <div className="flex flex-col md:flex-row items-center justify-between h-full px-4 md:px-6 lg:px-10">
                   <div className="space-y-4 md:space-y-6 lg:space-y-8">
-                    <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold">
+                    <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold"> 
                       Discover the Perfect Car for Your Next Adventure
                     </h1>
-                    <p className="text-lg md:text-xl lg:text-2xl text-muted-foreground">
+                    <p className="text-lg md:text-xl lg:text-2xl text-gray-500"> 
                       Rent the car of your dreams and explore the wilderness. 15% off for the summer season on choice* cars.
                     </p>
                     <Link href="/Promotions">
-                      <Button className="bg-customyello text-primary-foreground border-2 border-black">
+                      <Button className="bg-customyello text-primary-foreground border-2 border-black p-4 shadow-md hover:bg-orange-500 transition"> 
                         Book Now
                       </Button>
                     </Link>
@@ -91,8 +91,7 @@ const [ref4, inView4] = useInView({ threshold: 0.3,triggerOnce: true });
                     width="400"
                     height="300"
                     alt="Car"
-                    className="w-[600px] h-[500px] object-cover"
-                  />
+                    className="w-[600px] h-[500px] object-cover shadow-lg" /> 
                 </div>
               </CarouselItem>
               <CarouselItem>
@@ -104,7 +103,7 @@ const [ref4, inView4] = useInView({ threshold: 0.3,triggerOnce: true });
                       Rent the car of your dreams and experience the bustling nightlife. 10% off on sports cars for a week.
                     </p>
                     <Link href="/Promotions">
-                    <Button className="bg-customyello text-primary-foreground border-2 border-black" >
+                    <Button className="bg-customyello text-primary-foreground border-2 border-black p-4 shadow-md hover:bg-orange-500 transition" >
                       Book Now
                     </Button></Link>
                   </div>
@@ -124,7 +123,7 @@ const [ref4, inView4] = useInView({ threshold: 0.3,triggerOnce: true });
                       Hop in with some friends for the long haul. 20% on travel vans when renting up to a month.
                     </p>
                     <Link href="/Promotions">
-                    <Button className="bg-customyello text-primary-foreground border-2 border-black" >
+                    <Button className="bg-customyello text-primary-foreground border-2 border-black p-4 shadow-md hover:bg-orange-500 transition" >
                       Book Now
                     </Button></Link>
                   </div>
@@ -287,6 +286,7 @@ const [ref4, inView4] = useInView({ threshold: 0.3,triggerOnce: true });
     </div>)
   );
 }
+
 
 
 
