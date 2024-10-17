@@ -166,15 +166,15 @@ function PaymentForm({ agreedToTerms, setAgreedToTerms, total }: { agreedToTerms
                 <CardContent className="space-y-2">
                   <div className="flex justify-between">
                     <span>Base Price:</span>
-                    <span>${total ? (total).toFixed(2) : '0.00'}</span>
+                    <span>${total ? (total-total*0.2).toFixed(2) : '0.00'}</span>
                   </div>
                   <div className="flex justify-between">
                     <span>Taxes & Fees:</span>
-                    <span>${total ? (total * 0.2).toFixed(2) : '0.00'}</span>
+                    <span>${total ? ((total-total*0.2)*0.2).toFixed(2) : '0.00'}</span>
                   </div>
                   <div className="flex justify-between">
                     <span>Total Price:</span>
-                    <span className="font-bold">${total ? (total * 0.2 + total).toFixed(2) : '0.00'}</span>
+                    <span className="font-bold">${total ? (total).toFixed(2) : '0.00'}</span>
                   </div>
                 </CardContent>
               </Card>

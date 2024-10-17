@@ -70,7 +70,7 @@ export function NewBooking3() {
     const total = calculateTotal(); // Calculate total here
     router.push({
       pathname: '/Newbooking/payment',
-      query: { total: sentprice }, // Use total directly
+      query: { total: sentprice+=sentprice*0.2 }, // Use total directly
     });
   };
 
@@ -253,9 +253,11 @@ export function NewBooking3() {
                     <Separator />
                     <div className="flex items-center justify-between">
                       <p className="text-lg font-semibold">Total</p>
-                      <p className="text-lg font-semibold">
-                        ${total}
-                      </p>
+                      {paymentMethod && (
+                        <p className="text-lg font-semibold">
+                          ${total}
+                        </p>
+                      )}
                     </div>
                     {paymentMethod && (
                       <div className="flex items-center justify-between">

@@ -4,34 +4,54 @@ import { Button } from "@/components/ui/button";
 import { Navi } from "@/components/general/head/navi";
 import { Footer } from "@/components/general/head/footer";
 import { CheckCircleIcon } from "@heroicons/react/outline"; // You can also use your own SVG icon
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import axios from "axios";
 import { useRouter } from "next/router";
+import { getLatestPayment } from "@/convex/payment";
 const API_BASE_URL = 'https://third-elk-244.convex.cloud/api';
 
 export default function PaymentSuccess() {
-const router=useRouter()
+  const router = useRouter();
 
+  // Function to generate receipt number
+  const generateReceiptNumber = async (sequentialNumber: number) => {
+    const latestPayment = await getLatestPayment();
+    
+    const today = new Date();
+    const day = String(today.getDate()).padStart(2, '0');
+    const month = String(today.getMonth() + 1).padStart(2, '0'); // Months are zero-based
+    const year = String(today.getFullYear()).slice(-2); // Get last two digits of the year
+    return `${day}${month}${year}-${sequentialNumber}`;
+  };
 
-  useEffect(()=>{
+  useEffect(() => {
+    const addPayment = async () => {
+      const bookingId = "your_booking_id"; // Fetch this from the previous page or context
+      const amount = 0; // Get this from Stripe
+      const paymentDate = new Date().toISOString(); // Use current date in ISO format
+      const paymentType = "your_payment_type"; // Get this from Stripe
 
-    const addPayment=async ()=>{
+      // Assuming you have a way to track the sequential number, e.g., from a state or context
+      const sequentialNumber = 1; // Replace with actual logic to get the next sequential number
+
+      const receiptNumber = generateReceiptNumber(sequentialNumber);
+
       await axios.post(`${API_BASE_URL}/mutation`, {
-      path: "payment:createPayment",
-      args: {
-        receiptNumber:"",// make it includetodays date in ddmmyy format aswell as numbers starting from 1
-      bookingId:"",// make it fetch the booking id from the previous page
-      amount:0,// make it get it from stripe
-      paymentDate:"",// date created from convex will suffice
-      paymentType:"",// make it get it from stripe if it is paypal or card payment
-      }
-    });
-  void router.push('/bookings/currentbooking')
-  
-  
-  }
+        path: "payment:createPayment",
+        args: {
+          receiptNumber,
+          bookingId,
+          amount,
+          paymentDate,
+          paymentType,
+        }
+      });
+
+      void router.push('/bookings/currentbooking');
+    };
+
     void addPayment();
-  },[])
+  }, []);
 
   return (
     <>
