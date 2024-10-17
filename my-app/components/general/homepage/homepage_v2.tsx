@@ -91,19 +91,19 @@ const [ref4, inView4] = useInView({ threshold: 0.3,triggerOnce: true });
                     width="400"
                     height="300"
                     alt="Car"
-                    className="w-[600px] h-[500px] object-cover shadow-lg" /> 
+                    className="w-[600px] h-[500px] object-cover" /> 
                 </div>
               </CarouselItem>
               <CarouselItem>
                 <div
                   className="flex flex-col md:flex-row items-center justify-between h-full px-4 md:px-6 lg:px-10">
                   <div className="space-y-4 md:space-y-6 lg:space-y-8">
-                    <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold">Experience the Thrill of Driving</h1>
+                    <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold">Experience the Thrill of Driving</h1>
                     <p className="text-lg md:text-xl lg:text-2xl text-muted-foreground">
                       Rent the car of your dreams and experience the bustling nightlife. 10% off on sports cars for a week.
                     </p>
                     <Link href="/Promotions">
-                    <Button className="bg-customyello text-primary-foreground border-2 border-black p-4 shadow-md hover:bg-orange-500 transition" >
+                    <Button className="bg-customyello text-primary-foreground border-2 border-black" >
                       Book Now
                     </Button></Link>
                   </div>
@@ -118,12 +118,12 @@ const [ref4, inView4] = useInView({ threshold: 0.3,triggerOnce: true });
                 <div
                   className="flex flex-col md:flex-row items-center justify-between h-full px-4 md:px-6 lg:px-10">
                   <div className="space-y-4 md:space-y-6 lg:space-y-8">
-                    <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold">Elevate Your Travel Experience</h1>
+                    <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold">Elevate Your Travel Experience</h1>
                     <p className="text-lg md:text-xl lg:text-2xl text-muted-foreground">
                       Hop in with some friends for the long haul. 20% on travel vans when renting up to a month.
                     </p>
                     <Link href="/Promotions">
-                    <Button className="bg-customyello text-primary-foreground border-2 border-black p-4 shadow-md hover:bg-orange-500 transition" >
+                    <Button className="bg-customyello text-primary-foreground border-2 border-black" >
                       Book Now
                     </Button></Link>
                   </div>
