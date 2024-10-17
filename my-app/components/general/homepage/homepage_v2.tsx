@@ -40,24 +40,26 @@ const [ref4, inView4] = useInView({ threshold: 0.3,triggerOnce: true });
        style={{ backgroundImage: `url(https://res.cloudinary.com/dbsxjsktb/image/upload/v1729108115/benjamin-child-7Cdw956mZ4w-unsplash_ted8ag.jpg)`, 
                 backgroundColor: 'rgba(0, 0, 0, 0.5)' }} // Added dark overlay
     >
-      <div className="absolute inset-0 flex items-center justify-center">
-        <div className="text-center"> {/* Center text within the div */}
-          <h1 className="text-5xl font-bold tracking-tight text-white drop-shadow-lg">Find your perfect ride</h1> 
-          
-          <form className="flex gap-4 justify-center">
+    <div className="absolute inset-0 flex items-center justify-center">
+      <div className="text-center w-full max-w-[800px]"> {/* Increased width */}
+        <h1 className="text-7xl font-bold tracking-tight text-white drop-shadow-lg font-poppins">Find your perfect ride</h1> 
+
+        <form className="flex gap-4 justify-center mt-4"> {/* Added margin-top for spacing */}
+          <div className="relative w-full max-w-[600px]"> {/* Wrapper with relative positioning */}
             <input
               type="text"
               placeholder="Search by location or vehicle"
-              className="flex-1 p-2 border border-gray-300 rounded-lg w-full max-w-[600px] text-gray-800 " /> {/* Increased width */}
-            <Button type="submit" className="whitespace-nowrap p-4 text-lg">  
-              Search
-            </Button>
-          </form>
-        </div>
+              className="p-2 border-2 border-gray-800 rounded-lg w-full text-gray-800 placeholder:text-gray-400 shadow-md" /> 
+              <button type="submit" className="absolute inset-y-0 right-3 flex items-center pointer-events-auto"> 
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" className="w-5 h-5 text-gray-800"> 
+                <path d="M416 208c0 45.9-14.9 88.3-40 122.7L502.6 457.4c12.5 12.5 12.5 32.8 0 45.3s-32.8 12.5-45.3 0L330.7 376c-34.4 25.2-76.8 40-122.7 40C93.1 416 0 322.9 0 208S93.1 0 208 0S416 93.1 416 208zM208 352a144 144 0 1 0 0-288 144 144 0 1 0 0 288z"/>
+              </svg>
+            </button>
+          </div>
+        </form>
       </div>
+    </div>
     </section>
-
-       
         <section ref={ref2} className={`relative w-full h-screen overflow-hidden bg-gradient-to-b from-gray-200 to-white ${ 
           inView2 ? 'animate-fadeInUp' : 'opacity-0'
         }`} onMouseMove={handleMouseMove}> {/* Add mouse move event */}
@@ -143,15 +145,15 @@ const [ref4, inView4] = useInView({ threshold: 0.3,triggerOnce: true });
         </section>
         <section ref={ref3 }className={`relative py-12 md:py-16 lg:py-20 px-4 md:px-6 lg:px-10 bg-primary ${ 
           inView3 ? 'animate-fadeInUp' : "opacity-0"}`}>
-          <div className="max-w-3xl mx-auto space-y-6 md:space-y-8 lg:space-y-10">
-            <div className="space-y-6 md:space-y-8">
+          <div className="max-w-full mx-auto space-y-6 md:space-y-8 lg:space-y-10">
+            <div className="space-y-6 md:space-y-8 w-full">
               <div className="text-center">
                 <h2 className="text-3xl font-bold tracking-tight sm:text-4xl md:text-5xl text-background">Explore our fleet</h2>
                 <p className="text-background md:text-lg">
                   Choose from a wide range of vehicles to fit your needs.
                 </p>
               </div>
-              <div className="grid gap-6 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 ">
+              <div className="grid gap-20 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 ">
                 <Card className="rounded-xl  border-foreground hover:border-background transition-colors" >
                   <CardContent className=" rounded-xl bg-customgrey flex flex-col items-center justify-center gap-4 p-6  ">
                   <CarIcon className="w-[200px] h-[150px] rounded-lg  py-3"/>
@@ -286,6 +288,10 @@ const [ref4, inView4] = useInView({ threshold: 0.3,triggerOnce: true });
     </div>)
   );
 }
+
+
+
+
 
 
 
