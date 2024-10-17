@@ -6,6 +6,7 @@ import { ArrowLeft, ArrowRight } from "lucide-react"
 
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
+import useInterval from "@/lib/useInterval"
 
 type CarouselApi = UseEmblaCarouselType[1]
 type UseCarouselParameters = Parameters<typeof useEmblaCarousel>
@@ -60,6 +61,7 @@ const Carousel = React.forwardRef<
       {
         ...opts,
         axis: orientation === "horizontal" ? "x" : "y",
+        loop: true, // Enable looping
       },
       plugins
     )
@@ -117,6 +119,13 @@ const Carousel = React.forwardRef<
         api?.off("select", onSelect)
       }
     }, [api, onSelect])
+
+    // Add this useInterval hook to automatically scroll every 10 seconds
+    useInterval(() => {
+      if (api) {
+        api.scrollNext()
+      }
+    }, 5000);
 
     return (
       <CarouselContext.Provider
