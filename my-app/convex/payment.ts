@@ -1,39 +1,48 @@
 import { v } from 'convex/values';
 import { mutation, query } from './_generated/server';
+import { Id } from './_generated/dataModel';
 
 export const createPayment = mutation({
 	args: {
-		bookingId: v.string(),
+		bookingId: v.id('bookings'),
 		amount: v.number(),
 		paymentDate: v.string(),
 		paymentType: v.string(),
+		paymentIntentId: v.string(),
 	},
 	handler: async (ctx, args) => {
-		// Generate a unique receipt number
+		const existingPayment = await ctx.db
+			.query('payments')
+			.withIndex('by_paymentIntentId', (q) => q.eq('paymentIntentId', args.paymentIntentId))
+			.first();
+
+		if (existingPayment) {
+			return { paymentId: existingPayment._id, receiptNumber: existingPayment.receiptNumber };
+		}
+
 		const timestamp = Date.now();
 		const randomPart = Math.floor(Math.random() * 10000).toString().padStart(4, '0');
 		let receiptNumber = `REC-${timestamp}-${randomPart}`;
 
-		// Check if the receipt number already exists
-		let existingPayment;
+		let existingReceiptPayment;
 		do {
-			existingPayment = await ctx.db
+			existingReceiptPayment = await ctx.db
 				.query('payments')
-				.withIndex('by_recieptNumber', (q) => q.eq('recieptNumber', receiptNumber))
+				.withIndex('by_receiptNumber', (q) => q.eq('receiptNumber', receiptNumber))
 				.first();
 
-			if (existingPayment) {
-				// If it exists, generate a new one
+			if (existingReceiptPayment) {
 				receiptNumber = `REC-${Date.now()}-${Math.floor(Math.random() * 10000).toString().padStart(4, '0')}`;
 			}
-		} while (existingPayment);
+		} while (existingReceiptPayment);
 
 		const paymentId = await ctx.db.insert('payments', {
-			recieptNumber: receiptNumber,
+			receiptNumber: receiptNumber,
 			bookingId: args.bookingId,
 			amount: args.amount,
 			paymentDate: args.paymentDate,
 			paymentType: args.paymentType,
+			paymentIntentId: args.paymentIntentId,
 		});
 
 		return { paymentId, receiptNumber };
@@ -47,8 +56,8 @@ export const RefundPayment = mutation({
 	handler: async (ctx, args) => {
 		const existingPayment = await ctx.db
 			.query('payments')
-			.withIndex('by_recieptNumber', (q) =>
-				q.eq('recieptNumber', args.receiptNumber)
+			.withIndex('by_receiptNumber', (q) =>
+				q.eq('receiptNumber', args.receiptNumber)
 			)
 			.first();
 
@@ -69,8 +78,8 @@ export const getPayment = query({
 	handler: async (ctx, args) => {
 		const payment = await ctx.db
 			.query('payments')
-			.withIndex('by_recieptNumber', (q) =>
-				q.eq('recieptNumber', args.receiptNumber)
+			.withIndex('by_receiptNumber', (q) =>
+				q.eq('receiptNumber', args.receiptNumber)
 			)
 			.first();
 
@@ -92,12 +101,12 @@ export const getAllPayments = query({
 export const getAllPaymentsByBookingId = query({
 	args: { bookingId: v.id('bookings') },
 	handler: async (ctx, args) => {
-	  return await ctx.db
-		.query('payments')
-		.withIndex('by_bookingId', (q) => q.eq('bookingId', args.bookingId))
-		.collect();
+		return await ctx.db
+			.query('payments')
+			.withIndex('by_bookingId', (q) => q.eq('bookingId', args.bookingId))
+			.collect();
 	},
-  });
+});
 
 export const getLatestPayment = query({
 	handler: async (ctx) => {

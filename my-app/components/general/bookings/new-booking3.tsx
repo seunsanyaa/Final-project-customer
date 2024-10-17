@@ -14,6 +14,7 @@ import { useRouter } from 'next/router';
 import CheckoutButton from "../payment/payment_button";
 import { useMutation } from 'convex/react';
 import { api } from '../../../convex/_generated/api';
+import { Id } from '../../../convex/_generated/dataModel';
 
 export function NewBooking3() {
   const bookingSummaryRef = useRef<HTMLDivElement>(null);
@@ -47,6 +48,7 @@ export function NewBooking3() {
     setExtras(prev => ({ ...prev, [extra]: !prev[extra] }));
   };
   let totalcalc="";
+  let totalprice=0;
   const calculateTotal = () => {
     const basePrice = Number(pricePerDay); // Convert to number
     const insurancePrice = extras.insurance ? 10 : 0;
@@ -55,8 +57,8 @@ export function NewBooking3() {
     let totalstring="";
     let totalsum = basePrice + insurancePrice + gpsPrice + childSeatPrice;
     let total=totalsum;
-    total *= totalDays; // Multiply by total days for full payment
-    totalcalc=`${total} One time payment`;
+    totalprice =total* totalDays; // Multiply by total days for full payment
+    totalcalc=`${totalprice} One time payment`;
       if(paymentMethod==="full")
       {sentprice=total;
       return totalcalc;}
@@ -75,11 +77,11 @@ export function NewBooking3() {
     const total = calculateTotal();
     
     const booking = {
-      customerId: 'user123', // Replace with actual user ID
-      carId: registrationNumber as string,
+      customerId: 'user123' as Id<"customers">, // Cast to Id<"customers">
+      carId: registrationNumber as Id<"cars">, // Cast to Id<"cars">
       startDate: pickupDateTime,
       endDate: dropoffDateTime,
-      totalCost: sentprice + sentprice * 0.2,
+      totalCost: totalprice,
       paidAmount: 0,
       status: 'pending',
       pickupLocation,
@@ -95,7 +97,7 @@ export function NewBooking3() {
       router.push({
         pathname: '/Newbooking/payment',
         query: { 
-          total: booking.totalCost,
+          total: total,
           bookingId: bookingId
         },
       });

@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Navi } from "@/components/general/head/navi";
 import { Footer } from "@/components/general/head/footer";
 import { CheckCircleIcon } from "@heroicons/react/outline"; // You can also use your own SVG icon
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useMutation } from 'convex/react';
 import { api } from '../../../../convex/_generated/api';
 import { useRouter } from "next/router";
@@ -14,10 +14,11 @@ export default function PaymentSuccess() {
   const router = useRouter();
   const createPayment = useMutation(api.payment.createPayment);
   const updateBookingWithTotalPaid = useMutation(api.bookings.updateBookingWithTotalPaid);
+  const [paymentProcessed, setPaymentProcessed] = useState(false);
 
   useEffect(() => {
     const addPayment = async () => {
-      if (!router.isReady) return;
+      if (!router.isReady || paymentProcessed) return;
 
       const { bookingId, amount, paymentDate, paymentType, paymentIntentId } = router.query;
 
@@ -29,10 +30,11 @@ export default function PaymentSuccess() {
       try {
         // Create payment (receipt number will be generated server-side)
         const { paymentId, receiptNumber } = await createPayment({
-          bookingId: bookingId as string,
+          bookingId: bookingId as Id<"bookings">,
           amount: parseFloat(amount as string),
           paymentDate: paymentDate as string,
           paymentType: paymentType as string,
+          paymentIntentId: paymentIntentId as string,
         });
 
         // Update booking with total paid amount
@@ -41,13 +43,14 @@ export default function PaymentSuccess() {
         });
 
         console.log(`Payment added with ID ${paymentId} and receipt number ${receiptNumber}`);
+        setPaymentProcessed(true);
       } catch (error) {
         console.error("Error adding payment or updating booking:", error);
       }
     };
 
     void addPayment();
-  }, [router.isReady, router.query, createPayment, updateBookingWithTotalPaid]);
+  }, [router.isReady, router.query, createPayment, updateBookingWithTotalPaid, paymentProcessed]);
 
   return (
     <>

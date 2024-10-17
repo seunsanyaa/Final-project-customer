@@ -48,8 +48,8 @@ export default defineSchema({
 	// .index('by_fleetId', ['fleetId']), // Index for querying by fleetId
 
 	bookings: defineTable({
-		customerId: v.string(),
-		carId: v.string(),
+		customerId: v.id('customers'),
+		carId: v.id('cars'),
 		startDate: v.string(),
 		endDate: v.string(),
 		totalCost: v.number(),
@@ -64,14 +64,16 @@ export default defineSchema({
 		.index('by_carId', ['carId']),
 
 	payments: defineTable({
-		recieptNumber: v.string(),
-		bookingId: v.string(),
+		receiptNumber: v.string(),
+		bookingId: v.id('bookings'),
 		amount: v.number(),
 		paymentDate: v.string(),
 		paymentType: v.string(),
+		paymentIntentId: v.string(),
 	})
-		.index('by_recieptNumber', ['recieptNumber'])
-		.index('by_bookingId', ['bookingId']),
+		.index('by_receiptNumber', ['receiptNumber'])
+		.index('by_bookingId', ['bookingId'])
+		.index('by_paymentIntentId', ['paymentIntentId']),
 
 	fleets: defineTable({
 		model: v.string(),

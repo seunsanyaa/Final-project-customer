@@ -1,11 +1,13 @@
 import { v } from 'convex/values';
 import { mutation, query } from './_generated/server';
+import { api } from './_generated/api';
+import { Id } from './_generated/dataModel';
 
 // Create a new booking
 export const createBooking = mutation({
 	args: {
-		customerId: v.string(),
-		carId: v.string( ),
+		customerId: v.id('customers'),
+		carId: v.id('cars'),
 		startDate: v.string(),
 		endDate: v.string(),
 		totalCost: v.number(),
@@ -41,8 +43,8 @@ export const getAllBookings = query({
 export const updateBooking = mutation({
 	args: {
 		id: v.id('bookings'),
-		customerId: v.optional(v.string()),
-		carId: v.optional(v.string()),
+		customerId: v.optional(v.id('customers')),
+		carId: v.optional(v.id('cars')),
 		startDate: v.optional(v.string()),
 		endDate: v.optional(v.string()),
 		totalCost: v.optional(v.number()),
@@ -71,7 +73,7 @@ export const deleteBooking = mutation({
 
 // Get bookings by customer ID
 export const getBookingsByCustomer = query({
-	args: { customerId: v.string() },
+	args: { customerId: v.id('customers') },
 	handler: async (ctx, args) => {
 		return await ctx.db
 			.query('bookings')
@@ -82,7 +84,7 @@ export const getBookingsByCustomer = query({
 
 // Get bookings by car ID
 export const getBookingsByCar = query({
-	args: { carId: v.string() },
+	args: { carId: v.id('cars') },
 	handler: async (ctx, args) => {
 		return await ctx.db
 			.query('bookings')
@@ -91,33 +93,61 @@ export const getBookingsByCar = query({
 	},
 });
 
+// Add this new query
+export const getBookingDetails = query({
+	args: { bookingId: v.id('bookings') },
+	handler: async (ctx, args) => {
+		const booking = await ctx.db.get(args.bookingId);
+		if (!booking) {
+			throw new Error(`Booking with ID ${args.bookingId} not found.`);
+		}
 
-  
+		const car = await ctx.db.get(booking.carId as Id<'cars'>);
+		const customer = await ctx.db.get(booking.customerId as Id<'customers'>);
+
+		const payments = await ctx.db
+			.query('payments')
+			.withIndex('by_bookingId', (q) => q.eq('bookingId', args.bookingId))
+			.collect();
+
+		const totalPaid = payments.reduce((sum, payment) => sum + payment.amount, 0);
+
+		return {
+			...booking,
+			carDetails: car ? `${car.maker} ${car.model} (${car.year})` : 'Not available',
+			customerName: customer ? `${customer.userId}` : 'Not available',
+			totalPaid,
+			rewardsPointsEarned: Math.floor(booking.totalCost * 0.1), // Example: 10% of total cost
+			rewardsPointsUsed: 0, // This information is not available in the current schema
+			rewardsPointsCredited: 'Not available', // This information is not available in the current schema
+			cancellationPolicy: 'Standard 24-hour cancellation policy applies', // Example policy
+		};
+	},
+});
+
 // Update booking with total paid amount
 export const updateBookingWithTotalPaid = mutation({
 	args: {
-	  id: v.id('bookings'), // Booking ID
+		id: v.id('bookings'), // Booking ID
 	},
 	handler: async (ctx, args) => {
-	  // Manually call the query to fetch payments by booking ID
-	  const payments = await ctx.db
-		.query('payments')
-		.withIndex('by_bookingId', (q) => q.eq('bookingId', args.id))
-		.collect();
+		// Manually call the query to fetch payments by booking ID
+		const payments = await ctx.db
+			.query('payments')
+			.withIndex('by_bookingId', (q) => q.eq('bookingId', args.id))
+			.collect();
   
-	  // Handle case where no payments exist
-	  if (!payments || payments.length === 0) {
-		return `No payments found for booking ID ${args.id}.`;
-	  }
+		// Handle case where no payments exist
+		if (!payments || payments.length === 0) {
+			return `No payments found for booking ID ${args.id}.`;
+		}
   
-	  // Sum the paid amounts
-	  const totalPaidAmount = payments.reduce((sum, payment) => sum + payment.amount, 0);
+		// Sum the paid amounts
+		const totalPaidAmount = payments.reduce((sum, payment) => sum + payment.amount, 0);
   
-	  // Update the booking with the new total paid amount
-	  await ctx.db.patch(args.id, { paidAmount: totalPaidAmount });
+		// Update the booking with the new total paid amount
+		await ctx.db.patch(args.id, { paidAmount: totalPaidAmount });
   
-	  return `Booking with ID ${args.id} has been updated with total paid amount: ${totalPaidAmount}.`;
+		return `Booking with ID ${args.id} has been updated with total paid amount: ${totalPaidAmount}.`;
 	},
-  });
-  
-  
+});
