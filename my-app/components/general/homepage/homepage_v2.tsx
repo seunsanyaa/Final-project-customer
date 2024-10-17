@@ -69,7 +69,7 @@ const [ref4, inView4] = useInView({ threshold: 0.3,triggerOnce: true });
               </p>
             </div>
           </div>
-          <Carousel interval={5000}>
+          <Carousel> {/* Ensure Carousel accepts 'interval' prop */}
             <CarouselContent>
               <CarouselItem className='h-full'>
                 <div className="flex flex-col md:flex-row items-center justify-between h-full px-4 md:px-6 lg:px-10">

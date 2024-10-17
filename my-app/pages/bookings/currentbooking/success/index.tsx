@@ -26,13 +26,9 @@ export default function PaymentSuccess() {
         return;
       }
 
-      // Generate receipt number (you might want to implement a more robust method)
-      const receiptNumber = `REC-${Date.now()}-${Math.floor(Math.random() * 1000)}`;
-
       try {
-        // Create payment
-        await createPayment({
-          receiptNumber,
+        // Create payment (receipt number will be generated server-side)
+        const { paymentId, receiptNumber } = await createPayment({
           bookingId: bookingId as string,
           amount: parseFloat(amount as string),
           paymentDate: paymentDate as string,
@@ -44,7 +40,7 @@ export default function PaymentSuccess() {
           id: bookingId as Id<"bookings">,
         });
 
-        console.log("Payment added and booking updated successfully");
+        console.log(`Payment added with ID ${paymentId} and receipt number ${receiptNumber}`);
       } catch (error) {
         console.error("Error adding payment or updating booking:", error);
       }

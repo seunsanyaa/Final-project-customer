@@ -3,22 +3,40 @@ import { mutation, query } from './_generated/server';
 
 export const createPayment = mutation({
 	args: {
-		receiptNumber: v.string(),
 		bookingId: v.string(),
 		amount: v.number(),
 		paymentDate: v.string(),
 		paymentType: v.string(),
 	},
 	handler: async (ctx, args) => {
-		
+		// Generate a unique receipt number
+		const timestamp = Date.now();
+		const randomPart = Math.floor(Math.random() * 10000).toString().padStart(4, '0');
+		let receiptNumber = `REC-${timestamp}-${randomPart}`;
+
+		// Check if the receipt number already exists
+		let existingPayment;
+		do {
+			existingPayment = await ctx.db
+				.query('payments')
+				.withIndex('by_recieptNumber', (q) => q.eq('recieptNumber', receiptNumber))
+				.first();
+
+			if (existingPayment) {
+				// If it exists, generate a new one
+				receiptNumber = `REC-${Date.now()}-${Math.floor(Math.random() * 10000).toString().padStart(4, '0')}`;
+			}
+		} while (existingPayment);
+
 		const paymentId = await ctx.db.insert('payments', {
-			recieptNumber: args.receiptNumber,
-            bookingId:args.bookingId, 
-            amount:args.amount,
-            paymentDate:args.paymentDate,
-			paymentType: args.paymentType,    
+			recieptNumber: receiptNumber,
+			bookingId: args.bookingId,
+			amount: args.amount,
+			paymentDate: args.paymentDate,
+			paymentType: args.paymentType,
 		});
-		return `Payment with ID ${paymentId} has been created.`;
+
+		return { paymentId, receiptNumber };
 	},
 });
 
