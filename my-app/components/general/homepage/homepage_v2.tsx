@@ -149,53 +149,53 @@ const [ref4, inView4] = useInView({ threshold: 0.3,triggerOnce: true });
           </Carousel>
           
         </section>
-        <section ref={ref3 }className={`relative py-12 md:py-16 lg:py-20 px-4 md:px-6 lg:px-10 bg-primary ${ 
+        <section ref={ref3 }className={`relative py-12 md:py-16 lg:py-20 px-4 md:px-6 lg:px-10 ${ 
           inView3 ? 'animate-fadeInUp' : "opacity-0"}`}>
           <div className="max-w-full mx-auto space-y-6 md:space-y-8 lg:space-y-10">
-            <div className="space-y-6 md:space-y-8 w-full">
+            <div className="space-y-6 md:space-y-8">
               <div className="text-center">
-                <h2 className="text-3xl font-bold tracking-tight sm:text-4xl md:text-5xl text-background">Explore our fleet</h2>
-                <p className="text-background md:text-lg">
+                <h2 className="text-3xl font-bold tracking-tight sm:text-4xl md:text-5xl text-black">Explore our fleet</h2>
+                <p className="text-black md:text-lg">
                   Choose from a wide range of vehicles to fit your needs.
                 </p>
               </div>
-              <div className="grid gap-20 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 ">
-                <Card className="rounded-xl  border-foreground hover:border-background transition-colors" >
-                  <CardContent className=" rounded-xl bg-customgrey flex flex-col items-center justify-center gap-4 p-6  ">
-                  <CarIcon className="w-[200px] h-[150px] rounded-lg  py-3"/>
+              <div className="grid gap-6 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 ">
+                <Card className="rounded-xl  border-foreground hover:border-customgrey transition-colors" >
+                  <CardContent className=" rounded-xl bg-white flex flex-col items-center justify-center gap-4 p-6  ">
+                  <img src="https://res.cloudinary.com/dihvudxbt/image/upload/v1729197036/FORD_FUSION_2020_iv8enk.avif" alt="Sedan" className="w-[200px] h-[150px] rounded-lg py-3" />
                     <div className="text-center">
-                      <h3 className="text-4xl font-bold text-background ">Sedans</h3>
-                      <p className="text-background">Comfortable <br/>and efficient.</p>
+                      <h3 className="text-4xl font-bold text-black ">Sedans</h3>
+                      <p className="text-black">Comfortable <br/>and efficient.</p>
                     </div>
                     <Link href="/Search"><Button variant="outline">Rent Now</Button></Link>
                   </CardContent>
                 </Card>
-                <Card className="rounded-xl border-foreground hover:border-background transition-colors " >
-                  <CardContent className=" rounded-xl flex flex-col items-center justify-center gap-4 p-6 bg-customgrey ">
-                  <SUVIcon className="w-[150px] h-[150px] rounded-lg  py-3"/>
+                <Card className="rounded-xl border-foreground hover:border-customgrey transition-colors " >
+                  <CardContent className=" rounded-xl flex flex-col items-center justify-center gap-4 p-6 bg-white ">
+                  <img src="https://res.cloudinary.com/dihvudxbt/image/upload/v1729197172/CHEVROLET_TAHOE_2016_fet4lb.avif" alt="SUV" className="w-[200px] h-[150px] rounded-lg py-3" />
                     <div className="text-center">
-                      <h3 className="text-4xl font-semibold text-background">SUVs</h3>
-                      <p className="text-background">Spacious <br/>and versatile.</p>
+                      <h3 className="text-4xl font-semibold text-black">SUVs</h3>
+                      <p className="text-black">Spacious <br/>and versatile.</p>
                     </div>
                     <Link href="/Search"><Button variant="outline">Rent Now</Button></Link>
                   </CardContent>
                 </Card>
-                <Card className="rounded-xl border-foreground hover:border-background transition-colors" >
-                  <CardContent className=" rounded-xl flex flex-col items-center justify-center gap-4 p-6 bg-customgrey ">
-                  <LimoIcon className="w-[150px] h-[150px]  py-3"/>
+                <Card className="rounded-xl border-foreground hover:border-customgrey transition-colors" >
+                  <CardContent className=" rounded-xl flex flex-col items-center justify-center gap-4 p-6 bg-white ">
+                  <img src="https://res.cloudinary.com/dihvudxbt/image/upload/v1729197226/1700067178662_vm7rfz.avif" alt="Luxury" className="w-[200px] h-[174px] rounded-lg py-3" />
                     <div className="text-center">
-                      <h3 className="text-4xl font-semibold text-background">Luxury </h3>
-                      <p className="text-background">Indulge in style and comfort.</p>
+                      <h3 className="text-4xl font-semibold text-black">Luxury </h3>
+                      <p className="text-black">Indulge in style and comfort.</p>
                     </div>
                     <Link href="/Search"><Button variant="outline">Rent Now</Button></Link>
                   </CardContent>
                 </Card>
-                <Card className="rounded-xl border-foreground hover:border-background transition-colors" >
-                  <CardContent className=" rounded-xl flex flex-col items-center justify-center gap-4 p-6 bg-customgrey ">
-                  <CaravanIcon className="w-[200px] h-[150px] rounded-lg text- py-3"/>
+                <Card className="rounded-xl border-foreground hover:border-customgrey transition-colors" >
+                  <CardContent className=" rounded-xl flex flex-col items-center justify-center gap-4 p-6 bg-white ">
+                  <img src="https://res.cloudinary.com/dihvudxbt/image/upload/v1729200173/JKAR_22_Compact_Cargo_Van_AngularFront_US_ENG_280x210_wsqbrx.avif" alt="Van" className="w-[200px] h-[174px] rounded-lg py-3" />
                     <div className="text-center">
-                      <h3 className="text-4xl font-semibold text-background">Vans</h3>
-                      <p className=" text-background">Spacious and practical.</p>
+                      <h3 className="text-4xl font-semibold text-black">Vans</h3>
+                      <p className=" text-black">Spacious and practical.</p>
                     </div>
                     <Link href="/Search"><Button variant="outline">Rent Now</Button></Link>
                   </CardContent>
