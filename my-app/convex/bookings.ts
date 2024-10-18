@@ -6,8 +6,8 @@ import { Id } from './_generated/dataModel';
 // Create a new booking
 export const createBooking = mutation({
 	args: {
-		customerId: v.id('customers'),
-		carId: v.id('cars'),
+		customerId: v.string(),
+		carId: v.string(),
 		startDate: v.string(),
 		endDate: v.string(),
 		totalCost: v.number(),
@@ -102,8 +102,10 @@ export const getBookingDetails = query({
 			throw new Error(`Booking with ID ${args.bookingId} not found.`);
 		}
 
-		const car = await ctx.db.get(booking.carId as Id<'cars'>);
-		const customer = await ctx.db.get(booking.customerId as Id<'customers'>);
+		const car = await ctx.db
+			.query('cars')
+			.withIndex('by_registrationNumber', (q) => q.eq('registrationNumber', booking.carId))
+			.first();
 
 		const payments = await ctx.db
 			.query('payments')
@@ -115,12 +117,12 @@ export const getBookingDetails = query({
 		return {
 			...booking,
 			carDetails: car ? `${car.maker} ${car.model} (${car.year})` : 'Not available',
-			customerName: customer ? `${customer.userId}` : 'Not available',
+			customerName: 'Not available',
 			totalPaid,
-			rewardsPointsEarned: Math.floor(booking.totalCost * 0.1), // Example: 10% of total cost
-			rewardsPointsUsed: 0, // This information is not available in the current schema
-			rewardsPointsCredited: 'Not available', // This information is not available in the current schema
-			cancellationPolicy: 'Standard 24-hour cancellation policy applies', // Example policy
+			rewardsPointsEarned: Math.floor(booking.totalCost * 0.1),
+			rewardsPointsUsed: 0,
+			rewardsPointsCredited: 'Not available',
+			cancellationPolicy: 'Standard 24-hour cancellation policy applies',
 		};
 	},
 });

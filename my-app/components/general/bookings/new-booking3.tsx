@@ -77,8 +77,8 @@ export function NewBooking3() {
     const total = calculateTotal();
     
     const booking = {
-      customerId: 'user123' as Id<"customers">, // Cast to Id<"customers">
-      carId: registrationNumber as Id<"cars">, // Cast to Id<"cars">
+      customerId: 'user123' as string, // Cast to Id<"customers">
+      carId: registrationNumber as string, // Cast to Id<"cars">
       startDate: pickupDateTime,
       endDate: dropoffDateTime,
       totalCost: totalprice,

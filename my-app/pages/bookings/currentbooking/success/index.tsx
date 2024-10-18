@@ -15,6 +15,7 @@ export default function PaymentSuccess() {
   const createPayment = useMutation(api.payment.createPayment);
   const updateBookingWithTotalPaid = useMutation(api.bookings.updateBookingWithTotalPaid);
   const [paymentProcessed, setPaymentProcessed] = useState(false);
+  const [countdown, setCountdown] = useState(10);
 
   useEffect(() => {
     const addPayment = async () => {
@@ -52,6 +53,26 @@ export default function PaymentSuccess() {
     void addPayment();
   }, [router.isReady, router.query, createPayment, updateBookingWithTotalPaid, paymentProcessed]);
 
+  useEffect(() => {
+    const { bookingId } = router.query;
+    const timer = setInterval(() => {
+      setCountdown((prevCountdown) => prevCountdown - 1);
+    }, 1000);
+
+    const redirectTimer = setTimeout(() => {
+      if (bookingId) {
+        router.push(`/bookings/currentbooking?bookingId=${bookingId}`);
+      } else {
+        router.push('/bookings/currentbooking');
+      }
+    }, 10000);
+
+    return () => {
+      clearInterval(timer);
+      clearTimeout(redirectTimer);
+    };
+  }, [router]);
+
   return (
     <>
       <Navi />
@@ -60,6 +81,9 @@ export default function PaymentSuccess() {
         <h1 className="text-3xl font-bold mt-6">Payment Successful!</h1>
         <p className="text-lg text-muted-foreground mt-4">
           Thank you for your payment. Your booking has been confirmed.
+        </p>
+        <p className="text-md mt-4">
+          Redirecting to booking details in {countdown} seconds...
         </p>
         <div className="mt-8">
           <Link href="/bookings/currentbooking">

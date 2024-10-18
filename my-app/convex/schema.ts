@@ -48,8 +48,8 @@ export default defineSchema({
 	// .index('by_fleetId', ['fleetId']), // Index for querying by fleetId
 
 	bookings: defineTable({
-		customerId: v.id('customers'),
-		carId: v.id('cars'),
+		customerId: v.string(),
+		carId: v.string(),
 		startDate: v.string(),
 		endDate: v.string(),
 		totalCost: v.number(),

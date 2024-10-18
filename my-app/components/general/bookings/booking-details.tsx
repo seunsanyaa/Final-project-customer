@@ -1,3 +1,4 @@
+'use client'
 import { useRouter } from 'next/router';
 import { useEffect, useState } from 'react';
 import { Button } from "@/components/ui/button";
@@ -5,41 +6,26 @@ import { Separator } from "@/components/ui/separator";
 import { Input } from "@/components/ui/input";
 import { Navi } from '../head/navi';
 import { Footer } from '../head/footer';
+import { useQuery } from 'convex/react';
+import { api } from '../../../convex/_generated/api';
+import { Id } from '../../../convex/_generated/dataModel';
+
 export default function BookingDetails() {
   const router = useRouter();
-  const [bookingDetails, setBookingDetails] = useState({
-    bookingId: '',
-    rentalDates: '',
-    originalCost: 0,
-    rewardsDiscount: 0,
-    finalPrice: 0,
-    rewardsPointsEarned: 0,
-    carDetails: '',
-    pickupLocation: '',
-    rewardsPointsUsed: 0,
-    rewardsPointsCredited: '',
-    bookingStatus: '',
-    cancellationPolicy: ''
-  });
+  const { bookingId } = router.query;
 
-  useEffect(() => {
-    if (router.isReady) {
-      setBookingDetails({
-        bookingId: router.query.bookingId as string,
-        rentalDates: router.query.rentalDates as string,
-        originalCost: Number(router.query.originalCost),
-        rewardsDiscount: Number(router.query.rewardsDiscount),
-        finalPrice: Number(router.query.finalPrice),
-        rewardsPointsEarned: Number(router.query.rewardsPointsEarned),
-        carDetails: router.query.carDetails as string,
-        pickupLocation: router.query.pickupLocation as string,
-        rewardsPointsUsed: Number(router.query.rewardsPointsUsed),
-        rewardsPointsCredited: router.query.rewardsPointsCredited as string,
-        bookingStatus: router.query.bookingStatus as string,
-        cancellationPolicy: router.query.cancellationPolicy as string
-      });
-    }
-  }, [router.isReady, router.query]);
+  const bookingDetails = useQuery(
+    api.bookings.getBookingDetails,
+    typeof bookingId === 'string'? { bookingId: bookingId as Id<"bookings"> }: "skip"
+  );
+
+  if (!bookingId || typeof bookingId !== 'string') {
+    return <div>Invalid booking ID</div>;
+  }
+
+  if (!bookingDetails) {
+    return <div>Loading...</div>;
+  }
 
   return (
     <div>
@@ -62,14 +48,14 @@ export default function BookingDetails() {
                   <div className="text-sm font-medium text-muted-foreground">
                     Booking ID
                   </div>
-                  <div className="text-base font-semibold">{bookingDetails.bookingId}</div>
+                  <div className="text-base font-semibold">{bookingDetails._id}</div>
                 </div>
                 <div>
                   <div className="text-sm font-medium text-muted-foreground">
                     Rental Dates
                   </div>
                   <div className="text-base font-semibold">
-                    {bookingDetails.rentalDates}
+                    {bookingDetails.startDate} - {bookingDetails.endDate}
                   </div>
                 </div>
               </div>
@@ -78,23 +64,23 @@ export default function BookingDetails() {
                   <div className="text-sm font-medium text-muted-foreground">
                     Original Booking Cost
                   </div>
-                  <div className="text-base font-semibold">${bookingDetails.originalCost}.00</div>
+                  <div className="text-base font-semibold">${bookingDetails.totalCost}.00</div>
                 </div>
                 <div>
                   <div className="text-sm font-medium text-muted-foreground">
-                    Rewards Discount
+                    Paid Amount
                   </div>
                   <div className="text-base font-semibold text-green-500">
-                    -${bookingDetails.rewardsDiscount}.00
+                    ${bookingDetails.paidAmount}
                   </div>
                 </div>
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <div className="text-sm font-medium text-muted-foreground">
-                    Final Price
+                    Remaining Cost
                   </div>
-                  <div className="text-base font-semibold">${bookingDetails.finalPrice}.00</div>
+                  <div className="text-base font-semibold">${bookingDetails.totalCost - bookingDetails.paidAmount}</div>
                 </div>
                 <div>
                   <div className="text-sm font-medium text-muted-foreground">
@@ -114,7 +100,7 @@ export default function BookingDetails() {
                   <div className="text-sm font-medium text-muted-foreground">
                     Pickup & Dropoff Location
                   </div>
-                  <div className="text-base font-semibold">{bookingDetails.pickupLocation}</div>
+                  <div className="text-base font-semibold">{bookingDetails.pickupLocation} - {bookingDetails.dropoffLocation}</div>
                 </div>
               </div>
               <Separator />
@@ -137,7 +123,7 @@ export default function BookingDetails() {
                   <div className="text-sm font-medium text-muted-foreground">
                     Booking Status
                   </div>
-                  <div className="text-base font-semibold text-yellow-500">{bookingDetails.bookingStatus}</div>
+                  <div className="text-base font-semibold text-yellow-500">{bookingDetails.status}</div>
                 </div>
                 <div>
                   <div className="text-sm font-medium text-muted-foreground">
