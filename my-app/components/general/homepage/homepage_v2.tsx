@@ -192,7 +192,7 @@ const [ref4, inView4] = useInView({ threshold: 0.3,triggerOnce: true });
                 </Card>
                 <Card className="rounded-xl border-foreground hover:border-customgrey transition-colors" >
                   <CardContent className=" rounded-xl flex flex-col items-center justify-center gap-4 p-6 bg-white ">
-                  <img src="https://res.cloudinary.com/dihvudxbt/image/upload/v1729200173/JKAR_22_Compact_Cargo_Van_AngularFront_US_ENG_280x210_wsqbrx.avif" alt="Van" className="w-[200px] h-[174px] rounded-lg py-3" />
+                  <img src="https://res.cloudinary.com/dihvudxbt/image/upload/v1729200173/JKAR_22_Compact_Cargo_Van_AngularFront_US_ENG_280x210_wsqbrx.avif" alt="Van" className="w-[200px] h-[160px] rounded-lg py-3" />
                     <div className="text-center">
                       <h3 className="text-4xl font-semibold text-black">Vans</h3>
                       <p className=" text-black">Spacious and practical.</p>

@@ -14,7 +14,7 @@ export function Navi() {
     
     <>
 <header
-        className="flex items-center justify-between h-16 px-4 md:px-6  bg-primary text-primary-foreground py-6 md:py-12">
+        className="flex items-center justify-between h-5 px-4 md:px-6  bg-primary text-primary-foreground py-6 md:py-12">
         <nav className=" md:flex gap-4 sm:gap-6">
           <Link href="/" className="flex items-center gap-2 flex-col md:flex-row" >
             <CarIcon className="w-6 h-6 " />

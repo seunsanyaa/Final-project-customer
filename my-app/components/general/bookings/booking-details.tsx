@@ -6,9 +6,10 @@ import { Separator } from "@/components/ui/separator";
 import { Input } from "@/components/ui/input";
 import { Navi } from '../head/navi';
 import { Footer } from '../head/footer';
-import { useQuery } from 'convex/react';
+import { useQuery, useMutation } from 'convex/react';
 import { api } from '../../../convex/_generated/api';
 import { Id } from '../../../convex/_generated/dataModel';
+import { Dialog, DialogContent, DialogFooter } from "@/components/ui/dialog";
 
 export default function BookingDetails() {
   const router = useRouter();
@@ -27,6 +28,46 @@ export default function BookingDetails() {
     return <div>Loading...</div>;
   }
 
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [pickupDate, setPickupDate] = useState('');
+  const [dropoffDate, setDropoffDate] = useState('');
+  const [pickupLocation, setPickupLocation] = useState('');
+  const [dropoffLocation, setDropoffLocation] = useState('');
+  const [bookingDetailsState, setBookingDetailsState] = useState<{
+    pickupLocation: string;
+    dropoffLocation: string;
+    startDate: string;
+    endDate: string;
+  } | null>(null); // Update the type to allow null or the object structure
+
+  const updateBooking = useMutation(api.bookings.updateBooking);
+
+  const handleModifyClick = () => {
+    setIsModalOpen(true);
+  };
+
+  const handleConfirm = async () => {
+    // Call the updateBooking mutation with the new values
+    await updateBooking({
+      id: bookingDetails._id, // Use the booking ID
+      pickupLocation,
+      dropoffLocation,
+      startDate: pickupDate, // Assuming pickupDate is the new start date
+      endDate: dropoffDate, // Assuming dropoffDate is the new end date
+    });
+
+    // Update the booking details state with the new values
+    setBookingDetailsState((prevDetails) => ({
+      ...(prevDetails || {}), // Ensure prevDetails is an object
+      pickupLocation,
+      dropoffLocation,
+      startDate: pickupDate,
+      endDate: dropoffDate,
+    }));
+
+    setIsModalOpen(false); // Close modal after confirmation
+  };
+
   return (
     <div>
       <Navi/>
@@ -37,7 +78,7 @@ export default function BookingDetails() {
             <div className="px-6 py-5 bg-muted">
               <div className="flex items-center justify-between">
                 <h1 className="text-2xl font-semibold">Booking Details</h1>
-                <Button variant="outline" size="sm" className='hover:bg-muted'>
+                <Button variant="outline" size="sm" className='hover:bg-muted' onClick={handleModifyClick}>
                   Modify Booking
                 </Button>
               </div>
@@ -157,6 +198,43 @@ export default function BookingDetails() {
       </div>
       <Separator />
       <Footer/>
+      {/* Dialog for modifying booking */}
+      <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
+        <DialogContent className="sm:max-w-[425px]" style={{ opacity: 1, backgroundColor: '#ffffff', zIndex: 50 }}>
+          <div className="flex flex-col gap-6">
+            <div>
+              <label>Pickup Date:</label>
+              <Input type="date" value={pickupDate} onChange={(e) => setPickupDate(e.target.value)} />
+            </div>
+            <div>
+              <label>Dropoff Date:</label>
+              <Input type="date" value={dropoffDate} onChange={(e) => setDropoffDate(e.target.value)} />
+            </div>
+            <div>
+              <label>Pickup Location:</label>
+              <Input type="text" value={pickupLocation} onChange={(e) => setPickupLocation(e.target.value)} />
+            </div>
+            <div>
+              <label>Dropoff Location:</label>
+              <Input type="text" value={dropoffLocation} onChange={(e) => setDropoffLocation(e.target.value)} />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={handleConfirm}>Confirm</Button>
+            <Button variant="outline" onClick={() => setIsModalOpen(false)}>Cancel</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+      {/* Display updated booking details */}
+      {bookingDetailsState && (
+        <div>
+          <h2>Updated Booking Details</h2>
+          <p>Pickup Location: {bookingDetailsState.pickupLocation}</p>
+          <p>Dropoff Location: {bookingDetailsState.dropoffLocation}</p>
+          <p>Start Date: {bookingDetailsState.startDate}</p>
+          <p>End Date: {bookingDetailsState.endDate}</p>
+        </div>
+      )}
     </div>
   );
 }
