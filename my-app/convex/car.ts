@@ -1,5 +1,6 @@
 import { v } from 'convex/values';
-import { mutation, query } from './_generated/server';
+import { mutation, query, action } from './_generated/server';
+import { api } from './_generated/api';
 
 export const createCar = mutation({
 	args: {
@@ -135,5 +136,60 @@ export const getAllAvailableCarsGrouped = query({
 			const [maker, model] = key.split(':');
 			return { maker, model, cars };
 		});
+	},
+});
+
+export const getCarSpecifications = action({
+	args: {
+		maker: v.string(),
+		model: v.string(),
+		year: v.string(),
+	},
+	handler: async (ctx, args) => {
+		const { maker, model, year } = args;
+
+		// Log the extracted values
+		console.log('Input values:', { maker, model, year });
+
+		const response = await fetch(
+			`https://www.carqueryapi.com/api/0.3/?callback=?&cmd=getTrims&make=${encodeURIComponent(
+				maker
+			)}&model=${encodeURIComponent(model)}&year=${encodeURIComponent(year)}`
+		);
+
+		const text = await response.text();
+
+		// The API returns JSONP, so we need to extract the JSON
+		const json = JSON.parse(text.replace(/^\s*\w+\s*\(|\)\s*$/g, ""));
+
+		if (!json.Trims || json.Trims.length === 0) {
+			throw new Error("No specifications found for the given car.");
+		}
+
+		// Pick the first trim
+		const trim = json.Trims[0];
+
+		// Extract necessary specifications
+		const specifications: {
+			engineType: string;
+			engineCylinders: string;
+			engineHorsepower: string;
+			fuelType: string;
+			transmission: string;
+			drive: string;
+			seats: string;
+		} = {
+			engineType: trim.model_engine_type || "N/A",
+			engineCylinders: trim.model_engine_cyl || "N/A",
+			engineHorsepower: trim.model_engine_power_ps
+				? `${trim.model_engine_power_ps} PS`
+					: "N/A",
+			fuelType: trim.model_engine_fuel || "N/A",
+			transmission: trim.model_transmission_type || "N/A",
+			drive: trim.model_drive || "N/A",
+			seats: trim.model_seats || "N/A",
+		};
+
+		return specifications;
 	},
 });
