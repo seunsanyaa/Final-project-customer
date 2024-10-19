@@ -7,12 +7,13 @@ export const createCar = mutation({
 		model: v.string(),
 		color: v.string(),
 		maker: v.string(),
+		trim: v.string(),
 		lastMaintenanceDate: v.string(),
 		available: v.boolean(),
 		year: v.number(),
 		registrationNumber: v.string(),
 		pictures: v.array(v.string()),
-		pricePerDay: v.number(), 
+		pricePerDay: v.number(),
 	},
 	handler: async (ctx, args) => {
 		const existingCar = await ctx.db
@@ -61,6 +62,7 @@ export const updateCar = mutation({
 		model: v.optional(v.string()),
 		color: v.optional(v.string()),
 		maker: v.optional(v.string()),
+		trim: v.optional(v.string()),
 		lastMaintenanceDate: v.optional(v.string()),
 		available: v.optional(v.boolean()),
 		year: v.optional(v.number()),
@@ -143,51 +145,45 @@ export const getCarSpecifications = action({
 	args: {
 		maker: v.string(),
 		model: v.string(),
-		year: v.string(),
+		year: v.number(),
+		trim: v.string(),
 	},
 	handler: async (ctx, args) => {
-		const { maker, model, year } = args;
+		const { maker, model, year, trim } = args;
 
-		// Log the extracted values
-		console.log('Input values:', { maker, model, year });
+		console.log('Input values:', { maker, model, year, trim });
 
-		const response = await fetch(
-			`https://www.carqueryapi.com/api/0.3/?callback=?&cmd=getTrims&make=${encodeURIComponent(
-				maker
-			)}&model=${encodeURIComponent(model)}&year=${encodeURIComponent(year)}`
-		);
+		const apiUrl = `https://www.carqueryapi.com/api/0.3/?callback=?&cmd=getTrims&make=${encodeURIComponent(
+			maker
+		)}&model=${encodeURIComponent(model)}&year=${encodeURIComponent(year.toString())}&trim=${encodeURIComponent(trim)}`;
 
+		const response = await fetch(apiUrl);
 		const text = await response.text();
 
-		// The API returns JSONP, so we need to extract the JSON
-		const json = JSON.parse(text.replace(/^\s*\w+\s*\(|\)\s*$/g, ""));
-
-		if (!json.Trims || json.Trims.length === 0) {
-			throw new Error("No specifications found for the given car.");
+		// Extract JSON from JSONP response
+		const jsonMatch = text.match(/\{.+\}/);
+		if (!jsonMatch) {
+			throw new Error('Invalid API response');
 		}
 
-		// Pick the first trim
-		const trim = json.Trims[0];
+		const json = JSON.parse(jsonMatch[0]);
 
-		// Extract necessary specifications
-		const specifications: {
-			engineType: string;
-			engineCylinders: string;
-			engineHorsepower: string;
-			fuelType: string;
-			transmission: string;
-			drive: string;
-			seats: string;
-		} = {
-			engineType: trim.model_engine_type || "N/A",
-			engineCylinders: trim.model_engine_cyl || "N/A",
-			engineHorsepower: trim.model_engine_power_ps
-				? `${trim.model_engine_power_ps} PS`
+		if (!json.Trims || json.Trims.length === 0) {
+			throw new Error('No specifications found for the given car details');
+		}
+
+		const carData = json.Trims[0];
+
+		const specifications = {
+			engineType: carData.model_engine_type || "N/A",
+			engineCylinders: carData.model_engine_cyl || "N/A",
+			engineHorsepower: carData.model_engine_power_ps
+				? `${carData.model_engine_power_ps} PS`
 					: "N/A",
-			fuelType: trim.model_engine_fuel || "N/A",
-			transmission: trim.model_transmission_type || "N/A",
-			drive: trim.model_drive || "N/A",
-			seats: trim.model_seats || "N/A",
+			fuelType: carData.model_engine_fuel || "N/A",
+			transmission: carData.model_transmission_type || "N/A",
+			drive: carData.model_drive || "N/A",
+			seats: carData.model_seats || "N/A",
 		};
 
 		return specifications;
