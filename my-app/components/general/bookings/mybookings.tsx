@@ -20,6 +20,10 @@ interface Booking {
   startDate: string;
   endDate: string;
   totalCost: number;
+  licensePlate: string;
+  pickupLocation: string;
+  returnLocation: string;
+  cardId: string; // Add cardId property to the Booking interface
 }
 
 const API_BASE_URL = 'https://third-elk-244.convex.cloud/api';
@@ -33,62 +37,58 @@ export function Mybookings() {
   const [filterModel, setFilterModel] = useState("")
   const [filterColor, setFilterColor] = useState("")
   const [selectedBooking, setSelectedBooking] = useState<Booking | null>(null)
-  const [customerId, setCustomerId] = useState<string | null>(null); // Initialize customerId state
+  const [customerId, setCustomerId] = useState<string | null>(null)
   const [loading, setLoading] = useState(false); // Add loading state if needed
   const [error, setError] = useState(null); // Add error state
+  const [carDetails, setCarDetails] = useState<any | null>(null); // Add state for car details
 
   useEffect(() => {
-    const fetchCustomerId = async () => {
-        const response = await axios.post(`${API_BASE_URL}/query`, {
-            path: "customers:getCustomerByUserId", // Create this query to fetch customer ID
-            args: { userId: 'user123' } // Replace with the actual userId
-        });
-        if (response.data && response.data.value) {
-            setCustomerId(response.data.value._id); // Set the valid customer ID
-        } else {
-            console.error('Customer not found');
-            setError('Customer not found.'); // Handle error
-        }
-    };
-    fetchCustomerId();
+    // Remove the fetchCustomerId function and directly set the customerId
+    setCustomerId('user123'); // Set the hardcoded customer ID directly
+    console.log('Using hardcoded Customer ID: user123'); // Log the hardcoded customer ID
   }, []); // Fetch customer ID on component mount
 
+
+  
+  // Fetch bookings when customerId is available
   useEffect(() => {
     if (customerId) {
-        const fetchBookings = async () => {
-            setLoading(true);
-            setError(null);
-            try {
-                const response = await axios.post(`${API_BASE_URL}/query`, {
-                    path: "bookings:getBookingsByCustomer",
-                    args: { customerId } // Use the valid customerId
-                });
-                
-                console.log('API Response:', response.data); // Log the entire response data
-                console.log('Fetching bookings for customerId:', customerId); // Log the customerId
-
-                // Check if the response has the expected structure
-                if (response.data && Array.isArray(response.data.value)) {
-                    if (response.data.value.length > 0) {
-                        setBookings(response.data.value); // Set fetched bookings to state
-                    } else {
-                        console.error('No bookings found in response');
-                        setError('No bookings found.'); // Set error message if no bookings
-                    }
-                } else {
-                    console.error('Unexpected response structure:', response.data);
-                    setError('Unexpected response structure.'); // Handle unexpected response
-                }
-            } catch (err) {
-                console.error('Error fetching bookings:', err);
-                setError('Failed to fetch bookings. Please try again.'); // Set error message
-            } finally {
-                setLoading(false);
+      const fetchBookings = async () => {
+        setLoading(true);
+        setError(null);
+        try {
+          const response = await axios.post(`${API_BASE_URL}/query`, {
+            path: "bookings:getBookingsByCustomer",
+            args: { customerId }  // Use the valid customerId
+          });
+  
+          console.log('API Response:', response.data);  // Log the entire response data
+          console.log('Fetching bookings for customerId:', customerId);  // Log the customerId
+  
+          // Check if the response has the expected structure
+          if (response.data && Array.isArray(response.data.value)) {
+            if (response.data.value.length > 0) {
+              setBookings(response.data.value);  // Set fetched bookings to state
+              console.log('Bookings State:', bookings); // Log bookings state
+            } else {
+              console.error('No bookings found in response');
+              setError('No bookings found.');  // Set error message if no bookings
             }
-        };
-        fetchBookings();
+          } else {
+            console.error('Unexpected response structure:', response.data);
+            setError('Unexpected response structure.');  // Handle unexpected response
+          }
+        } catch (err) {
+          console.error('Error fetching bookings:', err);
+          setError('Failed to fetch bookings. Please try again.');  // Set error message
+        } finally {
+          setLoading(false);
+        }
+      };
+      fetchBookings();
     }
-  }, [customerId]); // Fetch bookings when customerId is available
+  }, [customerId]);  // Fetch bookings when customerId is available
+  
 
   useEffect(() => {
     setFilteredBookings(bookings || []); // Ensure filteredBookings is always an array
@@ -118,8 +118,29 @@ export function Mybookings() {
   }
 
   // Determine the most recent booking
-  const currentBooking = bookings && bookings.find(booking => new Date(booking.startDate) >= new Date()); // Find current booking
+  const currentBooking = bookings && bookings[0]; // Fetch any booking
   const pastBookings = bookings && bookings.filter(booking => new Date(booking.startDate) < new Date()); // Filter past bookings
+
+  // Fetch car details when currentBooking changes
+  useEffect(() => {
+    const fetchCarDetails = async () => {
+      if (currentBooking && currentBooking.cardId) { // Ensure cardId is present
+        try {
+          console.log('Fetching car details for carId:', currentBooking.cardId); // Log the carId
+          const response = await axios.post(`${API_BASE_URL}/query`, {
+            path: "bookings:getCarByCarId",  // Updated to use the correct query
+            args: { carId: currentBooking.cardId } // Use currentBooking.cardId instead of hardcoded ID
+          });
+          setCarDetails(response.data); // Store the fetched car details in state
+        } catch (error) {
+          console.error('Error fetching car details:', error);
+        }
+      } else {
+        console.error('Current booking or cardId is missing:', currentBooking); // Log if currentBooking or cardId is missing
+      }
+    };
+    fetchCarDetails();
+  }, [currentBooking]); // Fetch car details when currentBooking changes
 
   return (
     <>
@@ -148,19 +169,19 @@ export function Mybookings() {
             <div className="grid sm:grid-cols-2 gap-4">
               <div>
                 <h3 className="text-lg font-semibold">Car Model</h3>
-                <p>Toyota Camry</p>
+                <p>{carDetails ? carDetails.model : 'N/A'}</p>  {/* Update to show car model */}
               </div>
               <div>
                 <h3 className="text-lg font-semibold">License Plate</h3>
-                <p>ABC 123</p>
+                <p>{currentBooking ? currentBooking.licensePlate : 'N/A'}</p>  {/* Assuming licensePlate is part of Booking */}
               </div>
               <div>
                 <h3 className="text-lg font-semibold">Pickup Location</h3>
-                <p>123 Main St, Anytown USA</p>
+                <p>{currentBooking ? currentBooking.pickupLocation : 'N/A'}</p>  {/* Assuming pickupLocation is part of Booking */}
               </div>
               <div>
                 <h3 className="text-lg font-semibold">Return Location</h3>
-                <p>123 Main St, Anytown USA</p>
+                <p>{currentBooking ? currentBooking.returnLocation : 'N/A'}</p>  {/* Assuming returnLocation is part of Booking */}
               </div>
             </div>
           </div>
