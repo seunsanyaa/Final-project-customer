@@ -82,9 +82,28 @@ export const updateCustomer = mutation({
 		return `Customer with ID ${args.userId} has been updated.`;
 	},
 });
+
 export const getAllCustomers = query({
 	handler: async (ctx) => {
 		const custs = await ctx.db.query('customers').collect();
 		return custs;
+	},
+});
+
+export const getCustomerByUserId = query({
+	args: {
+		userId: v.string(),
+	},
+	handler: async (ctx, args) => {
+		const customer = await ctx.db
+			.query('customers')
+			.withIndex('by_userId', (q) => q.eq('userId', args.userId))
+			.first();
+
+		if (!customer) {
+			return null; // Return null if no customer is found
+		}
+
+		return customer; // Return the found customer
 	},
 });

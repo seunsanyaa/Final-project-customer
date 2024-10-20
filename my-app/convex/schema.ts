@@ -34,6 +34,7 @@ export default defineSchema({
 		model: v.string(),
 		color: v.string(),
 		maker: v.string(),
+		trim: v.string(),
 		lastMaintenanceDate: v.string(),
 		available: v.boolean(),
 		year: v.number(),

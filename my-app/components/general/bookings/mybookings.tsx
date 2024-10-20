@@ -1,80 +1,94 @@
+
+
 "use client"
 import Link from "next/link"
-
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { Button } from "@/components/ui/button"
 import { Card, CardHeader, CardContent, CardFooter } from "@/components/ui/card"
 import { Dialog, DialogContent, DialogFooter } from "@/components/ui/dialog";
 import { Separator } from "@/components/ui/separator"
 import { Navi } from '../head/navi';
 import { Footer } from '../head/footer';
+import { api } from "@/convex/_generated/api";
+import { useQuery } from "convex/react"; // Add this import
+import axios from 'axios';
 
 // Define the Booking interface
 interface Booking {
-  id: number;
+  _id: string; // Change id to _id to match Convex's ID format
   make: string;
   model: string;
   color: string;
   startDate: string;
   endDate: string;
   totalCost: number;
+  licensePlate: string;
+  pickupLocation: string;
+  dropoffLocation: string;
+  carId: string; // Change cardId to carId to match your schema
 }
 
+const API_BASE_URL = 'https://third-elk-244.convex.cloud/api';
+
 export function Mybookings() {
-  const [bookings, setBookings] = useState([
-    {
-      id: 1,
-      make: "Toyota",
-      model: "Camry",
-      color: "Silver",
-      startDate: "2023-06-01",
-      endDate: "2023-06-05",
-      totalCost: 250.0,
-    },
-    {
-      id: 2,
-      make: "Honda",
-      model: "Civic",
-      color: "Blue",
-      startDate: "2023-05-15",
-      endDate: "2023-05-20",
-      totalCost: 180.0,
-    },
-    {
-      id: 3,
-      make: "Ford",
-      model: "Mustang",
-      color: "Red",
-      startDate: "2023-07-01",
-      endDate: "2023-07-07",
-      totalCost: 300.0,
-    },
-    {
-      id: 4,
-      make: "Nissan",
-      model: "Altima",
-      color: "White",
-      startDate: "2023-04-20",
-      endDate: "2023-04-25",
-      totalCost: 220.0,
-    },
-    {
-      id: 5,
-      make: "Toyota",
-      model: "RAV4",
-      color: "Gray",
-      startDate: "2023-08-10",
-      endDate: "2023-08-15",
-      totalCost: 275.0,
-    },
-  ])
-  const [filteredBookings, setFilteredBookings] = useState(bookings)
+  const [bookings, setBookings] = useState<Booking[]>([]);
+  const [filteredBookings, setFilteredBookings] = useState<Booking[]>([]);
   const [filterStartDate, setFilterStartDate] = useState<string | null>(null)
-  const [filterEndDate, setFilterEndDate] = useState<string | null>(null)  // Ensure filterEndDate can be string or null
+  const [filterEndDate, setFilterEndDate] = useState<string | null>(null)
   const [filterMake, setFilterMake] = useState("")
   const [filterModel, setFilterModel] = useState("")
   const [filterColor, setFilterColor] = useState("")
   const [selectedBooking, setSelectedBooking] = useState<Booking | null>(null)
+  const [customerId, setCustomerId] = useState<string | null>(null)
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null); // Change to string | null
+
+  useEffect(() => {
+    setCustomerId('user123');
+    console.log('Using hardcoded Customer ID: user123');
+  }, []);
+
+  useEffect(() => {
+    if (customerId) {
+      const fetchBookings = async () => {
+        setLoading(true);
+        setError(null);
+        try {
+          const response = await axios.post(`${API_BASE_URL}/query`, {
+            path: "bookings:getBookingsByCustomer",
+            args: { customerId }
+          });
+
+          console.log('API Response:', response.data);
+          console.log('Fetching bookings for customerId:', customerId);
+
+          if (response.data && Array.isArray(response.data.value)) {
+            if (response.data.value.length > 0) {
+              setBookings(response.data.value);
+              console.log('Bookings State:', response.data.value);
+            } else {
+              console.error('No bookings found in response');
+              setError('No bookings found.');
+            }
+          } else {
+            console.error('Unexpected response structure:', response.data);
+            setError('Unexpected response structure.');
+          }
+        } catch (err) {
+          console.error('Error fetching bookings:', err);
+          setError('Failed to fetch bookings. Please try again.');
+        } finally {
+          setLoading(false);
+        }
+      };
+      fetchBookings();
+    }
+  }, [customerId]);
+
+  useEffect(() => {
+    setFilteredBookings(bookings);
+  }, [bookings]);
+
   const handleFilterChange = () => {
     let filtered = bookings
     if (filterStartDate) {
@@ -94,9 +108,21 @@ export function Mybookings() {
     }
     setFilteredBookings(filtered)
   }
-  const handleViewDetails = (booking: any) => {
+
+  const handleViewDetails = (booking: Booking) => {
     setSelectedBooking(booking)
   }
+
+  const currentBooking = bookings[0];
+  const pastBookings = bookings.filter(booking => new Date(booking.startDate) < new Date());
+
+  // Replace the useEffect for fetching car details with this:
+  const carDetails = useQuery(api.bookings.getCarByCarId, 
+    currentBooking ? { carId: currentBooking.carId } : "skip"
+  );
+
+  // Remove the previous useEffect for fetchCarDetails
+
   return (
     <>
       <Navi />  {/* Ensure Navi is rendered correctly */}
@@ -104,14 +130,19 @@ export function Mybookings() {
       <Separator />
       <div className="max-w-6xl mx-auto px-4 py-8 sm:px-6 md:py-12">
         <h1 className="text-3xl font-bold mb-8">Your Car Bookings</h1>
-        <Link href="bookings/currentbooking" className='hover:cursor-pointer'><div className="bg-background border rounded-lg p-6 shadow-sm">
-         <div className="flex items-center justify-between">
-            <div>
+        <Link href="bookings/currentbooking" className='hover:cursor-pointer'>
+          <div className="bg-background border rounded-lg p-6 shadow-sm">
+            <div className="flex items-center justify-between">
+              <div>
                 <h2 className="text-2xl font-semibold">Current Booking</h2>
-                <p className="text-muted-foreground">Rental Dates: June 1 - June 8</p>
+                {currentBooking ? ( // Display current booking details
+                  <p className="text-muted-foreground">Rental Dates: {currentBooking.startDate} - {currentBooking.endDate}</p>
+                ) : (
+                  <p className="text-muted-foreground">No current bookings</p>
+                )}
               </div>
               <div className="text-right">
-                <h3 className="text-3xl font-bold">$450</h3>
+                <h3 className="text-3xl font-bold">${currentBooking ? currentBooking.totalCost : 0}</h3>
                 <p className="text-muted-foreground">Total Cost</p>
               </div>
             </div>
@@ -119,22 +150,24 @@ export function Mybookings() {
             <div className="grid sm:grid-cols-2 gap-4">
               <div>
                 <h3 className="text-lg font-semibold">Car Model</h3>
-                <p>Toyota Camry</p>
+                <p>{carDetails ? `${carDetails.maker} ${carDetails.model}` : 'N/A'}</p>
               </div>
               <div>
                 <h3 className="text-lg font-semibold">License Plate</h3>
-                <p>ABC 123</p>
+                <p>{carDetails ? `${carDetails.registrationNumber}` : 'N/A'}</p>  {/* Assuming licensePlate is part of Booking */}
               </div>
               <div>
                 <h3 className="text-lg font-semibold">Pickup Location</h3>
-                <p>123 Main St, Anytown USA</p>
+                <p>{currentBooking ? currentBooking.pickupLocation : 'N/A'}</p>  {/* Assuming pickupLocation is part of Booking */}
               </div>
               <div>
                 <h3 className="text-lg font-semibold">Return Location</h3>
-                <p>123 Main St, Anytown USA</p>
+                <p>{currentBooking ? currentBooking.dropoffLocation : 'N/A'}</p>  {/* Assuming returnLocation is part of Booking */}
               </div>
             </div>
-          </div></Link><Separator className="my-6" />
+          </div>
+        </Link>
+        <Separator className="my-6" />
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           <div className="bg-background rounded-lg shadow-md p-6 max-w-md">
             <h2 className="text-xl font-bold mb-4">Filter Bookings</h2>
@@ -212,7 +245,7 @@ export function Mybookings() {
           <div className="col-span-2 lg:col-span-2">
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
               {filteredBookings.map((booking) => (
-                <Card key={booking.id}>
+                <Card key={booking._id}>
                   <CardHeader>
                     <div className="flex items-center justify-between">
                       <div className="text-lg font-bold">{booking.make}</div>
@@ -290,7 +323,9 @@ export function Mybookings() {
             </DialogContent>
           </Dialog>
         )}
-        
+        {loading && <p>Loading...</p>} {/* Show loading state */}
+        {error && <p className="text-red-500">{error}</p>} {/* Show error message */}
+        {filteredBookings.length === 0 && !loading && <p>No bookings available.</p>} {/* Show message if no bookings */}
       </div>
       <Footer/>
     </>

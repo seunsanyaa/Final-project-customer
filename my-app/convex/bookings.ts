@@ -72,15 +72,20 @@ export const deleteBooking = mutation({
 });
 
 // Get bookings by customer ID
+// Get bookings by customer ID
 export const getBookingsByCustomer = query({
-	args: { customerId: v.id('customers') },
+	// Validate the customerId argument against the 'bookings' table
+	args: { customerId: v.string() },  // Use string validation for customerId
 	handler: async (ctx, args) => {
-		return await ctx.db
-			.query('bookings')
-			.withIndex('by_customerId', (q) => q.eq('customerId', args.customerId))
-			.collect();
+	  // Query the bookings table using the customerId field
+	  return await ctx.db
+		.query('bookings')
+		.withIndex('by_customerId', (q) => q.eq('customerId', args.customerId))  // Query by customerId
+		.collect();
 	},
-});
+  });
+  
+  
 
 // Get bookings by car ID
 export const getBookingsByCar = query({
@@ -92,6 +97,8 @@ export const getBookingsByCar = query({
 			.collect();
 	},
 });
+
+
 
 // Add this new query
 export const getBookingDetails = query({
@@ -151,5 +158,23 @@ export const updateBookingWithTotalPaid = mutation({
 		await ctx.db.patch(args.id, { paidAmount: totalPaidAmount });
   
 		return `Booking with ID ${args.id} has been updated with total paid amount: ${totalPaidAmount}.`;
+	},
+});
+
+// Get car by car ID
+export const getCarByCarId = query({
+	args: { carId: v.string() },
+	handler: async (ctx, args) => {
+		
+		const car = await ctx.db
+			.query('cars')
+			.withIndex('by_registrationNumber', (q) => q.eq('registrationNumber', args.carId))
+			.first();
+
+		if (!car) {
+			throw new Error(`Car with registration number ${args.carId} not found.`);
+		}
+
+		return car;
 	},
 });
