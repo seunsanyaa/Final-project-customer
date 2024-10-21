@@ -15,21 +15,22 @@ import { ConvexReactClient } from 'convex/react';
 import { ConvexProviderWithClerk } from 'convex/react-clerk';
 import { AppProps } from 'next/app';
 
+// Access the Convex URL from environment variables
+const convexUrl = process.env.NEXT_PUBLIC_CONVEX_URL;
+
 const PUBLISHABLE_KEY = process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY;
 if (!PUBLISHABLE_KEY) {
 	throw new Error('Missing Publishable Key');
 }
 
-const convex = new ConvexReactClient('https://third-elk-244.convex.cloud');
+// Initialize Convex React Client with the environment variable
+const convex = new ConvexReactClient(convexUrl!);
 
 export default function App({ Component, pageProps }: AppProps) {
 	return (
-		// clerk is authentication
-		<ClerkProvider
-			publishableKey={'pk_test_c3Ryb25nLWRhc3NpZS00Ny5jbGVyay5hY2NvdW50cy5kZXYk'}
-		>
-
-			{/* convex is Database */}
+		// Clerk is for authentication
+		<ClerkProvider publishableKey={PUBLISHABLE_KEY}>
+			{/* Convex is the Database */}
 			<ConvexProviderWithClerk client={convex} useAuth={useAuth}>
 				<main
 					className={cn(

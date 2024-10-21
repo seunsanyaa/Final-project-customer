@@ -1,5 +1,3 @@
-
-
 "use client"
 import Link from "next/link"
 import { useState, useEffect } from "react"
@@ -10,12 +8,10 @@ import { Separator } from "@/components/ui/separator"
 import { Navi } from '../head/navi';
 import { Footer } from '../head/footer';
 import { api } from "@/convex/_generated/api";
-import { useQuery } from "convex/react"; // Add this import
-import axios from 'axios';
+import { useQuery, useMutation } from "convex/react";
 
-// Define the Booking interface
 interface Booking {
-  _id: string; // Change id to _id to match Convex's ID format
+  _id: string;
   make: string;
   model: string;
   color: string;
@@ -25,13 +21,10 @@ interface Booking {
   licensePlate: string;
   pickupLocation: string;
   dropoffLocation: string;
-  carId: string; // Change cardId to carId to match your schema
+  carId: string;
 }
 
-const API_BASE_URL = 'https://third-elk-244.convex.cloud/api';
-
 export function Mybookings() {
-  const [bookings, setBookings] = useState<Booking[]>([]);
   const [filteredBookings, setFilteredBookings] = useState<Booking[]>([]);
   const [filterStartDate, setFilterStartDate] = useState<string | null>(null)
   const [filterEndDate, setFilterEndDate] = useState<string | null>(null)
@@ -39,58 +32,21 @@ export function Mybookings() {
   const [filterModel, setFilterModel] = useState("")
   const [filterColor, setFilterColor] = useState("")
   const [selectedBooking, setSelectedBooking] = useState<Booking | null>(null)
-  const [customerId, setCustomerId] = useState<string | null>(null)
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null); // Change to string | null
+
+  // Replace the customerId state with a hardcoded value or retrieve it from auth
+  const customerId = 'user123';
+
+  // Use Convex's query hook to fetch bookings
+  const bookings = useQuery(api.bookings.getBookingsByCustomer, { customerId });
 
   useEffect(() => {
-    setCustomerId('user123');
-    console.log('Using hardcoded Customer ID: user123');
-  }, []);
-
-  useEffect(() => {
-    if (customerId) {
-      const fetchBookings = async () => {
-        setLoading(true);
-        setError(null);
-        try {
-          const response = await axios.post(`${API_BASE_URL}/query`, {
-            path: "bookings:getBookingsByCustomer",
-            args: { customerId }
-          });
-
-          console.log('API Response:', response.data);
-          console.log('Fetching bookings for customerId:', customerId);
-
-          if (response.data && Array.isArray(response.data.value)) {
-            if (response.data.value.length > 0) {
-              setBookings(response.data.value);
-              console.log('Bookings State:', response.data.value);
-            } else {
-              console.error('No bookings found in response');
-              setError('No bookings found.');
-            }
-          } else {
-            console.error('Unexpected response structure:', response.data);
-            setError('Unexpected response structure.');
-          }
-        } catch (err) {
-          console.error('Error fetching bookings:', err);
-          setError('Failed to fetch bookings. Please try again.');
-        } finally {
-          setLoading(false);
-        }
-      };
-      fetchBookings();
+    if (bookings) {
+      setFilteredBookings(bookings);
     }
-  }, [customerId]);
-
-  useEffect(() => {
-    setFilteredBookings(bookings);
   }, [bookings]);
 
   const handleFilterChange = () => {
-    let filtered = bookings
+    let filtered = bookings || [];
     if (filterStartDate) {
       filtered = filtered.filter((booking) => new Date(booking.startDate) >= new Date(filterStartDate))
     }
@@ -98,13 +54,13 @@ export function Mybookings() {
       filtered = filtered.filter((booking) => new Date(booking.endDate) <= new Date(filterEndDate))
     }
     if (filterMake) {
-      filtered = filtered.filter((booking) => booking.make === filterMake)
+      filtered = filtered.filter((booking) => booking.make.toLowerCase().includes(filterMake.toLowerCase()))
     }
     if (filterModel) {
-      filtered = filtered.filter((booking) => booking.model === filterModel)
+      filtered = filtered.filter((booking) => booking.model.toLowerCase().includes(filterModel.toLowerCase()))
     }
     if (filterColor) {
-      filtered = filtered.filter((booking) => booking.color === filterColor)
+      filtered = filtered.filter((booking) => booking.color.toLowerCase().includes(filterColor.toLowerCase()))
     }
     setFilteredBookings(filtered)
   }
@@ -113,29 +69,26 @@ export function Mybookings() {
     setSelectedBooking(booking)
   }
 
-  const currentBooking = bookings[0];
-  const pastBookings = bookings.filter(booking => new Date(booking.startDate) < new Date());
+  const currentBooking = bookings?.[0];
+  const pastBookings = bookings?.filter(booking => new Date(booking.startDate) < new Date());
 
-  // Replace the useEffect for fetching car details with this:
   const carDetails = useQuery(api.bookings.getCarByCarId, 
     currentBooking ? { carId: currentBooking.carId } : "skip"
   );
 
-  // Remove the previous useEffect for fetchCarDetails
-
   return (
     <>
-      <Navi />  {/* Ensure Navi is rendered correctly */}
+      <Navi />
 
       <Separator />
       <div className="max-w-6xl mx-auto px-4 py-8 sm:px-6 md:py-12">
         <h1 className="text-3xl font-bold mb-8">Your Car Bookings</h1>
-        <Link href="bookings/currentbooking" className='hover:cursor-pointer'>
+        <Link href={`bookings/currentbooking?bookingId=${currentBooking?._id}`} className='hover:cursor-pointer'>
           <div className="bg-background border rounded-lg p-6 shadow-sm">
             <div className="flex items-center justify-between">
               <div>
                 <h2 className="text-2xl font-semibold">Current Booking</h2>
-                {currentBooking ? ( // Display current booking details
+                {currentBooking ? (
                   <p className="text-muted-foreground">Rental Dates: {currentBooking.startDate} - {currentBooking.endDate}</p>
                 ) : (
                   <p className="text-muted-foreground">No current bookings</p>
@@ -154,15 +107,15 @@ export function Mybookings() {
               </div>
               <div>
                 <h3 className="text-lg font-semibold">License Plate</h3>
-                <p>{carDetails ? `${carDetails.registrationNumber}` : 'N/A'}</p>  {/* Assuming licensePlate is part of Booking */}
+                <p>{carDetails ? `${carDetails.registrationNumber}` : 'N/A'}</p>
               </div>
               <div>
                 <h3 className="text-lg font-semibold">Pickup Location</h3>
-                <p>{currentBooking ? currentBooking.pickupLocation : 'N/A'}</p>  {/* Assuming pickupLocation is part of Booking */}
+                <p>{currentBooking ? currentBooking.pickupLocation : 'N/A'}</p>
               </div>
               <div>
                 <h3 className="text-lg font-semibold">Return Location</h3>
-                <p>{currentBooking ? currentBooking.dropoffLocation : 'N/A'}</p>  {/* Assuming returnLocation is part of Booking */}
+                <p>{currentBooking ? currentBooking.dropoffLocation : 'N/A'}</p>
               </div>
             </div>
           </div>
@@ -195,7 +148,7 @@ export function Mybookings() {
                   type="date"
                   id="end-date"
                   value={filterEndDate || ""}
-                  onChange={(e) => setFilterEndDate(e.target.value || null)}  // Ensure null is set if empty
+                  onChange={(e) => setFilterEndDate(e.target.value || null)}
                   className="mt-1 block w-full rounded-md border-input bg-background px-3 py-2 text-sm shadow-sm focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary" />
               </div>
               <div>
@@ -232,7 +185,7 @@ export function Mybookings() {
                 </label>
                 <input
                   type="text"
-                  id="Lorem ipsum"
+                  id="color"
                   value={filterColor}
                   onChange={(e) => setFilterColor(e.target.value)}
                   className="mt-1 block w-full rounded-md border-input bg-background px-3 py-2 text-sm shadow-sm focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary" />
@@ -271,7 +224,6 @@ export function Mybookings() {
                   </CardContent>
                   <CardFooter className="flex justify-end">
                     <Button 
-                  
                       onClick={() => handleViewDetails(booking)} 
                       className="border-2 bg-transparent hover:bg-muted">
                       View Details
@@ -292,7 +244,7 @@ export function Mybookings() {
                 <div className="grid grid-cols-2 gap-6">
                   <div>
                     <div className="text-sm font-medium">Make</div>
-                    <div>{selectedBooking?.make}</div>  // Use optional chaining to avoid errors
+                    <div>{selectedBooking?.make}</div>
                   </div>
                   <div>
                     <div className="text-sm font-medium">Model</div>
@@ -323,9 +275,8 @@ export function Mybookings() {
             </DialogContent>
           </Dialog>
         )}
-        {loading && <p>Loading...</p>} {/* Show loading state */}
-        {error && <p className="text-red-500">{error}</p>} {/* Show error message */}
-        {filteredBookings.length === 0 && !loading && <p>No bookings available.</p>} {/* Show message if no bookings */}
+        {!bookings && <p>Loading...</p>}
+        {bookings && bookings.length === 0 && <p>No bookings available.</p>}
       </div>
       <Footer/>
     </>
