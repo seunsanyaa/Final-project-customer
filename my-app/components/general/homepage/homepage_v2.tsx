@@ -33,7 +33,6 @@ const [ref4, inView4] = useInView({ threshold: 0.3,triggerOnce: true });
   };
 
   useEffect(() => {
-    // Load a modern sans-serif font
     const link = document.createElement('link');
     link.href = 'https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap';
     link.rel = 'stylesheet';
@@ -78,17 +77,17 @@ const [ref4, inView4] = useInView({ threshold: 0.3,triggerOnce: true });
     </section>
         <section ref={ref2} className={`relative w-full h-screen overflow-hidden bg-gradient-to-b from-gray-200 to-white ${ 
           inView2 ? 'animate-fadeInUp' : 'opacity-0'
-        }`} onMouseMove={handleMouseMove}> {/* Add mouse move event */}
-          <div className="max-w-full mx-auto h-full"> {/* Added h-full to ensure full height */}
-            <div className="w-full mx-auto pt-5 md:pt-8 lg:pt-10 bg-muted"> {/* Added bg-muted for the title section */}
-              <div className="text-center bg-muted p-4"> {/* Added bg-muted and padding for the title section */}
+        }`} onMouseMove={handleMouseMove}> 
+          <div className="max-w-full mx-auto h-full"> 
+            <div className="w-full mx-auto pt-5 md:pt-8 lg:pt-10 bg-muted"> 
+              <div className="text-center bg-muted p-4"> 
                 <h2 className="text-2xl md:text-3xl lg:text-4xl font-bold">Special Offers</h2>
                 <p className="text-gray-600 text-lg md:text-xl lg:text-2xl"> 
                   Check out our latest deals and discounts on car rentals.
                 </p>
               </div>
             </div>
-            <Carousel> {/* Ensure Carousel accepts 'interval' prop */}
+            <Carousel> 
               <CarouselContent>
                 <CarouselItem className='h-full'>
                   <div className="flex flex-col md:flex-row items-center justify-between h-full px-4 md:px-6 lg:px-10">
@@ -159,24 +158,23 @@ const [ref4, inView4] = useInView({ threshold: 0.3,triggerOnce: true });
         </section>
         
         <section ref={ref3} className={`relative w-full h-auto overflow-hidden bg-gradient-to-b from-gray-200 to-white ${ 
-          inView3 ? 'animate-fadeInUp' : "opacity-0"}`} > {/* Changed h-screen to h-auto */}
+          inView3 ? 'animate-fadeInUp' : "opacity-0"}`} > 
           <div className="max-w-full mx-auto h-full"> 
             <div className="w-full mx-auto pt-5 md:pt-8 lg:pt-10 bg-muted"> 
               <div className="text-center bg-muted p-4"> 
-                <h2 className="text-2xl md:text-3xl lg:text-4xl font-bold tracking-tight leading-tight">Explore our fleet</h2> {/* Improved spacing */}
-                <p className="text-gray-600 text-lg md:text-xl lg:text-2xl leading-relaxed"> {/* Improved line spacing */}
+                <h2 className="text-2xl md:text-3xl lg:text-4xl font-bold tracking-tight leading-tight">Explore our fleet</h2> 
+                <p className="text-gray-600 text-lg md:text-xl lg:text-2xl leading-relaxed"> 
                   Choose from a wide range of vehicles to fit your needs.
                 </p>
               </div>
             </div>
             <div className="grid gap-6 grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-3 mt-20 pl-4 pr-4 mb-20"> 
-              {/* Adjusted grid classes to ensure 3 items per row */}
               <div className="flex flex-col items-center justify-center gap-4 p-6"> 
                 <img src="https://res.cloudinary.com/dbsxjsktb/image/upload/v1729522582/2021-toyota-camry-se-sedan-white_featured_yakvxp.avif" alt="Sedan" className="w-[300px] h-[220px] rounded-lg" /> 
                 <div className="text-center">
                   <h3 className="text-4xl font-semibold text-black mt-0">Sedans</h3>
                   <p className="text-black font-semibold">Comfortable and efficient.</p> 
-                  <p className="text-black">Starting from $45/day</p> {/* Added price info */}
+                  <p className="text-black">Starting from $45/day</p> 
                 </div>
                 <Link href="/Search">
                   <Button className="hover:bg-blue-500 hover:shadow-lg transition-all duration-300 rounded-lg hover:bg-muted" variant="outline">Rent Now</Button> 
@@ -187,7 +185,7 @@ const [ref4, inView4] = useInView({ threshold: 0.3,triggerOnce: true });
                 <div className="text-center">
                   <h3 className="text-4xl font-semibold text-black">SUVs</h3>
                   <p className="text-black font-semibold">Spacious and versatile.</p> 
-                  <p className="text-black">Starting from $50/day</p> {/* Added price info */}
+                  <p className="text-black">Starting from $50/day</p> 
                 </div>
                 <Link href="/Search">
                   <Button className="hover:bg-blue-500 hover:shadow-lg transition-all duration-300 rounded-lg hover:bg-muted" variant="outline">Rent Now</Button> 
@@ -198,41 +196,40 @@ const [ref4, inView4] = useInView({ threshold: 0.3,triggerOnce: true });
                 <div className="text-center">
                   <h3 className="text-4xl font-semibold text-black mt-1">Luxury</h3>
                   <p className="text-black font-semibold">Indulge in style and comfort.</p> 
-                  <p className="text-black">Starting from $70/day</p> {/* Added price info */}
+                  <p className="text-black">Starting from $70/day</p> 
                 </div>
                 <Link href="/Search">
                   <Button className="hover:bg-blue-500 hover:shadow-lg transition-all duration-300 rounded-lg hover:bg-muted" variant="outline">Rent Now</Button> 
                 </Link>
               </div>
-              {/* Displaying three car listings */}
-              <div className="flex flex-col items-center justify-center gap-4 p-6"> {/* Increased height for better display */}
+              <div className="flex flex-col items-center justify-center gap-4 p-6"> 
                 <img src="https://res.cloudinary.com/dihvudxbt/image/upload/v1729200173/JKAR_22_Compact_Cargo_Van_AngularFront_US_ENG_280x210_wsqbrx.avif" alt="Van" className="w-[300px] h-[220px] rounded-lg" /> 
                 <div className="text-center mb-0 mt-0">
                   <h3 className="text-4xl font-semibold text-black">Vans</h3>
                   <p className="text-black font-semibold mb-0">Spacious and practical.</p> 
-                  <p className="text-black">Starting from $30/day</p> {/* Added price info */}
+                  <p className="text-black">Starting from $30/day</p> 
                 </div>
                 <Link href="/Search">
                   <Button className="hover:bg-blue-500 hover:shadow-lg  hover:bg-muted transition-all duration-300 rounded-lg mt-0" variant="outline">Rent Now</Button> 
                 </Link>
               </div>
-              <div className="flex flex-col items-center justify-center gap-4 p-6"> {/* Increased height for better display */}
+              <div className="flex flex-col items-center justify-center gap-4 p-6"> 
                 <img src="https://res.cloudinary.com/dbsxjsktb/image/upload/v1729522582/2020-ford-mustang-ecoboost-premium-convertible-white_featured_c4qsq5.avif" alt="Van" className="w-[300px] h-[220px] rounded-lg" /> 
                 <div className="text-center mb-0 mt-0">
                   <h3 className="text-4xl font-semibold text-black">Convertible</h3>
                   <p className="text-black font-semibold mb-0">Spacious and practical.</p> 
-                  <p className="text-black">Starting from $300/day</p> {/* Added price info */}
+                  <p className="text-black">Starting from $300/day</p> 
                 </div>
                 <Link href="/Search">
                   <Button className="hover:bg-blue-500 hover:shadow-lg transition-all duration-300 rounded-lg mt-0 hover:bg-muted" variant="outline">Rent Now</Button> 
                 </Link>
               </div>
-              <div className="flex flex-col items-center justify-center gap-4 p-6 "> {/* Increased height for better display */}
+              <div className="flex flex-col items-center justify-center gap-4 p-6 "> 
                 <img src="https://res.cloudinary.com/dbsxjsktb/image/upload/v1729527063/2022-ram-1500-limited-swb-crew-pick-up-silver_featured_x2xwqj.avif" alt="Van" className="w-[300px] h-[220px] rounded-lg" /> 
                 <div className="text-center mb-0 mt-0">
                   <h3 className="text-4xl font-semibold text-black">Pickup Truck</h3>
                   <p className="text-black font-semibold mb-0">Spacious and practical.</p> 
-                  <p className="text-black">Starting from $120/day</p> {/* Added price info */}
+                  <p className="text-black">Starting from $120/day</p> 
                 </div>
                 <Link href="/Search">
                   <Button className="hover:bg-blue-500 hover:shadow-lg transition-all duration-300 rounded-lg mt-0 hover:bg-muted" variant="outline">Rent Now</Button> 
@@ -241,21 +238,17 @@ const [ref4, inView4] = useInView({ threshold: 0.3,triggerOnce: true });
             </div>
           </div>
         </section>
-<<<<<<< Updated upstream
-        <section ref={ref4 } className={`relative bg-white py-12 md:py-16 lg:py-20 px-4 md:px-6 lg:px-10 h-full ${ 
-=======
 
-        <section ref={ref4 } className={`relative bg-muted py-20 md:py-16 lg:py-20 px-4 md:px-6 lg:px-10 h-full ${ 
->>>>>>> Stashed changes
+        <section ref={ref4 } className={`relative bg-white py-12 md:py-16 lg:py-20 px-4 md:px-6 lg:px-10 h-full ${ 
           inView4 ? 'animate-fadeInUp' : "opacity-0"}`}>
           <div className="max-w-10xl mx-auto space-y-6 md:space-y-8 lg:space-y-10 h-full">
             <div className="space-y-6 md:space-y-8">
-              <div className="text-center">
-                <h2 className="text-3xl font-bold tracking-tight sm:text-4xl md:text-5xl">What our customers say</h2>
-                <p className="text-muted-foreground md:text-lg">Hear from real people who have rented with us.</p>
+              <div className="text-center w-full mx-auto pt-5 md:pt-8 lg:pt-10">
+                <h2 className="text-2xl md:text-3xl lg:text-5xl font-bold tracking-tight leading-tight">What our customers say</h2>
+                <p className="text-gray-600 text-lg md:text-xl lg:text-2xl leading-relaxed">Hear from real people who have rented with us.</p>
               </div>
               <div className="grid gap-6 sm:grid-cols-2 md:grid-cols-3">
-                <Card>
+                <Card className="bg-muted">
                   <CardContent className="p-6">
                     <div className="flex items-start gap-4">
                       <Avatar className="border w-12 h-12">
@@ -279,7 +272,7 @@ const [ref4, inView4] = useInView({ threshold: 0.3,triggerOnce: true });
                     </p>
                   </CardContent>
                 </Card>
-                <Card>
+                <Card className="bg-muted">
                   <CardContent className="p-6">
                     <div className="flex items-start gap-4">
                       <Avatar className="border w-12 h-12">
@@ -303,7 +296,79 @@ const [ref4, inView4] = useInView({ threshold: 0.3,triggerOnce: true });
                     </p>
                   </CardContent>
                 </Card>
-                <Card>
+                <Card className="bg-muted">
+                  <CardContent className="p-6">
+                    <div className="flex items-start gap-4">
+                      <Avatar className="border w-12 h-12">
+                        <AvatarImage src="/placeholder-user.jpg" />
+                        <AvatarFallback>MJ</AvatarFallback>
+                      </Avatar>
+                      <div className="space-y-1">
+                        <div className="font-semibold">Michael Johnson</div>
+                        <div className="flex items-center gap-1 text-xs font-medium">
+                          <StarIcon className="w-4 h-4 fill-primary" />
+                          <StarIcon className="w-4 h-4 fill-primary" />
+                          <StarIcon className="w-4 h-4 fill-primary" />
+                          <StarIcon className="w-4 h-4 fill-primary" />
+                          <StarIcon className="w-4 h-4 fill-primary" />
+                        </div>
+                      </div>
+                    </div>
+                    <p className="mt-4 text-muted-black">
+                    &quot;The rental process was quick and easy, and the staff\n was very helpful. I would definitely
+                      recommend this company to anyone looking to rent a car.&quot;
+                    </p>
+                  </CardContent>
+                </Card>
+                <Card className="bg-muted">
+                  <CardContent className="p-6">
+                    <div className="flex items-start gap-4">
+                      <Avatar className="border w-12 h-12">
+                        <AvatarImage src="/placeholder-user.jpg" />
+                        <AvatarFallback>MJ</AvatarFallback>
+                      </Avatar>
+                      <div className="space-y-1">
+                        <div className="font-semibold">Michael Johnson</div>
+                        <div className="flex items-center gap-1 text-xs font-medium">
+                          <StarIcon className="w-4 h-4 fill-primary" />
+                          <StarIcon className="w-4 h-4 fill-primary" />
+                          <StarIcon className="w-4 h-4 fill-primary" />
+                          <StarIcon className="w-4 h-4 fill-primary" />
+                          <StarIcon className="w-4 h-4 fill-primary" />
+                        </div>
+                      </div>
+                    </div>
+                    <p className="mt-4 text-muted-black">
+                    &quot;The rental process was quick and easy, and the staff\n was very helpful. I would definitely
+                      recommend this company to anyone looking to rent a car.&quot;
+                    </p>
+                  </CardContent>
+                </Card>
+                <Card className="bg-muted">
+                  <CardContent className="p-6">
+                    <div className="flex items-start gap-4">
+                      <Avatar className="border w-12 h-12">
+                        <AvatarImage src="/placeholder-user.jpg" />
+                        <AvatarFallback>MJ</AvatarFallback>
+                      </Avatar>
+                      <div className="space-y-1">
+                        <div className="font-semibold">Michael Johnson</div>
+                        <div className="flex items-center gap-1 text-xs font-medium">
+                          <StarIcon className="w-4 h-4 fill-primary" />
+                          <StarIcon className="w-4 h-4 fill-primary" />
+                          <StarIcon className="w-4 h-4 fill-primary" />
+                          <StarIcon className="w-4 h-4 fill-primary" />
+                          <StarIcon className="w-4 h-4 fill-primary" />
+                        </div>
+                      </div>
+                    </div>
+                    <p className="mt-4 text-muted-black">
+                    &quot;The rental process was quick and easy, and the staff\n was very helpful. I would definitely
+                      recommend this company to anyone looking to rent a car.&quot;
+                    </p>
+                  </CardContent>
+                </Card>
+                <Card className="bg-muted">
                   <CardContent className="p-6">
                     <div className="flex items-start gap-4">
                       <Avatar className="border w-12 h-12">
@@ -332,7 +397,7 @@ const [ref4, inView4] = useInView({ threshold: 0.3,triggerOnce: true });
           </div>
         </section>
       </main>
-      <Footer/> {/* Updated footer color */}
+      <Footer/> 
     </div>)
   );
 }
