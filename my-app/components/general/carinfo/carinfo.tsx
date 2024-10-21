@@ -1,7 +1,6 @@
 import { useRouter } from 'next/router'; // Import useRouter to access URL parameters
 import { useQuery } from "convex/react"; // Ensure useQuery is imported
 import { api } from "@/convex/_generated/api"; // Import the API
-import Link from "next/link";
 import { Separator } from "@/components/ui/separator";
 import PlayIcon from "@/svgs/Playicon";
 import EyeIcon from "@/svgs/EyeIcon";
@@ -9,7 +8,7 @@ import VolumeIcon from "@/svgs/VolumeIcon";
 import { Navi } from "../head/navi";
 import { Footer } from '../head/footer';
 import { Car } from "@/types/car"; // Import the Car type
-import { useState } from 'react'; // Import useState for managing state
+import Specifications from './Specifications';
 
 export function Carinfo() {
   const router = useRouter();
@@ -64,30 +63,7 @@ export function Carinfo() {
               </div>
             </div>
             <div className="space-y-6">
-              <div>
-                <h2 className="text-2xl font-bold">Specifications</h2>
-                <ul className="mt-4 space-y-2 text-muted-foreground">
-                  <li>
-                    <span className="font-medium">Engine:</span> { "Lorem ipsum"}
-                  </li>
-                  <li>
-                    <span className="font-medium">Transmission:</span> {"Lorem ipsum"}
-                  </li>
-                  <li>
-                    <span className="font-medium">Horsepower:</span> { "Lorem ipsum"}
-                  </li>
-                  <li>
-                    <span className="font-medium">Torque:</span> { "Lorem ipsum"}
-                  </li>
-                  <li>
-                    <span className="font-medium">0-60 mph:</span> { "Lorem ipsum"}
-                  </li>
-                  <li>
-                    <span className="font-medium">Top Speed:</span> { "Lorem ipsum"}
-                  </li>
-                </ul>
-              </div>
-
+              <Specifications maker={car.maker} model={car.model} year={car.year} />
               <div>
                 <h2 className="text-2xl font-bold">Features</h2>
                 <ul className="mt-4 space-y-2 text-muted-foreground">

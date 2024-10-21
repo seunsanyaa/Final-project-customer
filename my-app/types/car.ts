@@ -11,3 +11,12 @@ export interface Car {
   pricePerDay: number;
 }
 
+export interface Specifications {
+  engineType: string;
+  engineCylinders: string;
+  engineHorsepower: string;
+  fuelType: string;
+  transmission: string;
+  drive: string;
+  seats: string;
+}

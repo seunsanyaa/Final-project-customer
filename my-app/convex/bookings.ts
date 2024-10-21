@@ -163,16 +163,16 @@ export const updateBookingWithTotalPaid = mutation({
 
 // Get car by car ID
 export const getCarByCarId = query({
-	args: { carId: v.id('cars') },
+	args: { carId: v.string() },
 	handler: async (ctx, args) => {
-		// Fetch the car using the carId directly
+		
 		const car = await ctx.db
 			.query('cars')
-			.withIndex('by_registrationNumber', (q) => q.eq('registrationNumber', args.carId))  // Use args.carId
+			.withIndex('by_registrationNumber', (q) => q.eq('registrationNumber', args.carId))
 			.first();
 
 		if (!car) {
-			throw new Error(`Car with registration number ${args.carId} not found.`);  // Updated error message
+			throw new Error(`Car with registration number ${args.carId} not found.`);
 		}
 
 		return car;

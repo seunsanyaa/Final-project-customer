@@ -69,144 +69,150 @@ const [ref4, inView4] = useInView({ threshold: 0.3,triggerOnce: true });
         <section ref={ref2} className={`relative w-full h-screen overflow-hidden bg-gradient-to-b from-gray-200 to-white ${ 
           inView2 ? 'animate-fadeInUp' : 'opacity-0'
         }`} onMouseMove={handleMouseMove}> {/* Add mouse move event */}
-          <div className="w-full mx-auto space-y-6 pt-10 pb-5 md:space-y-8 lg:space-y-10 bg-muted"> 
-            <div className="text-center">
-              <h2 className="text-2xl md:text-3xl lg:text-4xl font-bold">Special Offers</h2>
-              <p className="text-gray-600 text-lg md:text-xl lg:text-2xl"> 
-                Check out our latest deals and discounts on car rentals.
-              </p>
+          <div className="max-w-full mx-auto h-full"> {/* Added h-full to ensure full height */}
+            <div className="w-full mx-auto pt-5 md:pt-8 lg:pt-10 bg-muted"> {/* Added bg-muted for the title section */}
+              <div className="text-center bg-muted p-4"> {/* Added bg-muted and padding for the title section */}
+                <h2 className="text-2xl md:text-3xl lg:text-4xl font-bold">Special Offers</h2>
+                <p className="text-gray-600 text-lg md:text-xl lg:text-2xl"> 
+                  Check out our latest deals and discounts on car rentals.
+                </p>
+              </div>
             </div>
-          </div>
-          <Carousel> {/* Ensure Carousel accepts 'interval' prop */}
-            <CarouselContent>
-              <CarouselItem className='h-full'>
-                <div className="flex flex-col md:flex-row items-center justify-between h-full px-4 md:px-6 lg:px-10">
-                  <div className="space-y-4 md:space-y-6 lg:space-y-8">
-                    <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold"> 
-                      Discover the Perfect Car for Your Next Adventure
-                    </h1>
-                    <p className="text-lg md:text-xl lg:text-2xl text-gray-500"> 
-                      Rent the car of your dreams and explore the wilderness. 15% off for the summer season on choice* cars.
-                    </p>
-                    <Link href="/Promotions">
-                      <Button className="bg-customyello text-primary-foreground border-2 border-black p-4 shadow-md hover:bg-orange-500 transition"> 
-                        Book Now
-                      </Button>
-                    </Link>
+            <Carousel> {/* Ensure Carousel accepts 'interval' prop */}
+              <CarouselContent>
+                <CarouselItem className='h-full'>
+                  <div className="flex flex-col md:flex-row items-center justify-between h-full px-4 md:px-6 lg:px-10">
+                    <div className="space-y-4 md:space-y-6 lg:space-y-8">
+                      <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold"> 
+                        Discover the Perfect Car for Your Next Adventure
+                      </h1>
+                      <p className="text-lg md:text-xl lg:text-2xl text-gray-500"> 
+                        Rent the car of your dreams and explore the wilderness. 15% off for the summer season on choice* cars.
+                      </p>
+                      <Link href="/Promotions">
+                        <Button className="bg-customyello text-primary-foreground border-2 border-black p-4 shadow-md hover:bg-orange-500 transition"> 
+                          Book Now
+                        </Button>
+                      </Link>
+                    </div>
+                    <img
+                      src="https://res.cloudinary.com/dbsxjsktb/image/upload/v1729195988/1714578868267_yicf3b.avif"
+                      width="400"
+                      height="300"
+                      alt="Car"
+                      className="w-[600px] h-[500px] object-cover" /> 
                   </div>
-                  <img
-                    src="https://res.cloudinary.com/dbsxjsktb/image/upload/v1729195988/1714578868267_yicf3b.avif"
+                </CarouselItem>
+                <CarouselItem>
+                  <div className="flex flex-col md:flex-row items-center justify-between h-full px-4 md:px-6 lg:px-10">
+                    <div className="space-y-4 md:space-y-6 lg:space-y-8">
+                      <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold">Experience the Thrill of Driving</h1>
+                      <p className="text-lg md:text-xl lg:text-2xl text-muted-foreground">
+                        Rent the car of your dreams and experience the bustling nightlife. 10% off on sports cars for a week.
+                      </p>
+                      <Link href="/Promotions">
+                      <Button className="bg-customyello text-primary-foreground border-2 border-black" >
+                        Book Now
+                      </Button></Link>
+                    </div>
+                    <img
+                    src="https://res.cloudinary.com/dbsxjsktb/image/upload/v1729196318/1727199981315_ixilao.avif"
+                    alt="Car"
+                    className="w-[500px] h-[400px] object-cover"
+                    />
+                  </div>
+                </CarouselItem>
+                <CarouselItem>
+                  <div className="flex flex-col md:flex-row items-center justify-between h-full px-4 md:px-6 lg:px-10">
+                    <div className="space-y-4 md:space-y-6 lg:space-y-8">
+                      <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold">Elevate Your Travel Experience</h1>
+                      <p className="text-lg md:text-xl lg:text-2xl text-muted-foreground">
+                        Hop in with some friends for the long haul. 20% on travel vans when renting up to a month.
+                      </p>
+                      <Link href="/Promotions">
+                      <Button className="bg-customyello text-primary-foreground border-2 border-black" >
+                        Book Now
+                      </Button></Link>
+                    </div>
+                    <img
+                    src="https://res.cloudinary.com/dbsxjsktb/image/upload/v1729196547/1727199981443_oidgif.avif"
                     width="400"
                     height="300"
                     alt="Car"
-                    className="w-[600px] h-[500px] object-cover" /> 
-                </div>
-              </CarouselItem>
-              <CarouselItem>
-                <div
-                  className="flex flex-col md:flex-row items-center justify-between h-full px-4 md:px-6 lg:px-10">
-                  <div className="space-y-4 md:space-y-6 lg:space-y-8">
-                    <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold">Experience the Thrill of Driving</h1>
-                    <p className="text-lg md:text-xl lg:text-2xl text-muted-foreground">
-                      Rent the car of your dreams and experience the bustling nightlife. 10% off on sports cars for a week.
-                    </p>
-                    <Link href="/Promotions">
-                    <Button className="bg-customyello text-primary-foreground border-2 border-black" >
-                      Book Now
-                    </Button></Link>
+                    className="w-[500px] h-[400px] object-cover"
+                    />
                   </div>
-                  <img
-                  src="https://res.cloudinary.com/dbsxjsktb/image/upload/v1729196318/1727199981315_ixilao.avif"
-                  alt="Car"
-                  className="w-[500px] h-[400px] object-cover"
-                  />
-                </div>
-              </CarouselItem>
-              <CarouselItem>
-                <div
-                  className="flex flex-col md:flex-row items-center justify-between h-full px-4 md:px-6 lg:px-10">
-                  <div className="space-y-4 md:space-y-6 lg:space-y-8">
-                    <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold">Elevate Your Travel Experience</h1>
-                    <p className="text-lg md:text-xl lg:text-2xl text-muted-foreground">
-                      Hop in with some friends for the long haul. 20% on travel vans when renting up to a month.
-                    </p>
-                    <Link href="/Promotions">
-                    <Button className="bg-customyello text-primary-foreground border-2 border-black" >
-                      Book Now
-                    </Button></Link>
-                  </div>
-                  <img
-                  src="https://res.cloudinary.com/dbsxjsktb/image/upload/v1729196547/1727199981443_oidgif.avif"
-                  width="400"
-                  height="300"
-                  alt="Car"
-                  className="w-[500px] h-[400px] object-cover"
-                  />
-                </div>
-              </CarouselItem>
-            </CarouselContent>
-            {/* Removed CarouselPrevious and CarouselNext */}
-          </Carousel>
-          
+                </CarouselItem>
+              </CarouselContent>
+            </Carousel>
+          </div>
         </section>
-        <section ref={ref3 }className={`relative py-12 md:py-16 lg:py-20 px-4 md:px-6 lg:px-10 ${ 
-          inView3 ? 'animate-fadeInUp' : "opacity-0"}`}>
-          <div className="max-w-full mx-auto space-y-6 md:space-y-8 lg:space-y-10">
-            <div className="space-y-6 md:space-y-8">
-              <div className="text-center">
-                <h2 className="text-3xl font-bold tracking-tight sm:text-4xl md:text-5xl text-black">Explore our fleet</h2>
-                <p className="text-black md:text-lg">
+        <section ref={ref3} className={`relative w-full h-screen overflow-hidden bg-gradient-to-b from-gray-200 to-white ${ 
+          inView3 ? 'animate-fadeInUp' : "opacity-0"}`} >
+          <div className="max-w-full mx-auto h-full"> 
+            <div className="w-full mx-auto pt-5 md:pt-8 lg:pt-10 bg-muted"> 
+              <div className="text-center bg-muted p-4"> 
+                <h2 className="text-2xl md:text-3xl lg:text-4xl font-bold">Explore our fleet</h2>
+                <p className="text-gray-600 text-lg md:text-xl lg:text-2xl">
                   Choose from a wide range of vehicles to fit your needs.
                 </p>
               </div>
-              <div className="grid gap-6 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 ">
-                <Card className="rounded-xl  border-foreground hover:border-customgrey transition-colors" >
-                  <CardContent className=" rounded-xl bg-white flex flex-col items-center justify-center gap-4 p-6  ">
-                  <img src="https://res.cloudinary.com/dihvudxbt/image/upload/v1729197036/FORD_FUSION_2020_iv8enk.avif" alt="Sedan" className="w-[200px] h-[150px] rounded-lg py-3" />
-                    <div className="text-center">
-                      <h3 className="text-4xl font-bold text-black ">Sedans</h3>
-                      <p className="text-black">Comfortable <br/>and efficient.</p>
-                    </div>
-                    <Link href="/Search"><Button variant="outline">Rent Now</Button></Link>
-                  </CardContent>
-                </Card>
-                <Card className="rounded-xl border-foreground hover:border-customgrey transition-colors " >
-                  <CardContent className=" rounded-xl flex flex-col items-center justify-center gap-4 p-6 bg-white ">
-                  <img src="https://res.cloudinary.com/dihvudxbt/image/upload/v1729197172/CHEVROLET_TAHOE_2016_fet4lb.avif" alt="SUV" className="w-[200px] h-[150px] rounded-lg py-3" />
-                    <div className="text-center">
-                      <h3 className="text-4xl font-semibold text-black">SUVs</h3>
-                      <p className="text-black">Spacious <br/>and versatile.</p>
-                    </div>
-                    <Link href="/Search"><Button variant="outline">Rent Now</Button></Link>
-                  </CardContent>
-                </Card>
-                <Card className="rounded-xl border-foreground hover:border-customgrey transition-colors" >
-                  <CardContent className=" rounded-xl flex flex-col items-center justify-center gap-4 p-6 bg-white ">
-                  <img src="https://res.cloudinary.com/dihvudxbt/image/upload/v1729197226/1700067178662_vm7rfz.avif" alt="Luxury" className="w-[200px] h-[174px] rounded-lg py-3" />
-                    <div className="text-center">
-                      <h3 className="text-4xl font-semibold text-black">Luxury </h3>
-                      <p className="text-black">Indulge in style and comfort.</p>
-                    </div>
-                    <Link href="/Search"><Button variant="outline">Rent Now</Button></Link>
-                  </CardContent>
-                </Card>
-                <Card className="rounded-xl border-foreground hover:border-customgrey transition-colors" >
-                  <CardContent className=" rounded-xl flex flex-col items-center justify-center gap-4 p-6 bg-white ">
-                  <img src="https://res.cloudinary.com/dihvudxbt/image/upload/v1729200173/JKAR_22_Compact_Cargo_Van_AngularFront_US_ENG_280x210_wsqbrx.avif" alt="Van" className="w-[200px] h-[160px] rounded-lg py-3" />
-                    <div className="text-center">
-                      <h3 className="text-4xl font-semibold text-black">Vans</h3>
-                      <p className=" text-black">Spacious and practical.</p>
-                    </div>
-                    <Link href="/Search"><Button variant="outline">Rent Now</Button></Link>
-                  </CardContent>
-                </Card>
-              </div>
+            </div>
+            <div className="grid gap-8 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 mt-20 pl-4 pr-4"> 
+              <Card className="rounded-10px border-foreground hover:border-customgrey bg-muted shadow-lg focus:ring-4 focus:ring-blue-500 transition-transform ease-in-out duration-300 transform hover:scale-105"> 
+                <CardContent className="rounded-xl flex flex-col items-center justify-center gap-4 p-6"> 
+                  <img src="https://res.cloudinary.com/dihvudxbt/image/upload/v1729197036/FORD_FUSION_2020_iv8enk.avif" alt="Sedan" className="w-[200px] h-[150px] rounded-lg py-3" /> 
+                  <div className="text-center">
+                    <h3 className="text-4xl font-semibold text-black">Sedans</h3>
+                    <p className="text-black font-semibold">Comfortable and efficient.</p> 
+                  </div>
+                  <Link href="/Search">
+                    <Button className="hover:bg-blue-500 hover:shadow-lg transition-all duration-300 rounded-10px" variant="outline">Rent Now</Button> 
+                  </Link>
+                </CardContent>
+              </Card>
+              <Card className="rounded-10px border-foreground hover:border-customgrey bg-muted shadow-lg focus:ring-4 focus:ring-blue-500 transition-transform ease-in-out duration-300 transform hover:scale-105"> 
+                <CardContent className="rounded-xl flex flex-col items-center justify-center gap-4 p-6"> 
+                  <img src="https://res.cloudinary.com/dihvudxbt/image/upload/v1729197172/CHEVROLET_TAHOE_2016_fet4lb.avif" alt="SUV" className="w-[200px] h-[150px] rounded-lg py-3" /> 
+                  <div className="text-center">
+                    <h3 className="text-4xl font-semibold text-black">SUVs</h3>
+                    <p className="text-black font-semibold">Spacious and versatile.</p> 
+                  </div>
+                  <Link href="/Search">
+                    <Button className="hover:bg-blue-500 hover:shadow-lg transition-all duration-300 rounded-10px" variant="outline">Rent Now</Button> 
+                  </Link>
+                </CardContent>
+              </Card>
+              <Card className="rounded-10px border-foreground hover:border-customgrey bg-muted shadow-lg focus:ring-4 focus:ring-blue-500 transition-transform ease-in-out duration-300 transform hover:scale-105"> 
+                <CardContent className="rounded-xl flex flex-col items-center justify-center gap-4 p-6"> 
+                  <img src="https://res.cloudinary.com/dihvudxbt/image/upload/v1729197226/1700067178662_vm7rfz.avif" alt="Luxury" className="w-[200px] h-[150px] rounded-lg py-3" /> 
+                  <div className="text-center">
+                    <h3 className="text-4xl font-semibold text-black mt-1">Luxury</h3>
+                    <p className="text-black font-semibold">Indulge in style and comfort.</p> 
+                  </div>
+                  <Link href="/Search">
+                    <Button className="hover:bg-blue-500 hover:shadow-lg transition-all duration-300 rounded-10px" variant="outline">Rent Now</Button> 
+                  </Link>
+                </CardContent>
+              </Card>
+              <Card className="rounded-10px border-foreground hover:border-customgrey bg-muted shadow-lg focus:ring-4 focus:ring-blue-500 transition-transform ease-in-out duration-300 transform hover:scale-105"> 
+                <CardContent className="rounded-xl flex flex-col items-center justify-center gap-4 p-6"> 
+                  <img src="https://res.cloudinary.com/dihvudxbt/image/upload/v1729200173/JKAR_22_Compact_Cargo_Van_AngularFront_US_ENG_280x210_wsqbrx.avif" alt="Van" className="w-[200px] h-[150px] rounded-lg py-3" /> 
+                  <div className="text-center mb-0 mt-0">
+                    <h3 className="text-4xl font-semibold text-black">Vans</h3>
+                    <p className="text-black font-semibold mb-0">Spacious and practical.</p> 
+                  </div>
+                  <Link href="/Search">
+                    <Button className=" hover:bg-blue-500 hover:shadow-lg transition-all duration-300 rounded-10px mt-0" variant="outline">Rent Now</Button> 
+                  </Link>
+                </CardContent>
+              </Card>
             </div>
           </div>
         </section>
-        <section ref={ref4 } className={`relative bg-white py-12 md:py-16 lg:py-20 px-4 md:px-6 lg:px-10 ${ 
+        <section ref={ref4 } className={`relative bg-muted py-12 md:py-16 lg:py-20 px-4 md:px-6 lg:px-10 h-full ${ 
           inView4 ? 'animate-fadeInUp' : "opacity-0"}`}>
-          <div className="max-w-10xl  mx-auto space-y-6 md:space-y-8 lg:space-y-10">
+          <div className="max-w-10xl mx-auto space-y-6 md:space-y-8 lg:space-y-10 h-full">
             <div className="space-y-6 md:space-y-8">
               <div className="text-center">
                 <h2 className="text-3xl font-bold tracking-tight sm:text-4xl md:text-5xl">What our customers say</h2>
@@ -294,6 +300,11 @@ const [ref4, inView4] = useInView({ threshold: 0.3,triggerOnce: true });
     </div>)
   );
 }
+
+
+
+
+
 
 
 

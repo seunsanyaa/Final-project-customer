@@ -1,6 +1,7 @@
+
+
 "use client"
 import Link from "next/link"
-
 import { useState, useEffect } from "react"
 import { Button } from "@/components/ui/button"
 import { Card, CardHeader, CardContent, CardFooter } from "@/components/ui/card"
@@ -8,12 +9,13 @@ import { Dialog, DialogContent, DialogFooter } from "@/components/ui/dialog";
 import { Separator } from "@/components/ui/separator"
 import { Navi } from '../head/navi';
 import { Footer } from '../head/footer';
-import { api } from "@/convex/_generated/api"; // Import the API for fetching bookings
+import { api } from "@/convex/_generated/api";
+import { useQuery } from "convex/react"; // Add this import
 import axios from 'axios';
 
 // Define the Booking interface
 interface Booking {
-  id: number;
+  _id: string; // Change id to _id to match Convex's ID format
   make: string;
   model: string;
   color: string;
@@ -22,35 +24,30 @@ interface Booking {
   totalCost: number;
   licensePlate: string;
   pickupLocation: string;
-  returnLocation: string;
-  cardId: string; // Add cardId property to the Booking interface
+  dropoffLocation: string;
+  carId: string; // Change cardId to carId to match your schema
 }
 
 const API_BASE_URL = 'https://third-elk-244.convex.cloud/api';
 
 export function Mybookings() {
-  const [bookings, setBookings] = useState<Booking[]>([]); // Initialize bookings state
-  const [filteredBookings, setFilteredBookings] = useState<Booking[]>([]); // Initialize filtered bookings state
+  const [bookings, setBookings] = useState<Booking[]>([]);
+  const [filteredBookings, setFilteredBookings] = useState<Booking[]>([]);
   const [filterStartDate, setFilterStartDate] = useState<string | null>(null)
-  const [filterEndDate, setFilterEndDate] = useState<string | null>(null)  // Ensure filterEndDate can be string or null
+  const [filterEndDate, setFilterEndDate] = useState<string | null>(null)
   const [filterMake, setFilterMake] = useState("")
   const [filterModel, setFilterModel] = useState("")
   const [filterColor, setFilterColor] = useState("")
   const [selectedBooking, setSelectedBooking] = useState<Booking | null>(null)
   const [customerId, setCustomerId] = useState<string | null>(null)
-  const [loading, setLoading] = useState(false); // Add loading state if needed
-  const [error, setError] = useState(null); // Add error state
-  const [carDetails, setCarDetails] = useState<any | null>(null); // Add state for car details
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null); // Change to string | null
 
   useEffect(() => {
-    // Remove the fetchCustomerId function and directly set the customerId
-    setCustomerId('user123'); // Set the hardcoded customer ID directly
-    console.log('Using hardcoded Customer ID: user123'); // Log the hardcoded customer ID
-  }, []); // Fetch customer ID on component mount
+    setCustomerId('user123');
+    console.log('Using hardcoded Customer ID: user123');
+  }, []);
 
-
-  
-  // Fetch bookings when customerId is available
   useEffect(() => {
     if (customerId) {
       const fetchBookings = async () => {
@@ -59,39 +56,37 @@ export function Mybookings() {
         try {
           const response = await axios.post(`${API_BASE_URL}/query`, {
             path: "bookings:getBookingsByCustomer",
-            args: { customerId }  // Use the valid customerId
+            args: { customerId }
           });
-  
-          console.log('API Response:', response.data);  // Log the entire response data
-          console.log('Fetching bookings for customerId:', customerId);  // Log the customerId
-  
-          // Check if the response has the expected structure
+
+          console.log('API Response:', response.data);
+          console.log('Fetching bookings for customerId:', customerId);
+
           if (response.data && Array.isArray(response.data.value)) {
             if (response.data.value.length > 0) {
-              setBookings(response.data.value);  // Set fetched bookings to state
-              console.log('Bookings State:', bookings); // Log bookings state
+              setBookings(response.data.value);
+              console.log('Bookings State:', response.data.value);
             } else {
               console.error('No bookings found in response');
-              setError('No bookings found.');  // Set error message if no bookings
+              setError('No bookings found.');
             }
           } else {
             console.error('Unexpected response structure:', response.data);
-            setError('Unexpected response structure.');  // Handle unexpected response
+            setError('Unexpected response structure.');
           }
         } catch (err) {
           console.error('Error fetching bookings:', err);
-          setError('Failed to fetch bookings. Please try again.');  // Set error message
+          setError('Failed to fetch bookings. Please try again.');
         } finally {
           setLoading(false);
         }
       };
       fetchBookings();
     }
-  }, [customerId]);  // Fetch bookings when customerId is available
-  
+  }, [customerId]);
 
   useEffect(() => {
-    setFilteredBookings(bookings || []); // Ensure filteredBookings is always an array
+    setFilteredBookings(bookings);
   }, [bookings]);
 
   const handleFilterChange = () => {
@@ -113,34 +108,20 @@ export function Mybookings() {
     }
     setFilteredBookings(filtered)
   }
-  const handleViewDetails = (booking: any) => {
+
+  const handleViewDetails = (booking: Booking) => {
     setSelectedBooking(booking)
   }
 
-  // Determine the most recent booking
-  const currentBooking = bookings && bookings[0]; // Fetch any booking
-  const pastBookings = bookings && bookings.filter(booking => new Date(booking.startDate) < new Date()); // Filter past bookings
+  const currentBooking = bookings[0];
+  const pastBookings = bookings.filter(booking => new Date(booking.startDate) < new Date());
 
-  // Fetch car details when currentBooking changes
-  useEffect(() => {
-    const fetchCarDetails = async () => {
-      if (currentBooking && currentBooking.cardId) { // Ensure cardId is present
-        try {
-          console.log('Fetching car details for carId:', currentBooking.cardId); // Log the carId
-          const response = await axios.post(`${API_BASE_URL}/query`, {
-            path: "bookings:getCarByCarId",  // Updated to use the correct query
-            args: { carId: currentBooking.cardId } // Use currentBooking.cardId instead of hardcoded ID
-          });
-          setCarDetails(response.data); // Store the fetched car details in state
-        } catch (error) {
-          console.error('Error fetching car details:', error);
-        }
-      } else {
-        console.error('Current booking or cardId is missing:', currentBooking); // Log if currentBooking or cardId is missing
-      }
-    };
-    fetchCarDetails();
-  }, [currentBooking]); // Fetch car details when currentBooking changes
+  // Replace the useEffect for fetching car details with this:
+  const carDetails = useQuery(api.bookings.getCarByCarId, 
+    currentBooking ? { carId: currentBooking.carId } : "skip"
+  );
+
+  // Remove the previous useEffect for fetchCarDetails
 
   return (
     <>
@@ -169,11 +150,11 @@ export function Mybookings() {
             <div className="grid sm:grid-cols-2 gap-4">
               <div>
                 <h3 className="text-lg font-semibold">Car Model</h3>
-                <p>{carDetails ? carDetails.model : 'N/A'}</p>  {/* Update to show car model */}
+                <p>{carDetails ? `${carDetails.maker} ${carDetails.model}` : 'N/A'}</p>
               </div>
               <div>
                 <h3 className="text-lg font-semibold">License Plate</h3>
-                <p>{currentBooking ? currentBooking.licensePlate : 'N/A'}</p>  {/* Assuming licensePlate is part of Booking */}
+                <p>{carDetails ? `${carDetails.registrationNumber}` : 'N/A'}</p>  {/* Assuming licensePlate is part of Booking */}
               </div>
               <div>
                 <h3 className="text-lg font-semibold">Pickup Location</h3>
@@ -181,7 +162,7 @@ export function Mybookings() {
               </div>
               <div>
                 <h3 className="text-lg font-semibold">Return Location</h3>
-                <p>{currentBooking ? currentBooking.returnLocation : 'N/A'}</p>  {/* Assuming returnLocation is part of Booking */}
+                <p>{currentBooking ? currentBooking.dropoffLocation : 'N/A'}</p>  {/* Assuming returnLocation is part of Booking */}
               </div>
             </div>
           </div>
@@ -264,7 +245,7 @@ export function Mybookings() {
           <div className="col-span-2 lg:col-span-2">
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
               {filteredBookings.map((booking) => (
-                <Card key={booking.id}>
+                <Card key={booking._id}>
                   <CardHeader>
                     <div className="flex items-center justify-between">
                       <div className="text-lg font-bold">{booking.make}</div>

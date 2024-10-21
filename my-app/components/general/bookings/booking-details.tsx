@@ -15,20 +15,7 @@ export default function BookingDetails() {
   const router = useRouter();
   const { bookingId } = router.query;
 
-  const bookingDetails = useQuery(
-    api.bookings.getBookingDetails,
-    typeof bookingId === 'string'? { bookingId: bookingId as Id<"bookings"> }: "skip"
-  );
-
-  if (!bookingId || typeof bookingId !== 'string') {
-    return <div>Invalid booking ID</div>;
-  }
-
-  if (!bookingDetails) {
-    return <div>Loading...</div>;
-  }
-
-  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
   const [pickupDate, setPickupDate] = useState('');
   const [dropoffDate, setDropoffDate] = useState('');
   const [pickupLocation, setPickupLocation] = useState('');
@@ -38,7 +25,12 @@ export default function BookingDetails() {
     dropoffLocation: string;
     startDate: string;
     endDate: string;
-  } | null>(null); // Update the type to allow null or the object structure
+  } | null>(null);
+
+  const bookingDetails = useQuery(
+    api.bookings.getBookingDetails,
+    typeof bookingId === 'string' ? { bookingId: bookingId as Id<"bookings"> } : "skip"
+  );
 
   const updateBooking = useMutation(api.bookings.updateBooking);
 
@@ -47,26 +39,33 @@ export default function BookingDetails() {
   };
 
   const handleConfirm = async () => {
-    // Call the updateBooking mutation with the new values
-    await updateBooking({
-      id: bookingDetails._id, // Use the booking ID
-      pickupLocation,
-      dropoffLocation,
-      startDate: pickupDate, // Assuming pickupDate is the new start date
-      endDate: dropoffDate, // Assuming dropoffDate is the new end date
-    });
+    if (!bookingDetails) return;
 
-    // Update the booking details state with the new values
-    setBookingDetailsState((prevDetails) => ({
-      ...(prevDetails || {}), // Ensure prevDetails is an object
+    await updateBooking({
+      id: bookingDetails._id,
       pickupLocation,
       dropoffLocation,
       startDate: pickupDate,
       endDate: dropoffDate,
-    }));
+    });
 
-    setIsModalOpen(false); // Close modal after confirmation
+    setBookingDetailsState({
+      pickupLocation,
+      dropoffLocation,
+      startDate: pickupDate,
+      endDate: dropoffDate,
+    });
+
+    setIsModalOpen(false);
   };
+
+  if (!bookingId || typeof bookingId !== 'string') {
+    return <div>Invalid booking ID</div>;
+  }
+
+  if (!bookingDetails) {
+    return <div>Loading...</div>;
+  }
 
   return (
     <div>

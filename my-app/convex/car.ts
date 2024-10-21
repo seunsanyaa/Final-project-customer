@@ -1,17 +1,19 @@
 import { v } from 'convex/values';
-import { mutation, query } from './_generated/server';
+import { mutation, query, action } from './_generated/server';
+import { api } from './_generated/api';
 
 export const createCar = mutation({
 	args: {
 		model: v.string(),
 		color: v.string(),
 		maker: v.string(),
+		trim: v.string(),
 		lastMaintenanceDate: v.string(),
 		available: v.boolean(),
 		year: v.number(),
 		registrationNumber: v.string(),
 		pictures: v.array(v.string()),
-		pricePerDay: v.number(), 
+		pricePerDay: v.number(),
 	},
 	handler: async (ctx, args) => {
 		const existingCar = await ctx.db
@@ -60,6 +62,7 @@ export const updateCar = mutation({
 		model: v.optional(v.string()),
 		color: v.optional(v.string()),
 		maker: v.optional(v.string()),
+		trim: v.optional(v.string()),
 		lastMaintenanceDate: v.optional(v.string()),
 		available: v.optional(v.boolean()),
 		year: v.optional(v.number()),
@@ -135,5 +138,54 @@ export const getAllAvailableCarsGrouped = query({
 			const [maker, model] = key.split(':');
 			return { maker, model, cars };
 		});
+	},
+});
+
+export const getCarSpecifications = action({
+	args: {
+		maker: v.string(),
+		model: v.string(),
+		year: v.number(),
+		trim: v.string(),
+	},
+	handler: async (ctx, args) => {
+		const { maker, model, year, trim } = args;
+
+		console.log('Input values:', { maker, model, year, trim });
+
+		const apiUrl = `https://www.carqueryapi.com/api/0.3/?callback=?&cmd=getTrims&make=${encodeURIComponent(
+			maker
+		)}&model=${encodeURIComponent(model)}&year=${encodeURIComponent(year.toString())}&trim=${encodeURIComponent(trim)}`;
+
+		const response = await fetch(apiUrl);
+		const text = await response.text();
+
+		// Extract JSON from JSONP response
+		const jsonMatch = text.match(/\{.+\}/);
+		if (!jsonMatch) {
+			throw new Error('Invalid API response');
+		}
+
+		const json = JSON.parse(jsonMatch[0]);
+
+		if (!json.Trims || json.Trims.length === 0) {
+			throw new Error('No specifications found for the given car details');
+		}
+
+		const carData = json.Trims[0];
+
+		const specifications = {
+			engineType: carData.model_engine_type || "N/A",
+			engineCylinders: carData.model_engine_cyl || "N/A",
+			engineHorsepower: carData.model_engine_power_ps
+				? `${carData.model_engine_power_ps} PS`
+					: "N/A",
+			fuelType: carData.model_engine_fuel || "N/A",
+			transmission: carData.model_transmission_type || "N/A",
+			drive: carData.model_drive || "N/A",
+			seats: carData.model_seats || "N/A",
+		};
+
+		return specifications;
 	},
 });
