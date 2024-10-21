@@ -16,6 +16,8 @@ import ChevronLeftIcon from '@/svgs/ChevronLeftIcon';
 import ChevronRightIcon from '@/svgs/ChevronRightIcon';
 import { Navi } from "../head/navi";
 import { Footer } from "../head/footer";
+import { useEffect } from 'react'; // Added for font loading
+
 export function Homepage_v2() {
   const [ref1, inView1] = useInView({ threshold: 0.6, triggerOnce: true });
 const [ref2, inView2] = useInView({ threshold: 0.6,triggerOnce: true  });
@@ -30,9 +32,17 @@ const [ref4, inView4] = useInView({ threshold: 0.3,triggerOnce: true });
     carousel.scrollTo({ left: scrollPosition, behavior: 'smooth' });
   };
 
+  useEffect(() => {
+    // Load a modern sans-serif font
+    const link = document.createElement('link');
+    link.href = 'https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap';
+    link.rel = 'stylesheet';
+    document.head.appendChild(link);
+  }, []);
+
   return (
-    (<div className="flex flex-col min-h-dvh">
-      <Navi/>
+    (<div className="flex flex-col min-h-dvh font-roboto">
+      <Navi className="bg-gradient-to-r from-gray-800 to-gray-600"/>
       <main className="flex-1 top-0 mt-0">
       <section  ref={ref1}className={`relative top-0 md:py-16 w-full h-[610px] px-4 md:px-6 lg:px-10 bg-cover bg-center bg-no-repeat ${
         inView1 ? 'animate-fadeInUp' : 'opacity-0'
@@ -147,70 +157,96 @@ const [ref4, inView4] = useInView({ threshold: 0.3,triggerOnce: true });
             </Carousel>
           </div>
         </section>
-        <section ref={ref3} className={`relative w-full h-screen overflow-hidden bg-gradient-to-b from-gray-200 to-white ${ 
-          inView3 ? 'animate-fadeInUp' : "opacity-0"}`} >
+        
+        <section ref={ref3} className={`relative w-full h-auto overflow-hidden bg-gradient-to-b from-gray-200 to-white ${ 
+          inView3 ? 'animate-fadeInUp' : "opacity-0"}`} > {/* Changed h-screen to h-auto */}
           <div className="max-w-full mx-auto h-full"> 
             <div className="w-full mx-auto pt-5 md:pt-8 lg:pt-10 bg-muted"> 
               <div className="text-center bg-muted p-4"> 
-                <h2 className="text-2xl md:text-3xl lg:text-4xl font-bold">Explore our fleet</h2>
-                <p className="text-gray-600 text-lg md:text-xl lg:text-2xl">
+                <h2 className="text-2xl md:text-3xl lg:text-4xl font-bold tracking-tight leading-tight">Explore our fleet</h2> {/* Improved spacing */}
+                <p className="text-gray-600 text-lg md:text-xl lg:text-2xl leading-relaxed"> {/* Improved line spacing */}
                   Choose from a wide range of vehicles to fit your needs.
                 </p>
               </div>
             </div>
-            <div className="grid gap-8 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 mt-20 pl-4 pr-4"> 
-              <Card className="rounded-10px border-foreground hover:border-customgrey bg-muted shadow-lg focus:ring-4 focus:ring-blue-500 transition-transform ease-in-out duration-300 transform hover:scale-105"> 
-                <CardContent className="rounded-xl flex flex-col items-center justify-center gap-4 p-6"> 
-                  <img src="https://res.cloudinary.com/dihvudxbt/image/upload/v1729197036/FORD_FUSION_2020_iv8enk.avif" alt="Sedan" className="w-[200px] h-[150px] rounded-lg py-3" /> 
-                  <div className="text-center">
-                    <h3 className="text-4xl font-semibold text-black">Sedans</h3>
-                    <p className="text-black font-semibold">Comfortable and efficient.</p> 
-                  </div>
-                  <Link href="/Search">
-                    <Button className="hover:bg-blue-500 hover:shadow-lg transition-all duration-300 rounded-10px" variant="outline">Rent Now</Button> 
-                  </Link>
-                </CardContent>
-              </Card>
-              <Card className="rounded-10px border-foreground hover:border-customgrey bg-muted shadow-lg focus:ring-4 focus:ring-blue-500 transition-transform ease-in-out duration-300 transform hover:scale-105"> 
-                <CardContent className="rounded-xl flex flex-col items-center justify-center gap-4 p-6"> 
-                  <img src="https://res.cloudinary.com/dihvudxbt/image/upload/v1729197172/CHEVROLET_TAHOE_2016_fet4lb.avif" alt="SUV" className="w-[200px] h-[150px] rounded-lg py-3" /> 
-                  <div className="text-center">
-                    <h3 className="text-4xl font-semibold text-black">SUVs</h3>
-                    <p className="text-black font-semibold">Spacious and versatile.</p> 
-                  </div>
-                  <Link href="/Search">
-                    <Button className="hover:bg-blue-500 hover:shadow-lg transition-all duration-300 rounded-10px" variant="outline">Rent Now</Button> 
-                  </Link>
-                </CardContent>
-              </Card>
-              <Card className="rounded-10px border-foreground hover:border-customgrey bg-muted shadow-lg focus:ring-4 focus:ring-blue-500 transition-transform ease-in-out duration-300 transform hover:scale-105"> 
-                <CardContent className="rounded-xl flex flex-col items-center justify-center gap-4 p-6"> 
-                  <img src="https://res.cloudinary.com/dihvudxbt/image/upload/v1729197226/1700067178662_vm7rfz.avif" alt="Luxury" className="w-[200px] h-[150px] rounded-lg py-3" /> 
-                  <div className="text-center">
-                    <h3 className="text-4xl font-semibold text-black mt-1">Luxury</h3>
-                    <p className="text-black font-semibold">Indulge in style and comfort.</p> 
-                  </div>
-                  <Link href="/Search">
-                    <Button className="hover:bg-blue-500 hover:shadow-lg transition-all duration-300 rounded-10px" variant="outline">Rent Now</Button> 
-                  </Link>
-                </CardContent>
-              </Card>
-              <Card className="rounded-10px border-foreground hover:border-customgrey bg-muted shadow-lg focus:ring-4 focus:ring-blue-500 transition-transform ease-in-out duration-300 transform hover:scale-105"> 
-                <CardContent className="rounded-xl flex flex-col items-center justify-center gap-4 p-6"> 
-                  <img src="https://res.cloudinary.com/dihvudxbt/image/upload/v1729200173/JKAR_22_Compact_Cargo_Van_AngularFront_US_ENG_280x210_wsqbrx.avif" alt="Van" className="w-[200px] h-[150px] rounded-lg py-3" /> 
-                  <div className="text-center mb-0 mt-0">
-                    <h3 className="text-4xl font-semibold text-black">Vans</h3>
-                    <p className="text-black font-semibold mb-0">Spacious and practical.</p> 
-                  </div>
-                  <Link href="/Search">
-                    <Button className=" hover:bg-blue-500 hover:shadow-lg transition-all duration-300 rounded-10px mt-0" variant="outline">Rent Now</Button> 
-                  </Link>
-                </CardContent>
-              </Card>
+            <div className="grid gap-6 grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-3 mt-20 pl-4 pr-4 mb-20"> 
+              {/* Adjusted grid classes to ensure 3 items per row */}
+              <div className="flex flex-col items-center justify-center gap-4 p-6"> 
+                <img src="https://res.cloudinary.com/dbsxjsktb/image/upload/v1729522582/2021-toyota-camry-se-sedan-white_featured_yakvxp.avif" alt="Sedan" className="w-[300px] h-[220px] rounded-lg" /> 
+                <div className="text-center">
+                  <h3 className="text-4xl font-semibold text-black mt-0">Sedans</h3>
+                  <p className="text-black font-semibold">Comfortable and efficient.</p> 
+                  <p className="text-black">Starting from $45/day</p> {/* Added price info */}
+                </div>
+                <Link href="/Search">
+                  <Button className="hover:bg-blue-500 hover:shadow-lg transition-all duration-300 rounded-lg hover:bg-muted" variant="outline">Rent Now</Button> 
+                </Link>
+              </div>
+              <div className="flex flex-col items-center justify-center gap-4 p-6"> 
+                <img src="https://res.cloudinary.com/dbsxjsktb/image/upload/v1729522583/2022-chevrolet-tahoe-lt-4wd-suv-beige_featured_bsxp0g.avif" alt="SUV" className="w-[300px] h-[220px] rounded-lg" /> 
+                <div className="text-center">
+                  <h3 className="text-4xl font-semibold text-black">SUVs</h3>
+                  <p className="text-black font-semibold">Spacious and versatile.</p> 
+                  <p className="text-black">Starting from $50/day</p> {/* Added price info */}
+                </div>
+                <Link href="/Search">
+                  <Button className="hover:bg-blue-500 hover:shadow-lg transition-all duration-300 rounded-lg hover:bg-muted" variant="outline">Rent Now</Button> 
+                </Link>
+              </div>
+              <div className="flex flex-col items-center justify-center gap-4 p-6"> 
+                <img src="https://res.cloudinary.com/dbsxjsktb/image/upload/v1729527582/2022-genesis-g80-4wd-sedan-white_featured_e84fej.avif" alt="Luxury" className="w-[300px] h-[220px] rounded-lg" /> 
+                <div className="text-center">
+                  <h3 className="text-4xl font-semibold text-black mt-1">Luxury</h3>
+                  <p className="text-black font-semibold">Indulge in style and comfort.</p> 
+                  <p className="text-black">Starting from $70/day</p> {/* Added price info */}
+                </div>
+                <Link href="/Search">
+                  <Button className="hover:bg-blue-500 hover:shadow-lg transition-all duration-300 rounded-lg hover:bg-muted" variant="outline">Rent Now</Button> 
+                </Link>
+              </div>
+              {/* Displaying three car listings */}
+              <div className="flex flex-col items-center justify-center gap-4 p-6"> {/* Increased height for better display */}
+                <img src="https://res.cloudinary.com/dihvudxbt/image/upload/v1729200173/JKAR_22_Compact_Cargo_Van_AngularFront_US_ENG_280x210_wsqbrx.avif" alt="Van" className="w-[300px] h-[220px] rounded-lg" /> 
+                <div className="text-center mb-0 mt-0">
+                  <h3 className="text-4xl font-semibold text-black">Vans</h3>
+                  <p className="text-black font-semibold mb-0">Spacious and practical.</p> 
+                  <p className="text-black">Starting from $30/day</p> {/* Added price info */}
+                </div>
+                <Link href="/Search">
+                  <Button className="hover:bg-blue-500 hover:shadow-lg  hover:bg-muted transition-all duration-300 rounded-lg mt-0" variant="outline">Rent Now</Button> 
+                </Link>
+              </div>
+              <div className="flex flex-col items-center justify-center gap-4 p-6"> {/* Increased height for better display */}
+                <img src="https://res.cloudinary.com/dbsxjsktb/image/upload/v1729522582/2020-ford-mustang-ecoboost-premium-convertible-white_featured_c4qsq5.avif" alt="Van" className="w-[300px] h-[220px] rounded-lg" /> 
+                <div className="text-center mb-0 mt-0">
+                  <h3 className="text-4xl font-semibold text-black">Convertible</h3>
+                  <p className="text-black font-semibold mb-0">Spacious and practical.</p> 
+                  <p className="text-black">Starting from $300/day</p> {/* Added price info */}
+                </div>
+                <Link href="/Search">
+                  <Button className="hover:bg-blue-500 hover:shadow-lg transition-all duration-300 rounded-lg mt-0 hover:bg-muted" variant="outline">Rent Now</Button> 
+                </Link>
+              </div>
+              <div className="flex flex-col items-center justify-center gap-4 p-6 "> {/* Increased height for better display */}
+                <img src="https://res.cloudinary.com/dbsxjsktb/image/upload/v1729527063/2022-ram-1500-limited-swb-crew-pick-up-silver_featured_x2xwqj.avif" alt="Van" className="w-[300px] h-[220px] rounded-lg" /> 
+                <div className="text-center mb-0 mt-0">
+                  <h3 className="text-4xl font-semibold text-black">Pickup Truck</h3>
+                  <p className="text-black font-semibold mb-0">Spacious and practical.</p> 
+                  <p className="text-black">Starting from $120/day</p> {/* Added price info */}
+                </div>
+                <Link href="/Search">
+                  <Button className="hover:bg-blue-500 hover:shadow-lg transition-all duration-300 rounded-lg mt-0 hover:bg-muted" variant="outline">Rent Now</Button> 
+                </Link>
+              </div>
             </div>
           </div>
         </section>
+<<<<<<< Updated upstream
         <section ref={ref4 } className={`relative bg-white py-12 md:py-16 lg:py-20 px-4 md:px-6 lg:px-10 h-full ${ 
+=======
+
+        <section ref={ref4 } className={`relative bg-muted py-20 md:py-16 lg:py-20 px-4 md:px-6 lg:px-10 h-full ${ 
+>>>>>>> Stashed changes
           inView4 ? 'animate-fadeInUp' : "opacity-0"}`}>
           <div className="max-w-10xl mx-auto space-y-6 md:space-y-8 lg:space-y-10 h-full">
             <div className="space-y-6 md:space-y-8">
@@ -296,54 +332,7 @@ const [ref4, inView4] = useInView({ threshold: 0.3,triggerOnce: true });
           </div>
         </section>
       </main>
-      <Footer/>
+      <Footer/> {/* Updated footer color */}
     </div>)
   );
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

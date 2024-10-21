@@ -1,4 +1,3 @@
-
 'use client'
 import Link from "next/link"
 import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator } from "@/components/ui/dropdown-menu"
@@ -8,7 +7,12 @@ import ChevronDownIcon from '@/svgs/ChevronDownIcon';
 import FlagIcon from '@/svgs/FlagIcon';
 import { useState } from "react";
 import { Separator } from "@/components/ui/separator";
-export function Navi() {
+
+interface NaviProps {
+  className?: string;
+}
+
+export const Navi: React.FC<NaviProps> = ({ className }) => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   return (
     
