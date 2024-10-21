@@ -210,7 +210,7 @@ const [ref4, inView4] = useInView({ threshold: 0.3,triggerOnce: true });
             </div>
           </div>
         </section>
-        <section ref={ref4 } className={`relative bg-muted py-12 md:py-16 lg:py-20 px-4 md:px-6 lg:px-10 h-full ${ 
+        <section ref={ref4 } className={`relative bg-white py-12 md:py-16 lg:py-20 px-4 md:px-6 lg:px-10 h-full ${ 
           inView4 ? 'animate-fadeInUp' : "opacity-0"}`}>
           <div className="max-w-10xl mx-auto space-y-6 md:space-y-8 lg:space-y-10 h-full">
             <div className="space-y-6 md:space-y-8">
