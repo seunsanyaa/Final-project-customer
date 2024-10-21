@@ -72,24 +72,52 @@ export const deleteBooking = mutation({
 });
 
 // Get bookings by customer ID
-// Get bookings by customer ID
 export const getBookingsByCustomer = query({
 	// Validate the customerId argument against the 'bookings' table
 	args: { customerId: v.string() },  // Use string validation for customerId
 	handler: async (ctx, args) => {
-	  // Query the bookings table using the customerId field
-	  return await ctx.db
-		.query('bookings')
-		.withIndex('by_customerId', (q) => q.eq('customerId', args.customerId))  // Query by customerId
-		.collect();
+		// Fetch all bookings for the given customerId
+		const bookings = await ctx.db
+			.query('bookings')
+			.withIndex('by_customerId', (q) => q.eq('customerId', args.customerId))
+			.collect();
+
+		// Fetch car details for each booking where carId matches registrationNumber
+		const bookingsWithCarDetails = await Promise.all(
+			bookings.map(async (booking) => {
+				const car = await ctx.db
+					.query('cars')
+					.withIndex('by_registrationNumber', (q) =>
+						q.eq('registrationNumber', booking.carId)
+					)
+					.first();
+
+				return {
+					...booking,
+					carDetails: car
+						? `${car.maker} ${car.model} (${car.year})`
+						: 'Not available',
+					make: car?.maker || 'Not available',
+					model: car?.model || 'Not available',
+					color: car?.color || 'Not available',
+					trim: car?.trim || 'Not available',
+					customerName: 'Not available', // You can fetch and include customer details similarly
+					rewardsPointsUsed: 0, // Update as per your business logic
+					rewardsPointsCredited: 'Not available', // Update as needed
+					cancellationPolicy: 'Standard 24-hour cancellation policy applies', // Update if different
+				};
+			})
+		);
+
+		return bookingsWithCarDetails;
 	},
-  });
+});
   
   
 
 // Get bookings by car ID
 export const getBookingsByCar = query({
-	args: { carId: v.id('cars') },
+	args: { carId: v.string() },
 	handler: async (ctx, args) => {
 		return await ctx.db
 			.query('bookings')
@@ -124,6 +152,10 @@ export const getBookingDetails = query({
 		return {
 			...booking,
 			carDetails: car ? `${car.maker} ${car.model} (${car.year})` : 'Not available',
+			make: car?.maker,
+			model: car?.model,
+			color: car?.color,
+			trim: car?.trim,
 			customerName: 'Not available',
 			totalPaid,
 			rewardsPointsEarned: Math.floor(booking.totalCost * 0.1),
