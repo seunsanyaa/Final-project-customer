@@ -22,6 +22,7 @@ interface Booking {
   pickupLocation: string;
   dropoffLocation: string;
   carId: string;
+  trim: string; // Added trim field
 }
 
 export function Mybookings() {
@@ -104,6 +105,10 @@ export function Mybookings() {
               <div>
                 <h3 className="text-lg font-semibold">Car Model</h3>
                 <p>{carDetails ? `${carDetails.maker} ${carDetails.model}` : 'N/A'}</p>
+              </div>
+              <div>
+                <h3 className="text-lg font-semibold">Trim</h3>
+                <p>{carDetails ? carDetails.trim : 'N/A'}</p>
               </div>
               <div>
                 <h3 className="text-lg font-semibold">License Plate</h3>

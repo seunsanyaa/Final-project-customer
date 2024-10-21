@@ -134,7 +134,7 @@ export default function BookingDetails() {
                   <div className="text-sm font-medium text-muted-foreground">
                     Car Details
                   </div>
-                  <div className="text-base font-semibold">{bookingDetails.carDetails}</div>
+                  <div className="text-base font-semibold">{bookingDetails.carDetails } {bookingDetails.trim} </div>
                 </div>
                 <div>
                   <div className="text-sm font-medium text-muted-foreground">
