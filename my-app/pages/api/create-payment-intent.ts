@@ -23,7 +23,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       // Send the clientSecret to the client
       res.status(200).json({ clientSecret: paymentIntent.client_secret });
     } catch (error) {
-      res.status(500).json({ error: error.message });
+      res.status(500).json({ error: (error as Error).message });
     }
   } else {
     res.setHeader('Allow', 'POST');
