@@ -204,9 +204,9 @@ const [ref4, inView4] = useInView({ threshold: 0.3,triggerOnce: true });
             </div>
           </div>
         </section>
-        <section ref={ref4 } className={`relative bg-muted py-12 md:py-16 lg:py-20 px-4 md:px-6 lg:px-10 ${ 
+        <section ref={ref4 } className={`relative bg-white py-12 md:py-16 lg:py-20 px-4 md:px-6 lg:px-10 ${ 
           inView4 ? 'animate-fadeInUp' : "opacity-0"}`}>
-          <div className="max-w-10xl mx-auto space-y-6 md:space-y-8 lg:space-y-10">
+          <div className="max-w-10xl  mx-auto space-y-6 md:space-y-8 lg:space-y-10">
             <div className="space-y-6 md:space-y-8">
               <div className="text-center">
                 <h2 className="text-3xl font-bold tracking-tight sm:text-4xl md:text-5xl">What our customers say</h2>
@@ -231,9 +231,9 @@ const [ref4, inView4] = useInView({ threshold: 0.3,triggerOnce: true });
                         </div>
                       </div>
                     </div>
-                    <p className="mt-4 text-muted-foreground">
+                    <p className="mt-4 text-muted-black">
                     &quot;I had a great experience renting with this company. The\n process was smooth and the car was in
-                      excellent\n condition.&quot;
+                      excellent condition.&quot;
                     </p>
                   </CardContent>
                 </Card>
@@ -255,9 +255,9 @@ const [ref4, inView4] = useInView({ threshold: 0.3,triggerOnce: true });
                         </div>
                       </div>
                     </div>
-                    <p className="mt-4 text-muted-foreground">
+                    <p className="mt-4 text-muted-black">
                     &quot;I was impressed by the wide selection of vehicles and\n the competitive prices. I&apos;ll definitely
-                      be renting from\n them again.&quot;
+                      be renting from them again.&quot;
                     </p>
                   </CardContent>
                 </Card>
@@ -279,9 +279,9 @@ const [ref4, inView4] = useInView({ threshold: 0.3,triggerOnce: true });
                         </div>
                       </div>
                     </div>
-                    <p className="mt-4 text-muted-foreground">
+                    <p className="mt-4 text-muted-black">
                     &quot;The rental process was quick and easy, and the staff\n was very helpful. I would definitely
-                      recommend this\n company to anyone looking to rent a car.&quot;
+                      recommend this company to anyone looking to rent a car.&quot;
                     </p>
                   </CardContent>
                 </Card>
