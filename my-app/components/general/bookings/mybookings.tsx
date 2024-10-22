@@ -9,7 +9,7 @@ import { Navi } from '../head/navi';
 import { Footer } from '../head/footer';
 import { api } from "@/convex/_generated/api";
 import { useQuery, useMutation } from "convex/react";
-
+import {useUser} from "@clerk/nextjs"
 interface Booking {
   _id: string;
   make: string;
@@ -26,6 +26,8 @@ interface Booking {
 }
 
 export function Mybookings() {
+
+  const {user} = useUser();
   const [filteredBookings, setFilteredBookings] = useState<Booking[]>([]);
   const [filterStartDate, setFilterStartDate] = useState<string | null>(null)
   const [filterEndDate, setFilterEndDate] = useState<string | null>(null)
@@ -33,9 +35,9 @@ export function Mybookings() {
   const [filterModel, setFilterModel] = useState("")
   const [filterColor, setFilterColor] = useState("")
   const [selectedBooking, setSelectedBooking] = useState<Booking | null>(null)
-
+console.log(user)
   // Replace the customerId state with a hardcoded value or retrieve it from auth
-  const customerId = 'user123';
+  const customerId = user?.id;
 
   // Use Convex's query hook to fetch bookings
   const bookings = useQuery(api.bookings.getBookingsByCustomer, { customerId });

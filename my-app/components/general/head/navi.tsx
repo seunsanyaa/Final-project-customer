@@ -7,7 +7,7 @@ import ChevronDownIcon from '@/svgs/ChevronDownIcon';
 import FlagIcon from '@/svgs/FlagIcon';
 import { useState } from "react";
 import { Separator } from "@/components/ui/separator";
-
+import { SignedIn, SignedOut, SignInButton, UserButton } from "@clerk/nextjs";
 interface NaviProps {
   className?: string;
 }
@@ -103,7 +103,13 @@ onClick={() => setIsMenuOpen(!isMenuOpen)}>
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
-            <DropdownMenu>
+            <SignedOut>
+              <SignInButton />
+            </SignedOut> 
+             <SignedIn>
+              <UserButton />
+            </SignedIn>
+            {/* <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Avatar className="h-9 w-9 rounded-xl">
                   <AvatarImage src="/placeholder-user.jpg" className="rounded-xl" />
@@ -115,9 +121,10 @@ onClick={() => setIsMenuOpen(!isMenuOpen)}>
                 <DropdownMenuItem><Link href="/User_Account">My Account</Link></DropdownMenuItem>
                 <DropdownMenuItem><Link href='/Settings'>Settings</Link></DropdownMenuItem>
                 <DropdownMenuSeparator />
+               
                 <DropdownMenuItem><Link href='/Login'>Logout</Link></DropdownMenuItem>
               </DropdownMenuContent>
-            </DropdownMenu>
+            </DropdownMenu> */}
           </div>
       </header>
       

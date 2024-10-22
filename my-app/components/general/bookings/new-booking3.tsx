@@ -15,7 +15,7 @@ import CheckoutButton from "../payment/payment_button";
 import { useMutation } from 'convex/react';
 import { api } from '../../../convex/_generated/api';
 import { Id } from '../../../convex/_generated/dataModel';
-
+import { useUser } from "@clerk/nextjs";
 export function NewBooking3() {
   const bookingSummaryRef = useRef<HTMLDivElement>(null);
   const [paymentMethod, setPaymentMethod] = useState<string | null>(null);
@@ -24,7 +24,7 @@ export function NewBooking3() {
     gps: false,
     childSeat: false
   });
-
+  const {user} = useUser();
   const [pickupDateTime, setPickupDateTime] = useState('');
   const [dropoffDateTime, setDropoffDateTime] = useState('');
   const [pickupLocation, setPickupLocation] = useState('');
@@ -77,7 +77,7 @@ export function NewBooking3() {
     const total = calculateTotal();
     
     const booking = {
-      customerId: 'user123' as string, // Cast to Id<"customers">
+      customerId: user?.id as string, // Cast to Id<"customers">
       carId: registrationNumber as string, // Cast to Id<"cars">
       startDate: pickupDateTime,
       endDate: dropoffDateTime,

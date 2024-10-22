@@ -21,9 +21,9 @@ export const createCustomer = mutation({
 		if (existingCustomer) {
 			return `Customer with ID ${args.userId} already exists.`;
 		}
-
+		const user = await ctx.db.query('users').withIndex('by_userId', (q) => q.eq('userId', args.userId)).first();
 		await ctx.db.insert('customers', {
-			userId: args.userId,
+			userId: user?.userId ?? '',
 			nationality: args.nationality,
 			age: args.age,
 			phoneNumber: args.phoneNumber,

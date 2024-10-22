@@ -66,8 +66,9 @@ export const updateCar = mutation({
 		lastMaintenanceDate: v.optional(v.string()),
 		available: v.optional(v.boolean()),
 		year: v.optional(v.number()),
+		pictures: v.optional(v.array(v.string())),
 		disabled: v.optional(v.boolean()),
-		price: v.optional(v.number()), // Add price here
+		pricePerDay: v.optional(v.number()), // Add price here
 	},
 	handler: async (ctx, args) => {
 		const existingCar = await ctx.db
