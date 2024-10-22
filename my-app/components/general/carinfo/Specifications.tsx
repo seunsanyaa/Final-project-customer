@@ -7,9 +7,10 @@ interface SpecificationsProps {
   maker: string;
   model: string;
   year: number;
+  trim: string;
 }
 
-const Specifications: React.FC<SpecificationsProps> = ({ maker, model, year }) => {
+const Specifications: React.FC<SpecificationsProps> = ({ maker, model, year, trim }) => {
   const getCarSpecifications = useAction(api.car.getCarSpecifications);
   const [specifications, setSpecifications] = React.useState<SpecificationsType | null>(null);
   const [loading, setLoading] = React.useState(true);
@@ -18,7 +19,7 @@ const Specifications: React.FC<SpecificationsProps> = ({ maker, model, year }) =
   React.useEffect(() => {
     const fetchSpecifications = async () => {
       try {
-        const specs = await getCarSpecifications({ maker, model, year: year.toString() });
+        const specs = await getCarSpecifications({ maker, model, year, trim });
         setSpecifications(specs);
       } catch (err) {
         setError('Failed to fetch specifications');

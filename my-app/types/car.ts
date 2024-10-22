@@ -2,6 +2,7 @@
 export interface Car {
   model: string;
   maker: string;
+  trim: string;
   pictures: string[];
   registrationNumber: string;
   lastMaintenanceDate: string;

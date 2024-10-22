@@ -31,6 +31,7 @@ export function Carinfo() {
         maker: car.maker,
         pricePerDay: car.pricePerDay, 
         year: car.year,
+        trim: car.trim,
         disabled: car.disabled,
         registrationNumber: car.registrationNumber,
       },
@@ -63,7 +64,7 @@ export function Carinfo() {
               </div>
             </div>
             <div className="space-y-6">
-              <Specifications maker={car.maker} model={car.model} year={car.year} />
+              <Specifications maker={car.maker} model={car.model} year={car.year} trim={car.trim} />
               <div>
                 <h2 className="text-2xl font-bold">Features</h2>
                 <ul className="mt-4 space-y-2 text-muted-foreground">

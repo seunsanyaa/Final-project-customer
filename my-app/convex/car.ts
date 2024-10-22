@@ -153,39 +153,45 @@ export const getCarSpecifications = action({
 
 		console.log('Input values:', { maker, model, year, trim });
 
+		// Update the API command to 'getTrims'
 		const apiUrl = `https://www.carqueryapi.com/api/0.3/?callback=?&cmd=getTrims&make=${encodeURIComponent(
 			maker
 		)}&model=${encodeURIComponent(model)}&year=${encodeURIComponent(year.toString())}&trim=${encodeURIComponent(trim)}`;
 
-		const response = await fetch(apiUrl);
-		const text = await response.text();
+		try {
+			const response = await fetch(apiUrl);
+			const text = await response.text();
 
-		// Extract JSON from JSONP response
-		const jsonMatch = text.match(/\{.+\}/);
-		if (!jsonMatch) {
-			throw new Error('Invalid API response');
-		}
+			// Extract JSON from JSONP response
+			const jsonMatch = text.match(/\{.+\}/);
+			if (!jsonMatch) {
+				throw new Error('Invalid API response');
+			}
 
-		const json = JSON.parse(jsonMatch[0]);
+			const json = JSON.parse(jsonMatch[0]);
 
-		if (!json.Trims || json.Trims.length === 0) {
-			throw new Error('No specifications found for the given car details');
-		}
+			if (!json.Trims || json.Trims.length === 0) {
+				throw new Error('No specifications found for the given car details');
+			}
 
-		const carData = json.Trims[0];
+			const carData = json.Trims[0];
 
-		const specifications = {
-			engineType: carData.model_engine_type || "N/A",
-			engineCylinders: carData.model_engine_cyl || "N/A",
-			engineHorsepower: carData.model_engine_power_ps
-				? `${carData.model_engine_power_ps} PS`
+			const specifications = {
+				engineType: carData.model_engine_type || "N/A",
+				engineCylinders: carData.model_engine_cyl || "N/A",
+				engineHorsepower: carData.model_engine_power_ps
+					? `${carData.model_engine_power_ps} PS`
 					: "N/A",
-			fuelType: carData.model_engine_fuel || "N/A",
-			transmission: carData.model_transmission_type || "N/A",
-			drive: carData.model_drive || "N/A",
-			seats: carData.model_seats || "N/A",
-		};
+				fuelType: carData.model_engine_fuel || "N/A",
+				transmission: carData.model_transmission_type || "N/A",
+				drive: carData.model_drive || "N/A",
+				seats: carData.model_seats || "N/A",
+			};
 
-		return specifications;
+			return specifications;
+		} catch (error) {
+			console.error('Error fetching car specifications:', error);
+			throw new Error('Failed to fetch specifications');
+		}
 	},
 });
