@@ -215,3 +215,47 @@ export const getCarByCarId = query({
 		return car;
 	},
 });
+
+/**
+ * Fetch bookings for a customer that do not have an associated review along with car details.
+ */
+export const getPendingReviewsByCustomer = query({
+  args: { customerId: v.string() },
+  handler: async (ctx, args) => {
+    const { customerId } = args;
+
+    // Fetch all bookings for the given customerId
+    const bookings = await ctx.db
+      .query('bookings')
+      .withIndex('by_customerId', (q) => q.eq('customerId', customerId))
+      .collect();
+
+    // Filter out bookings that already have a reviewId
+    const pendingReviews = bookings.filter((booking) => !booking.reviewId);
+
+    // Fetch car details for each pending booking
+    const bookingsWithCarDetails = await Promise.all(
+      pendingReviews.map(async (booking) => {
+        const car = await ctx.db
+          .query('cars')
+          .withIndex('by_registrationNumber', (q) => q.eq('registrationNumber', booking.carId))
+          .first();
+
+        return {
+          ...booking,
+          carDetails: car
+            ? {
+                maker: car.maker,
+                model: car.model,
+                year: car.year,
+                color: car.color,
+                trim: car.trim,
+              }
+            : null,
+        };
+      })
+    );
+
+    return bookingsWithCarDetails;
+  },
+});

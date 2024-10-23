@@ -1,5 +1,6 @@
 // Define the Car interface based on the properties used in Carinfo
 export interface Car {
+  _id: string;
   model: string;
   maker: string;
   trim: string;
@@ -10,6 +11,7 @@ export interface Car {
   year: number;
   disabled: boolean;
   pricePerDay: number;
+  averageRating: number;
 }
 
 export interface Specifications {

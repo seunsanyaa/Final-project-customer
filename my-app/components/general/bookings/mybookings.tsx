@@ -62,7 +62,7 @@ export function Mybookings() {
 
   useEffect(() => {
     if (bookings) {
-      setFilteredBookings(bookings);
+      setFilteredBookings(bookings as Booking[]);
       setLoading(false);
     }
     else{
@@ -87,7 +87,7 @@ export function Mybookings() {
     if (filterColor) {
       filtered = filtered.filter((booking) => booking.color.toLowerCase().includes(filterColor.toLowerCase()))
     }
-    setFilteredBookings(filtered)
+    setFilteredBookings(filtered as Booking[])
   }
   
   const handleViewDetails = (booking: Booking) => {
