@@ -1,5 +1,5 @@
-import { ReviewsPage } from "@/components/general/ratings_and_reviews/reviews_page";
+import { Reviews_Page } from "@/components/general/ratings_and_reviews/reviews_page";
 
 export default function prompage() {
-  return <ReviewsPage/>
+  return <Reviews_Page/>
 }

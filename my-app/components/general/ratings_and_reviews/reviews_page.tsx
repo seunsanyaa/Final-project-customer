@@ -20,7 +20,7 @@ const previousBookings = [
   { id: 2, carName: 'Audi A4', startDate: '2023-05-20', endDate: '2023-05-22', reviewed: false },
 ]
 
-export default function CustomerReviews() {
+export  function Reviews_Page() {
   const [expandedBooking, setExpandedBooking] = useState(null)
   const [newReview, setNewReview] = useState('')
   const [newRating, setNewRating] = useState(0)

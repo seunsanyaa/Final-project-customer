@@ -37,8 +37,10 @@ export function Mybookings() {
   const [selectedBooking, setSelectedBooking] = useState<Booking | null>(null)
 console.log(user)
   // Replace the customerId state with a hardcoded value or retrieve it from auth
-  const customerId = user?.id;
-
+  const customerId = user?.id || "";
+if (customerId === "") {
+  return <div>Please Login to View your Bookings</div>
+}
   // Use Convex's query hook to fetch bookings
   const bookings = useQuery(api.bookings.getBookingsByCustomer, { customerId });
 

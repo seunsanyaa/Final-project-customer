@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Elements, PaymentElement, useStripe, useElements } from "@stripe/react-stripe-js";
 import { loadStripe, StripeElementsOptions, Appearance } from "@stripe/stripe-js";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
@@ -7,13 +7,15 @@ import { Separator } from "@/components/ui/separator";
 import { Navi } from "../head/navi";
 import { Footer } from "../head/footer";
 import { useRouter } from 'next/router';
+import Lottie, { LottieRefCurrentProps } from "lottie-react";
+import loadingAnimation from "@/public/animations/loadingAnimation.json"; // Import your animation
 
 export function Payment_Page() {
   const router = useRouter();
   const [total, setTotal] = useState<number | null>(null);
   const [agreedToTerms, setAgreedToTerms] = useState(false);
   const [clientSecret, setClientSecret] = useState<string | null>(null);
-
+  const lottieRef = useRef<LottieRefCurrentProps>(null);
   useEffect(() => {
     if (router.isReady) {
       const totalFromQuery = router.query.total;
@@ -56,7 +58,14 @@ export function Payment_Page() {
           <PaymentForm agreedToTerms={agreedToTerms} setAgreedToTerms={setAgreedToTerms} total={total} />
         </Elements>
       ) : (
-        <p>Loading payment details...</p>
+        <div className="flex items-center justify-center h-screen">
+        <Lottie
+          lottieRef={lottieRef}
+          animationData={loadingAnimation}
+          loop={true}
+          className="w-48 h-48"
+        />
+      </div>
       )}
     </>
   );
