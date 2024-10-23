@@ -114,7 +114,12 @@ export const getBookingsByCustomer = query({
 });
   
   
-
+export const addReview = mutation({
+	args: { reviewId: v.string(), bookingId: v.id('bookings') },
+	handler: async (ctx, args) => {
+		return await ctx.db.patch(args.bookingId, { reviewId: args.reviewId });
+	},
+});
 // Get bookings by car ID
 export const getBookingsByCar = query({
 	args: { carId: v.string() },

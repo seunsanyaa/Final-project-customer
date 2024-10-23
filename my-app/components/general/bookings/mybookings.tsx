@@ -128,17 +128,15 @@ export function Mybookings() {
       <Separator />
       <div className="max-w-6xl mx-auto px-4 py-8 sm:px-6 md:py-12">
         <h1 className="text-3xl font-bold mb-8">Your Car Bookings</h1>
-        <Link href={`bookings/currentbooking?bookingId=${currentBooking?._id}`} className='hover:cursor-pointer'>
-          <div className="bg-background border rounded-lg p-6 shadow-sm">
-            <div className="flex items-center justify-between">
-              <div>
-                <h2 className="text-2xl font-semibold">Current Booking</h2>
+       
                 {currentBooking ? (
+                   <Link href={`bookings/currentbooking?bookingId=${currentBooking?._id}`} className='hover:cursor-pointer'>
+                   <div className="bg-background border rounded-lg p-6 shadow-sm">
+                     <div className="flex items-center justify-between">
+                       <div>
+                         <h2 className="text-2xl font-semibold">Current Booking</h2>
                   <p className="text-muted-foreground">Rental Dates: {currentBooking.startDate} - {currentBooking.endDate}</p>
-                ) : (
-                  <p className="text-muted-foreground">No current bookings</p>
-                )}
-              </div>
+                  </div>
               <div className="text-right">
                 <h3 className="text-3xl font-bold">${currentBooking ? currentBooking.totalCost : 0}</h3>
                 <p className="text-muted-foreground">Total Cost</p>
@@ -169,6 +167,16 @@ export function Mybookings() {
             </div>
           </div>
         </Link>
+                ) : (<div className="bg-background border rounded-lg p-6 shadow-sm">
+                     <div className="flex items-center justify-between">
+                       <div>
+                         <h2 className="text-2xl font-semibold">Current Booking</h2>
+                  <p className="text-muted-foreground">No current bookings</p>
+                </div>
+              </div>
+            </div>
+          )}
+              
         <Separator className="my-6" />
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           <div className="bg-background rounded-lg shadow-md p-6 max-w-md">

@@ -42,6 +42,7 @@ export default defineSchema({
 		registrationNumber: v.string(), // Unique plate number for the individual car
 		pictures: v.array(v.string()), // Array of picture URLs
 		pricePerDay: v.number(),
+		averageRating: v.optional(v.number()),
 	})
 		.index('by_model', ['model'])
 		.index('by_maker', ['maker'])
@@ -60,6 +61,7 @@ export default defineSchema({
 		dropoffLocation: v.string(),
 		customerInsurancetype: v.string(),
 		customerInsuranceNumber: v.string(),
+		reviewId: v.optional(v.string()),
 	})
 		.index('by_customerId', ['customerId'])
 		.index('by_carId', ['carId']),
@@ -83,76 +85,16 @@ export default defineSchema({
 	})
 		.index('by_model', ['model'])
 		.index('by_maker', ['maker']),
+
+	reviews:defineTable({
+		bookingId: v.id('bookings'),
+		rating: v.number(),
+		userId: v.string(),
+		comment: v.string(),
+		numberOfStars: v.number(),
+		reviewDate: v.string(),
+	})
+		.index('by_bookingId', ['bookingId'])
+		.index('by_userId', ['userId']),
 });
 
-// 	bookings: defineTable({
-// 		bookingId: v.string(),
-// 		customerId: v.string(),
-// 		carId: v.string(),
-// 		startDate: v.string(),
-// 		endDate: v.string(),
-// 		totalCost: v.number(),
-// 		paidAmount: v.number(),
-// 		status: v.string(),
-// 		pickupLocation: v.string(),
-// 		dropoffLocation: v.string(),
-// 		customerInsurancetype: v.string(),
-// 		customerInsuranceNumber: v.string(),
-// 	})
-// 		.index('by_bookingId', ['bookingId'])
-// 		.index('by_customerId', ['customerId'])
-// 		.index('by_carId', ['carId']),
-
-// 	payments: defineTable({
-// 		recieptNumber: v.string(),
-// 		bookingId: v.string(),
-// 		amount: v.number(),
-// 		paymentDate: v.string(),
-// 		paymenttype: v.string(),
-// 	})
-// 		.index('by_recieptNumber', ['recieptNumber'])
-// 		.index('by_bookingId', ['bookingId']),
-
-// 	reviews: defineTable({
-// 		reviewId: v.string(),
-// 		bookingId: v.string(),
-// 		rating: v.number(),
-// 		comment: v.string(),
-// 		reviewDate: v.string(),
-// 	})
-// 		.index('by_reviewId', ['reviewId'])
-// 		.index('by_bookingId', ['bookingId']),
-
-// 	maintenance: defineTable({
-// 		maintenanceId: v.string(),
-// 		carId: v.string(),
-// 		maintenanceDate: v.string(),
-// 		description: v.string(),
-// 		cost: v.number(),
-// 	})
-// 		.index('by_maintenanceId', ['maintenanceId'])
-// 		.index('by_carId', ['carId']),
-
-// 	insurance: defineTable({
-// 		insuranceId: v.string(),
-// 		carId: v.string(),
-// 		provider: v.string(),
-// 		policyNumber: v.string(),
-// 		startDate: v.string(),
-// 		endDate: v.string(),
-// 		coverage: v.string(),
-// 	})
-// 		.index('by_insuranceId', ['insuranceId'])
-// 		.index('by_carId', ['carId']),
-// 	promotion: defineTable({
-// 		promotionId: v.string(),
-// 		discount: v.number(),
-// 		demographic: v.string(),
-// 	}).index('by_promotionId', ['promotionId']),
-// 	analyticalreport: defineTable({
-// 		reportId: v.string(),
-// 		reportDate: v.string(),
-// 		reportTitle: v.string(),
-// 		reportContent: v.string(),
-// 	}).index('by_reportId', ['reportId']),
-// });
