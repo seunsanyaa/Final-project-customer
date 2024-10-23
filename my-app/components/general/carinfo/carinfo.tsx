@@ -65,16 +65,7 @@ export function Carinfo() {
             </div>
             <div className="space-y-6">
               <Specifications maker={car.maker} model={car.model} year={car.year} trim={car.trim} />
-              <div>
-                <h2 className="text-2xl font-bold">Features</h2>
-                <ul className="mt-4 space-y-2 text-muted-foreground">
-                  <li>Leather seats with heating and cooling</li>
-                  <li>Premium audio system with 12 speakers</li>
-                  <li>Adaptive cruise control</li>
-                  <li>Lane-keeping assist</li>
-                  <li>Panoramic sunroof</li>
-                </ul>
-              </div>
+              
 
               <div>
                 <h2 className="text-2xl font-bold">Pricing</h2>

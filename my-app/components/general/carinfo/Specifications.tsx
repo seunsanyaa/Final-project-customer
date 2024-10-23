@@ -59,7 +59,7 @@ const Specifications: React.FC<SpecificationsProps> = ({ maker, model, year, tri
           <span className="font-medium">Drive:</span> {specifications.drive}
         </li>
         <li>
-          <span className="font-medium">Seats:</span> {specifications.seats}
+          <span className="font-medium">Doors:</span> {specifications.doors}
         </li>
       </ul>
     </div>

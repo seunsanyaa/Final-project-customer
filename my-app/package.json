@@ -37,6 +37,7 @@
     "convex": "^1.13.2",
     "embla-carousel-react": "^8.3.0",
     "input-otp": "^1.2.4",
+    "ldrs": "^1.0.2",
     "leaflet": "^1.9.4",
     "lottie-react": "^2.4.0",
     "lucide-react": "^0.424.0",

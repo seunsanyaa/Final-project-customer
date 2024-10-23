@@ -151,18 +151,19 @@ export const getCarSpecifications = action({
 	},
 	handler: async (ctx, args) => {
 		const { maker, model, year, trim } = args;
+		// Extract the first word of the trim if it contains multiple words
+		const trimFirstWord = trim.split(' ')[0];
 
-		console.log('Input values:', { maker, model, year, trim });
+		// Log the full URL with the first word of the trim
+		console.log(`https://www.carqueryapi.com/api/0.3/?callback=?&cmd=getTrims&make=${encodeURIComponent(maker)}&model=${encodeURIComponent(model)}&year=${year}&trim=${encodeURIComponent(trimFirstWord)}`);
 
-		// Update the API command to 'getTrims'
-		const apiUrl = `https://www.carqueryapi.com/api/0.3/?callback=?&cmd=getTrims&make=${encodeURIComponent(
-			maker
-		)}&model=${encodeURIComponent(model)}&year=${encodeURIComponent(year.toString())}&trim=${encodeURIComponent(trim)}`;
+		// Construct the API URL with the first word of the trim
+		const apiUrl = `https://www.carqueryapi.com/api/0.3/?callback=?&cmd=getTrims&make=${encodeURIComponent(maker)}&model=${encodeURIComponent(model)}&year=${year}&trim=${encodeURIComponent(trimFirstWord)}`;
 
 		try {
 			const response = await fetch(apiUrl);
 			const text = await response.text();
-
+			console.log('API Response:', text);
 			// Extract JSON from JSONP response
 			const jsonMatch = text.match(/\{.+\}/);
 			if (!jsonMatch) {
@@ -175,7 +176,14 @@ export const getCarSpecifications = action({
 				throw new Error('No specifications found for the given car details');
 			}
 
-			const carData = json.Trims[0];
+			// Find the trim that exactly matches the provided trim
+			const matchingTrim = json.Trims.find((t: any) => t.model_trim === trim);
+
+			if (!matchingTrim) {
+				throw new Error(`No matching trim found for trim "${trim}"`);
+			}
+
+			const carData = matchingTrim;
 
 			const specifications = {
 				engineType: carData.model_engine_type || "N/A",
@@ -186,7 +194,7 @@ export const getCarSpecifications = action({
 				fuelType: carData.model_engine_fuel || "N/A",
 				transmission: carData.model_transmission_type || "N/A",
 				drive: carData.model_drive || "N/A",
-				seats: carData.model_seats || "N/A",
+				doors: carData.model_doors || "N/A",
 			};
 
 			return specifications;
