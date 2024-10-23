@@ -10,6 +10,10 @@ import { Footer } from '../head/footer';
 import { api } from "@/convex/_generated/api";
 import { useQuery, useMutation } from "convex/react";
 import {useUser} from "@clerk/nextjs"
+import { useRef } from "react"
+import Lottie, { LottieRefCurrentProps } from "lottie-react"
+import loadingAnimation from "@/public/animations/loadingAnimation.json"
+
 interface Booking {
   _id: string;
   make: string;
@@ -26,28 +30,44 @@ interface Booking {
 }
 
 export function Mybookings() {
-
-  const {user} = useUser();
+  const { user } = useUser();
   const [filteredBookings, setFilteredBookings] = useState<Booking[]>([]);
-  const [filterStartDate, setFilterStartDate] = useState<string | null>(null)
-  const [filterEndDate, setFilterEndDate] = useState<string | null>(null)
-  const [filterMake, setFilterMake] = useState("")
-  const [filterModel, setFilterModel] = useState("")
-  const [filterColor, setFilterColor] = useState("")
-  const [selectedBooking, setSelectedBooking] = useState<Booking | null>(null)
-console.log(user)
-  // Replace the customerId state with a hardcoded value or retrieve it from auth
+  const [filterStartDate, setFilterStartDate] = useState<string | null>(null);
+  const [filterEndDate, setFilterEndDate] = useState<string | null>(null);
+  const [filterMake, setFilterMake] = useState("");
+  const [filterModel, setFilterModel] = useState("");
+  const [filterColor, setFilterColor] = useState("");
+  const [selectedBooking, setSelectedBooking] = useState<Booking | null>(null);
+  const [loading, setLoading] = useState(true);
+  const lottieRef = useRef<LottieRefCurrentProps>(null);
+
   const customerId = user?.id || "";
-if (customerId === "") {
-  return <div>Please Login to View your Bookings</div>
-}
-  // Use Convex's query hook to fetch bookings
-  const bookings = useQuery(api.bookings.getBookingsByCustomer, { customerId });
+  
+  // Always call useQuery, but pass "skip" if customerId is empty
+  const bookings = useQuery(api.bookings.getBookingsByCustomer, 
+    customerId ? { customerId } : "skip"
+  );
+
+  // Always call useQuery for car details, but use null as initial value
+  const carDetails = useQuery(api.bookings.getCarByCarId, 
+    bookings && bookings.length > 0 ? { carId: bookings[0].carId } : "skip"
+  );
+
+  // Optionally set speed after the component mounts
+  useEffect(() => {
+    if (lottieRef.current) {
+      lottieRef.current.setSpeed(1.5);
+    }
+  }, []);
 
   useEffect(() => {
     if (bookings) {
       setFilteredBookings(bookings);
+      setLoading(false);
     }
+    else{
+      setLoading(false);
+    } 
   }, [bookings]);
 
   const handleFilterChange = () => {
@@ -69,17 +89,37 @@ if (customerId === "") {
     }
     setFilteredBookings(filtered)
   }
-
+  
   const handleViewDetails = (booking: Booking) => {
     setSelectedBooking(booking)
   }
 
-  const currentBooking = bookings?.[0];
-  const pastBookings = bookings?.filter(booking => new Date(booking.startDate) < new Date());
+  
 
-  const carDetails = useQuery(api.bookings.getCarByCarId, 
-    currentBooking ? { carId: currentBooking.carId } : "skip"
-  );
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center h-screen">
+        <Lottie
+          lottieRef={lottieRef}
+          animationData={loadingAnimation}
+          loop={true}
+          className="w-48 h-48"
+        />
+      </div>
+    );
+  }
+    if (customerId === "") {
+    return (
+      <>
+        <Navi />
+        <div className="flex items-center justify-center h-screen">
+          <div className="text-2xl font-bold">Please Login to View your Bookings</div>
+        </div>
+      </>
+    );
+  }
+  const currentBooking = bookings && bookings.length > 0 ? bookings[0] : null;
+  const pastBookings = bookings?.filter(booking => new Date(booking.startDate) < new Date());
 
   return (
     <>
