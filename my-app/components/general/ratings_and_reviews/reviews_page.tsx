@@ -104,7 +104,7 @@ export function Reviews_Page() {
                     {[...Array(5)].map((_, i) => (
                       <Star
                         key={i}
-                        className={`w-4 h-4 ${i < review.numberOfStars ? 'text-yellow-400 fill-yellow-400' : 'text-gray-300'}`}
+                        className={`w-4 h-4 ${i < review.numberOfStars ? 'text-foreground fill-foreground' : 'text-gray-300'}`}
                       />
                     ))}
                   </div>

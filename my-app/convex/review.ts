@@ -106,7 +106,7 @@ export const createReview = mutation({
     const carId = booking.carId;
 
     // Update the car's averageRating
-    await updateCarAverageRating(ctx, carId);
+    //await updateCarAverageRating(ctx, carId);
 
     return reviewId;
   },

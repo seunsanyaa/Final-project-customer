@@ -1,8 +1,11 @@
-import React from 'react';
-import { useQuery } from 'convex/react';
-import { getPendingReviewsByCustomer } from '../../../convex/bookings';
+import React, { useState } from 'react';
+import { useQuery, useMutation } from 'convex/react';
 import { Button } from "@/components/ui/button";
-import { api } from '@/convex/_generated/api'
+import { api } from '@/convex/_generated/api';
+import { ChevronUp, ChevronDown, Star } from 'lucide-react';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/card";
+import { Textarea } from "@/components/ui/textarea";
+
 type BookingWithCarDetails = {
   _id: string;
   customerId: string;
@@ -18,6 +21,7 @@ type BookingWithCarDetails = {
   customerInsuranceNumber: string;
   reviewId?: string;
   carDetails: CarDetails | null;
+  reviewed: boolean;
 };
 
 type CarDetails = {
@@ -31,50 +35,103 @@ type CarDetails = {
 const PreviousBookings: React.FC<{ customerId: string }> = ({ customerId }) => {
   const pendingBookings = useQuery(api.bookings.getPendingReviewsByCustomer, { customerId });
 
-  if (!pendingBookings || pendingBookings.length === 0) return <p>You have no previous bookings pending reviews.</p>;
+  const createReview = useMutation(api.review.createReview);
+
+  const [expandedBooking, setExpandedBooking] = useState<string | null>(null);
+  const [newReview, setNewReview] = useState<string>('');
+  const [newRating, setNewRating] = useState<number>(0);
+  const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const handleExpandBooking = (bookingId: string) => {
+    setExpandedBooking(prev => (prev === bookingId ? null : bookingId));
+  };
+
+  const handleSubmitReview = async (bookingId: string) => {
+    setIsSubmitting(true);
+    setError(null);
+    try {
+      await createReview({
+        bookingId: bookingId as Id<'bookings'>,
+        rating: newRating,
+        userId: customerId,
+        comment: newReview,
+        numberOfStars: newRating,
+      });
+      console.log(`Review submitted for booking ${bookingId}`);
+      
+      setNewReview('');
+      setNewRating(0);
+      setExpandedBooking(null);
+      // Optionally, refetch bookings or update state to reflect the new review
+    } catch (err: any) {
+      console.error(`Error submitting review for booking ${bookingId}:`, err);
+      setError(err.message || 'An error occurred while submitting your review.');
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  if (!pendingBookings) return <p>Loading...</p>; // Added a loading state
+
+  if (pendingBookings.length === 0) return <p>You have no previous bookings pending reviews.</p>;
 
   return (
-    <div>
-      <ul>
-        {pendingBookings.map((booking: BookingWithCarDetails) => {
-          const car = booking.carDetails;
-          return (
-            <li key={booking._id} className="mb-6">
-              <div className="border rounded-md p-4 shadow-sm">
-                <h3 className="text-xl font-semibold">Booking ID: {booking._id}</h3>
-                {car ? (
-                  <p className="mt-2">
-                    <strong>Car:</strong> {car.maker} {car.model} ({car.year}) - {car.color} - {car.trim}
-                  </p>
-                ) : (
-                  <p className="mt-2">Car details not available.</p>
+    <div className="container mx-auto px-4 py-8">
+      <h1 className="text-3xl font-bold mb-6">Your Previous Bookings</h1>
+      
+      <section className="mb-12">
+        <div className="space-y-4">
+          {pendingBookings.map((booking) => {
+            const car = booking.carDetails;
+            const isExpanded = expandedBooking === booking._id;
+
+            return (
+              <Card key={booking._id}>
+                <CardHeader>
+                  <CardTitle>{car ? `${car.maker} ${car.model} (${car.year})` : 'Car Details Not Available'}</CardTitle>
+                  <CardDescription>{new Date(booking.startDate).toLocaleDateString()} to {new Date(booking.endDate).toLocaleDateString()}</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <p><strong>Total Cost:</strong> ${booking.totalCost.toFixed(2)}</p>
+                  <p><strong>Status:</strong> {booking.status}</p>
+                  {booking.reviewed ? (
+                    <p className="text-green-600">You've already reviewed this booking.</p>
+                  ) : (
+                    <Button onClick={() => handleExpandBooking(booking._id)}>
+                      Leave a Review
+                      {isExpanded ? <ChevronUp className="ml-2 h-4 w-4" /> : <ChevronDown className="ml-2 h-4 w-4" />}
+                    </Button>
+                  )}
+                </CardContent>
+                {isExpanded && (
+                  <CardFooter className="flex flex-col items-start">
+                    <div className="flex items-center mb-4">
+                      {[...Array(5)].map((_, i) => (
+                        <Star
+                          key={i}
+                          className={`w-6 h-6 cursor-pointer ${i < newRating ? 'text-foreground fill-foreground' : 'text-gray-300'}`}
+                          onClick={() => setNewRating(i + 1)}
+                        />
+                      ))}
+                    </div>
+                    <Textarea
+                      placeholder="Write your review here..."
+                      value={newReview}
+                      onChange={(e) => setNewReview(e.target.value)}
+                      className="w-full mb-4"
+                    />
+                    {error && <p className="text-red-500 mb-2">{error}</p>}
+                    <Button onClick={() => handleSubmitReview(booking._id)} disabled={isSubmitting}>
+                      {isSubmitting ? 'Submitting...' : 'Submit Review'}
+                    </Button>
+                  </CardFooter>
                 )}
-                <p>
-                  <strong>Rental Period:</strong> {new Date(booking.startDate).toLocaleDateString()} -{' '}
-                  {new Date(booking.endDate).toLocaleDateString()}
-                </p>
-                <p>
-                  <strong>Total Cost:</strong> ${booking.totalCost.toFixed(2)}
-                </p>
-                <p>
-                  <strong>Status:</strong> {booking.status}
-                </p>
-                <Button
-                  className="mt-4"
-                  onClick={() => {
-                    // Implement navigation to the review submission page or open a modal
-                    console.log(`Redirecting to review for booking ID: ${booking._id}`);
-                    // Example using Next.js router:
-                    // router.push(`/reviews/create?bookingId=${booking._id}`);
-                  }}
-                >
-                  Leave a Review
-                </Button>
-              </div>
-            </li>
-          );
-        })}
-      </ul>
+              </Card>
+            );
+          })}
+        </div>
+      </section>
     </div>
   );
 };
