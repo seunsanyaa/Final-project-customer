@@ -1,474 +1,283 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from 'react';
+import { useUser } from '@clerk/nextjs';
 import { Button } from "@/components/ui/button";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import Link from "next/link";
+
 import { Navi } from "../head/navi";
 import { Separator } from "@/components/ui/separator";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
-import { createWorker, OEM, LoggerMessage } from 'tesseract.js';
-import { useMutation, useQuery } from "convex/react";
-import { api } from "@/convex/_generated/api";
-import { useUser } from "@clerk/nextjs";
-
-interface PersonalInfo {
-  fullName: string;
-  dob: string;
-  license: string;
-  nationality: string;
-  address: string;
-  expirationDate: string;
-}
-
-interface ContactInfo {
-  email: string;
-  phone: string;
-}
-
-interface ExtractedInfo {
-  fullName: string;
-  license: string;
-  expirationDate: string;
-  address?: string;
-}
-
 export function User_page() {
-  const { user } = useUser();
-  const userData = useQuery(api.users.getFullUser, { userId: user?.id ?? "" });
-  const customerData = useQuery(api.customers.getCustomerByUserId, { userId: user?.id ?? "" });
+  const { user } = useUser(); // Access Clerk's user data
 
-  // State to manage edit mode and input values
-  const [isEditing, setIsEditing] = useState(false);
-  const [isDialogOpen, setIsDialogOpen] = useState(false); // State for dialog visibility
+  // State to manage edit modes and input values
+  const [isEditingPersonal, setIsEditingPersonal] = useState(false);
+  const [isEditingContact, setIsEditingContact] = useState(false);
+  const [isPasswordVisible, setIsPasswordVisible] = useState(false); // State for password visibility
 
-  // Update state initialization to use loaded data
-  const [personalInfo, setPersonalInfo] = useState<PersonalInfo>({
-    fullName: typeof userData === 'object' && userData 
-      ? `${userData.firstName} ${userData.lastName}` 
-      : "",
-    dob: customerData?.dateOfBirth ?? "",
-    license: customerData?.licenseNumber ?? "",
-    nationality: customerData?.nationality ?? "",
-    address: customerData?.address ?? "",
-    expirationDate: customerData?.expirationDate ?? "",
+  const [personalInfo, setPersonalInfo] = useState({
+    fullName: user?.firstName || "Jane ",
+    // Random placeholder data
+    occupation: "Software Developer",
+    address: "1234 Elm Street, Springfield",
   });
 
-  const [contactInfo, setContactInfo] = useState<ContactInfo>({
-    email: typeof userData === 'object' ? userData.email : "",
-    phone: customerData?.phoneNumber ?? "",
+  const [contactInfo, setContactInfo] = useState({
+    email: user?.emailAddresses[0].emailAddress || "jane.smith@example.com",
+    // Random placeholder data
+    phone: "+1 (555) 987-6543",
+    socialMedia: "@janesmith",
+    password: "", // Password field (cannot fetch from Clerk)
   });
 
-  // New state to manage extracted license information
-  const [extractedInfo, setExtractedInfo] = useState<ExtractedInfo>({
-    fullName: "",
-    license: "",
-    expirationDate: "",
-  });
-
-  const [errorMessage, setErrorMessage] = useState<string>("");
-
-  const upsertCustomer = useMutation(api.customers.upsertCustomer); // Use upsertCustomer mutation
-  const editUser = useMutation(api.users.editUser);
-
-  const isLicenseExpired = (expirationDate: string | undefined) => {
-    if (!expirationDate) return false;
-
-    // Convert DD.MM.YYYY to YYYY-MM-DD for comparison
-    const [day, month, year] = expirationDate.split('.');
-    const expDate = new Date(`${year}-${month}-${day}`);
-    const today = new Date();
-
-    // Reset time part for accurate date comparison
-    today.setHours(0, 0, 0, 0);
-    expDate.setHours(0, 0, 0, 0);
-
-    return expDate < today;
+  const handleEditPersonal = () => {
+    setIsEditingPersonal((prev) => !prev);
   };
 
-  const handleEditToggle = async () => {
-    if (!user?.id) return;
-
-    if (isEditing) {
-      try {
-        if (isLicenseExpired(personalInfo.expirationDate)) {
-          setErrorMessage("License has expired. Please update the expiration date.");
-          return;
-        }
-
-        // Update user table
-        await editUser({
-          userId: user.id,
-          firstName: personalInfo.fullName.split(' ')[0],
-          lastName: personalInfo.fullName.split(' ')[1],
-          email: contactInfo.email,
-        });
-
-        // Update customer table
-        await upsertCustomer({
-          userId: user.id,
-          nationality: personalInfo.nationality,
-          phoneNumber: contactInfo.phone,
-          licenseNumber: personalInfo.license,
-          address: personalInfo.address,
-          dateOfBirth: personalInfo.dob,
-          expirationDate: personalInfo.expirationDate,
-        });
-
-      } catch (error) {
-        console.error('Error updating user data:', error);
-      }
-    }
-    setIsEditing((prev) => !prev);
+  const handleEditContact = () => {
+    setIsEditingContact(!isEditingContact);
   };
 
-  const handleScanClick = () => {
-    setIsDialogOpen(true); // Open the dialog when Scan button is clicked
+  const togglePasswordVisibility = () => {
+    setIsPasswordVisible((prev) => !prev);
   };
-
-  const handleCloseDialog = () => {
-    setIsDialogOpen(false); // Close the dialog
-  };
-
-  // Handler for file upload
-  const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    if (!file) return;
-
-    // Create and initialize the worker with proper parameters
-    const worker = await createWorker(
-      'eng', // Language(s) to use
-      OEM.DEFAULT, // OCR Engine Mode
-      {
-        logger: (m: LoggerMessage) => console.log(m), // Logger function
-      }
-    );
-
-    try {
-      await worker.load(); // Load the Tesseract core
-      await worker.loadLanguage('eng'); // Load the English language
-      await worker.initialize('eng'); // Initialize the worker with English
-
-      const { data: { text } } = await worker.recognize(file);
-      
-      console.log('Extracted Text:', text); // Debugging: Check extracted text
-
-      // Parse the extracted text to find required fields
-      const parsedInfo = parseLicenseText(text);
-      console.log('Parsed Info:', parsedInfo); // Debugging: Check parsed info
-
-      setExtractedInfo(parsedInfo);
-      setPersonalInfo((prev) => ({
-        ...prev,
-        fullName: parsedInfo.fullName || prev.fullName,
-        license: parsedInfo.license || prev.license,
-        expirationDate: parsedInfo.expirationDate || prev.expirationDate,
-      }));
-      setContactInfo((prev) => ({
-        ...prev,
-        // Update other contact info if needed
-      }));
-      setIsEditing(true); // Enable edit mode to show extracted info
-    } catch (error) {
-      console.error('Error during OCR:', error);
-      // Handle the error (e.g., show an error message to the user)
-    } finally {
-      await worker.terminate(); // Terminate the worker to free up resources
-    }
-  };
-
-  // Function to parse the OCR text and extract required fields
-  const parseLicenseText = (text: string) => {
-    // Split the text into lines for easier processing
-    const lines = text.split('\n').map(line => line.trim()).filter(line => line !== '');
-
-    let license = '';
-    let expirationDate = '';
-    let nameParts: string[] = [];
-
-    // Iterate through each line to find relevant information
-    lines.forEach(line => {
-      // Skip lines containing "Drive" or "License" when extracting the full name
-      if (/driver|licence/i.test(line)) {
-        return;
-      }
-
-      // Extract Full Name
-      const nameMatch = line.match(/(?:1\.?\s+|2\.?\s+)([A-Z]+)/);
-      if (nameMatch) {
-        nameParts.push(nameMatch[1]);
-      }
-
-      // Extract License Number
-      const licenseMatch = line.match(/5\.?\s+((\d[A-Z0-9]+|[A-Z0-9]+\d))/);
-      if (licenseMatch && !license) {
-        license = licenseMatch[1];
-      }
-
-      // Extract Expiration Date
-      const expDateMatch = line.match(/(\d{2}\.\d{2}\.\d{4})$/);
-      if (expDateMatch && !expirationDate) {
-        expirationDate = expDateMatch[1];
-      }
-    });
-
-    // Reverse the order of name parts and join them
-    let fullName = nameParts.reverse().join(' ');
-
-    if (!license) {
-      const licenseLine = lines.find(line => line.match(/SMITH\d{9,}/));
-      if (licenseLine) {
-        const match = licenseLine.match(/SMITH\d{9,}/);
-        if (match) {
-          license = match[0];
-        }
-      }
-    }
-
-    if (!expirationDate) {
-      const expLine = lines.find(line => line.includes('07.11.2046'));
-      if (expLine) {
-        const match = expLine.match(/(\d{2}\.\d{2}\.\d{4})/);
-        if (match) {
-          expirationDate = match[1];
-        }
-      }
-    }
-
-    return {
-      fullName,
-      license,
-      expirationDate,
-    };
-  };
-
-  // Optional: Update state when data loads
-  useEffect(() => {
-    if (userData && typeof userData !== 'string' && customerData) {
-      setPersonalInfo({
-        fullName: `${userData.firstName} ${userData.lastName}`,
-        dob: customerData.dateOfBirth,
-        license: customerData.licenseNumber,
-        nationality: customerData.nationality,
-        address: customerData.address,
-        expirationDate: customerData.expirationDate ?? "",
-      });
-
-      setContactInfo({
-        email: userData.email,
-        phone: customerData.phoneNumber,
-      });
-    }
-  }, [userData, customerData, user?.id]);
 
   return (
     <div className="flex flex-col min-h-screen">
-      <Navi/>
-      <Separator/>
+      <Navi />
+      <Separator />
       <div className="flex flex-row h-[92vh]">
-        <aside
-          className="flex flex-col items-left justify-between  w-fit px-4 md:px-6 border-b bg-primary text-primary-foreground py-2 md:py-12">
-          <nav className="flex flex-col items-left justify-between h-fit w-fit  gap-4 sm:gap-6">
+        <aside className="flex flex-col items-left justify-between w-fit px-4 md:px-6 border-b bg-primary text-primary-foreground py-2 md:py-12">
+          <nav className="flex flex-col items-left justify-between h-fit w-fit gap-4 sm:gap-6">
             <div className="flex flex-col md:flex items-left gap-4 w-fit">
               <Link
                 href="#"
                 className="text-background drop-shadow-glow hover:text-customyello transition-colors"
-                prefetch={false}>
+                prefetch={false}
+              >
                 Account Details
               </Link>
               <Link
-                href="/User_Account/User_Promotions"
+                href="/User_Account/User_Rev"
                 className="text-muted-foreground hover:text-customyello transition-colors"
-                prefetch={false}>
-                My Promotions
+                prefetch={false}
+              >
+                My Ratings & Reviews
               </Link>
               <Link
-                href="/User_Account/User_Bookings"
+                href="#"
                 className="text-muted-foreground hover:text-customyello transition-colors"
-                prefetch={false}>
+                prefetch={false}
+              >
                 Previous Bookings
               </Link>
-              
             </div>
           </nav>
-        
         </aside>
         <main className="flex-1 bg-background py-8 px-4 sm:px-6 lg:px-8">
-          <div className="max-w-screen mx-auto grid grid-rows-1 gap-6">
-            <Card className="w-full mx-auto mt-1 rounded-lg p-1 bg-muted shadow-lg" style={{ border: "none" }}>
+          <div className="max-w-screen mx-auto grid grid-rows-2 sm:grid-rows-2 gap-6">
+            {/* Personal Information Card */}
+            <Card className="bg-primary text-primary-foreground">
               <CardHeader>
-                <CardTitle className="text-black">Personal & Contact Information</CardTitle>
+                <CardTitle>Personal Information</CardTitle>
               </CardHeader>
               <CardContent className="flex flex-row w-full justify-between">
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 w-full justify-between">
                   <div className="grid gap-2">
-                    <Label className="text-black">Full Name</Label>
-                    {isEditing ? (
+                    <Label className="text-primary-foreground">
+                      Full Name
+                    </Label>
+                    {isEditingPersonal ? (
                       <input
-                        aria-label="Full Name"
-                        value={personalInfo.fullName || extractedInfo.fullName} // Show extracted name if available
-                        onChange={(e) => setPersonalInfo({ ...personalInfo, fullName: e.target.value })}
+                        value={personalInfo.fullName}
+                        onChange={(e) =>
+                          setPersonalInfo({
+                            ...personalInfo,
+                            fullName: e.target.value,
+                          })
+                        }
+                        className="input-class" // Add your input styling here
                       />
                     ) : (
-                      <div className="text-black">{personalInfo.fullName || extractedInfo.fullName}</div> // Show extracted name if available
+                      <div className="text-black">{personalInfo.fullName}</div>
                     )}
                   </div>
                   <div className="grid gap-2">
-                    <Label className="text-black">Date of Birth</Label>
-                    {isEditing ? (
+                    <Label className="text-primary-foreground">
+                      Occupation
+                    </Label>
+                    {isEditingPersonal ? (
                       <input
-                        type="date"
-                        value={personalInfo.dob}
-                        onChange={(e) => setPersonalInfo({ ...personalInfo, dob: e.target.value })}
+                        value={personalInfo.occupation}
+                        onChange={(e) =>
+                          setPersonalInfo({
+                            ...personalInfo,
+                            occupation: e.target.value,
+                          })
+                        }
+                        className="input-class"
                       />
                     ) : (
-                      <div className="text-black">{personalInfo.dob}</div>
+                      <div className="text-black">{personalInfo.occupation}</div>
                     )}
                   </div>
                   <div className="grid gap-2">
-                    <Label className="text-black">Driver&apos;s License:</Label>
-                    {isEditing ? (
+                    <Label className="text-primary-foreground">
+                      Address
+                    </Label>
+                    {isEditingPersonal ? (
                       <input
-                        value={personalInfo.license || extractedInfo.license} // Show extracted license if available
-                        onChange={(e) => setPersonalInfo({ ...personalInfo, license: e.target.value })}
+                        value={personalInfo.address}
+                        onChange={(e) =>
+                          setPersonalInfo({
+                            ...personalInfo,
+                            address: e.target.value,
+                          })
+                        }
+                        className="input-class"
                       />
                     ) : (
-                      <div className="text-black">{personalInfo.license || extractedInfo.license}</div> // Show extracted license if available
+                      <div className="text-black">{personalInfo.address}</div>
                     )}
                   </div>
+                </div>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="text-secondary-foreground text-white ml-3 hover:bg-customgrey hover:text-primary-foreground"
+                  onClick={handleEditPersonal} // Toggle edit mode for personal info
+                >
+                  {isEditingPersonal ? "Confirm" : "Edit"}
+                </Button>
+              </CardContent>
+            </Card>
+
+            {/* Contact Information Card */}
+            <Card className="bg-muted text-secondary-foreground">
+              <CardHeader>
+                <CardTitle>Contact Information</CardTitle>
+              </CardHeader>
+              <CardContent className="flex flex-row w-full justify-between">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 w-full justify-between">
                   <div className="grid gap-2">
-                    <Label className="text-black">Nationality</Label>
-                    {isEditing ? (
+                    <Label className="text-secondary-foreground">Email</Label>
+                    {isEditingContact ? (
                       <input
-                        value={personalInfo.nationality}
-                        onChange={(e) => setPersonalInfo({ ...personalInfo, nationality: e.target.value })}
-                      />
-                    ) : (
-                      <div className="text-black">{personalInfo.nationality}</div>
-                    )}
-                  </div>
-                  <div className="grid gap-2">
-                    <Label className="text-black">Email</Label>
-                    {isEditing ? (
-                      <input
+                        type="email"
                         value={contactInfo.email}
-                        onChange={(e) => setContactInfo({ ...contactInfo, email: e.target.value })}
+                        onChange={(e) =>
+                          setContactInfo({
+                            ...contactInfo,
+                            email: e.target.value,
+                          })
+                        }
+                        className="input-class"
                       />
                     ) : (
-                      <div className="text-black">{contactInfo.email}</div>
+                      <div>{contactInfo.email}</div>
                     )}
                   </div>
                   <div className="grid gap-2">
-                    <Label className="text-black">Phone</Label>
-                    {isEditing ? (
+                    <Label className="text-secondary-foreground">Phone</Label>
+                    {isEditingContact ? (
                       <input
                         value={contactInfo.phone}
-                        onChange={(e) => setContactInfo({ ...contactInfo, phone: e.target.value })}
+                        onChange={(e) =>
+                          setContactInfo({
+                            ...contactInfo,
+                            phone: e.target.value,
+                          })
+                        }
+                        className="input-class"
                       />
                     ) : (
-                      <div className="text-black">{contactInfo.phone}</div>
+                      <div>{contactInfo.phone}</div>
                     )}
                   </div>
                   <div className="grid gap-2">
-                    <Label className="text-black">Expiration Date</Label>
-                    {isEditing ? (
+                    <Label className="text-secondary-foreground">Social Media</Label>
+                    {isEditingContact ? (
                       <input
-                        type="date"
-                        value={(personalInfo.expirationDate || extractedInfo.expirationDate)?.split('.').reverse().join('-')}
-                        onChange={(e) => setPersonalInfo({ 
-                          ...personalInfo, 
-                          expirationDate: e.target.value.split('-').reverse().join('.') 
-                        })}
+                        value={contactInfo.socialMedia}
+                        onChange={(e) =>
+                          setContactInfo({
+                            ...contactInfo,
+                            socialMedia: e.target.value,
+                          })
+                        }
+                        className="input-class"
                       />
                     ) : (
-                      <div className="text-black">
-                        {(personalInfo.expirationDate || extractedInfo.expirationDate) ? 
-                          new Date((personalInfo.expirationDate || extractedInfo.expirationDate).split('.').reverse().join('-')).toLocaleDateString() 
-                          : ''}
+                      <div>{contactInfo.socialMedia}</div>
+                    )}
+                  </div>
+
+                  {/* Password Field */}
+                  <div className="grid gap-2">
+                    <Label className="text-secondary-foreground">Password</Label>
+                    {isEditingContact ? (
+                      <div className="relative">
+                        <input
+                          type={isPasswordVisible ? "text" : "password"}
+                          value={contactInfo.password}
+                          onChange={(e) =>
+                            setContactInfo({
+                              ...contactInfo,
+                              password: e.target.value,
+                            })
+                          }
+                          className="input-class pr-10" // Add padding to make space for the icon
+                        />
+                        <button
+                          type="button"
+                          onClick={togglePasswordVisibility}
+                          className="absolute inset-y-0 right-0 pr-3 flex items-center text-sm leading-5"
+                        >
+                          {isPasswordVisible ? (
+                            // Hide Icon (e.g., Eye Off)
+                            <svg
+                              className="h-5 w-5 text-gray-500"
+                              xmlns="http://www.w3.org/2000/svg"
+                              viewBox="0 0 20 20"
+                              fill="currentColor"
+                            >
+                              <path
+                                fillRule="evenodd"
+                                d="M3.707 3.707a1 1 0 00-1.414-1.414l12 12a1 1 0 001.414-1.414l-12-12z"
+                                clipRule="evenodd"
+                              />
+                            </svg>
+                          ) : (
+                            // Show Icon (e.g., Eye)
+                            <svg
+                              className="h-5 w-5 text-gray-500"
+                              xmlns="http://www.w3.org/2000/svg"
+                              viewBox="0 0 20 20"
+                              fill="currentColor"
+                            >
+                              <path d="M10 3C5 3 1.73 7.11 1.73 7.11S5 11.22 10 11.22s8.27-4.11 8.27-4.11S15 3 10 3z" />
+                              <path d="M10 13.22c-2.66 0-5.12-1.3-6.46-3.22 1.34-1.92 3.8-3.22 6.46-3.22s5.12 1.3 6.46 3.22c-1.34 1.92-3.8 3.22-6.46 3.22z" />
+                            </svg>
+                          )}
+                        </button>
                       </div>
-                    )}
-                  </div>
-                  <div className="grid gap-2">
-                    <Label className="text-black">Address</Label>
-                    {isEditing ? (
-                      <input
-                        value={personalInfo.address || extractedInfo.address} // Show extracted address if available
-                        onChange={(e) => setPersonalInfo({ ...personalInfo, address: e.target.value })}
-                      />
                     ) : (
-                      <div className="text-black">{personalInfo.address || extractedInfo.address}</div> // Show extracted address if available
+                      <div>********</div> // Password is hidden by default
                     )}
                   </div>
                 </div>
-                <div className="flex flex-col">
-                  <Button 
-                    variant="outline" 
-                    size="sm" 
-                    className="text-black hover:bg-customgrey hover:text-primary-foreground"
-                    onClick={handleEditToggle} // Single button to toggle edit mode
-                  >
-                    {isEditing ? "Confirm" : "Edit"}
-                  </Button>
-                  <Button 
-                    variant="outline" 
-                    size="sm" 
-                    className="text-black hover:bg-customgrey hover:text-primary-foreground mt-2" 
-                    onClick={handleScanClick} // Open the scan dialog
-                  >
-                    Scan
-                  </Button>
-                </div>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="bg-primary text-primary-foreground hover:bg-customgrey hover:text-primary-foreground ml-3"
+                  onClick={handleEditContact} // Toggle edit mode for contact info
+                >
+                  {isEditingContact ? "Confirm" : "Edit"}
+                </Button>
               </CardContent>
-              {errorMessage && (
-                <div className="text-red-500 mt-2">
-                  {errorMessage}
-                </div>
-              )}
             </Card>
           </div>
         </main>
-        {/* Dialog for scanning */}
-        <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-          <DialogContent className="sm:max-w-[425px] bg-background" style={{ border: "none" }}>
-            <DialogHeader>
-              <DialogTitle>Scan Options</DialogTitle>
-            </DialogHeader>
-            <div className="grid gap-4 py-4">
-              <Card className="w-full mx-auto mt-1 rounded-lg p-1 bg-white shadow-lg" style={{ border: "none" }}>
-                <CardHeader>
-                  <CardTitle>Upload Picture</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <input 
-                    type="file" 
-                    accept="image/*" 
-                    className="w-full mx-auto mt-1 rounded-lg p-1 bg-white shadow-lg"
-                    onChange={handleFileUpload} // Handle file upload
-                  />
-                  {extractedInfo.fullName && (
-                    <div className="mt-4">
-                      <p><strong>Full Name:</strong> {extractedInfo.fullName}</p>
-                      <p><strong>License ID:</strong> {extractedInfo.license}</p>
-                      <p><strong>Expiration Date:</strong> {extractedInfo.expirationDate}</p>
-                    </div>
-                  )}
-                </CardContent>
-              </Card>
-              <Card className="w-full mx-auto mt-1 rounded-lg p-1 bg-muted shadow-lg" style={{ border: "none" }}>
-                <CardHeader>
-                  <CardTitle>Open Camera</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <p>Click the button below to open the camera.</p>
-                  <Button variant="outline" className="mt-2">Open Camera</Button>
-                </CardContent>
-              </Card>
-            </div>
-            <DialogFooter>
-              <Button className="px-6 py-3 text-sm font-semibold text-white bg-blue-600 hover:bg-blue-500 rounded-lg transition-colors hover:bg-muted shadow-2xl" style={{ border: "none" }} variant="outline" onClick={() => setIsDialogOpen(false)}>Cancel</Button>
-              <Button className="px-6 py-3 text-sm font-semibold text-white bg-blue-600 hover:bg-blue-500 rounded-lg transition-colors hover:bg-muted shadow-2xl" style={{ border: "none" }} variant="outline" onClick={() => setIsDialogOpen(false)}>Confirm</Button>
-            </DialogFooter>
-          </DialogContent>
-        </Dialog>
       </div>
     </div>
   );
