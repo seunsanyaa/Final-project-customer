@@ -65,7 +65,7 @@ export default function PaymentSuccess() {
       } else {
         router.push('/bookings/currentbooking');
       }
-    }, 10000);
+    }, 5000);
 
     return () => {
       clearInterval(timer);
@@ -85,11 +85,6 @@ export default function PaymentSuccess() {
         <p className="text-md mt-4">
           Redirecting to booking details in {countdown} seconds...
         </p>
-        <div className="mt-8">
-          <Link href="/bookings/currentbooking">
-            <Button className="w-auto">View Booking Details</Button>
-          </Link>
-        </div>
       </div>
       <Footer />
     </>
