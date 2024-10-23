@@ -6,11 +6,13 @@ import { useQuery } from "convex/react";
 import { Search } from "lucide-react"; // Import Car icon
 import Image from "next/image";
 import Link from "next/link";
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 
 import { api } from "@/convex/_generated/api";
 import { Footer } from "../head/footer";
 import { Navi } from "../head/navi";
+import Lottie, { LottieRefCurrentProps } from "lottie-react";
+import loadingAnimation from "@/public/animations/loadingAnimation.json"; // Import your animation
 
 export default function AllVehicles() {
   // Fetch cars from Convex
@@ -32,20 +34,37 @@ export default function AllVehicles() {
     );
   });
 
+  const lottieRef = useRef<LottieRefCurrentProps>(null);
+
+  // Optionally set speed after the component mounts
+  useEffect(() => {
+    if (lottieRef.current) {
+      lottieRef.current.setSpeed(1.5);
+      
+    }
+  }, []);
+
   if (!cars) {
-    return <div>Loading...</div>;
+    return (
+      <div className="flex items-center justify-center h-screen">
+        <Lottie
+          lottieRef={lottieRef}
+          animationData={loadingAnimation}
+          loop={true}
+          className="w-48 h-48"
+        />
+      </div>
+    );
   }
 
   return (
     <>
-      <Navi/>
+      <Navi />
       <Separator />
       <main className="flex flex-col items-center gap-4 p-4 md:p-8">
         <div className="container mx-auto px-4 py-8">
           <div className="mb-12">
-            <h1 className="text-3xl font-bold mb-6">
-              Find Your Perfect Rental Car
-            </h1>
+            <h1 className="text-3xl font-bold mb-6">Find Your Perfect Rental Car</h1>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
               <Input
                 placeholder="Make"
@@ -57,7 +76,7 @@ export default function AllVehicles() {
                 value={searchModel}
                 onChange={(e) => setSearchModel(e.target.value)}
               />
-              <div className="flex items-center"> 
+              <div className="flex items-center">
                 <Input
                   placeholder="Year"
                   type="number"
@@ -65,12 +84,10 @@ export default function AllVehicles() {
                   max="2024"
                   value={searchYear}
                   onChange={(e) =>
-                    setSearchYear(
-                      e.target.value ? parseInt(e.target.value) : undefined
-                    )
+                    setSearchYear(e.target.value ? parseInt(e.target.value) : undefined)
                   }
                 />
-                <Button className="md:w-auto border-2 ml-2 hover:bg-muted"> 
+                <Button className="md:w-auto border-2 ml-2 hover:bg-muted">
                   <Search className="w-4 h-4 mr-2" />
                   Search
                 </Button>

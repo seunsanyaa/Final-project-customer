@@ -16,13 +16,34 @@ import ChevronLeftIcon from '@/svgs/ChevronLeftIcon';
 import ChevronRightIcon from '@/svgs/ChevronRightIcon';
 import { Navi } from "../head/navi";
 import { Footer } from "../head/footer";
-import { useEffect } from 'react'; // Added for font loading
+import { useEffect, useRef, useState } from 'react'; // Added for font loading
+import Lottie, { LottieRefCurrentProps } from "lottie-react"; // Import Lottie
+import loadingAnimation from "@/public/animations/loadingAnimation.json"; // Import your animation
 
 export function Homepage_v2() {
   const [ref1, inView1] = useInView({ threshold: 0.6, triggerOnce: true });
-const [ref2, inView2] = useInView({ threshold: 0.6,triggerOnce: true  });
-const [ref3, inView3] = useInView({ threshold: 0.3,triggerOnce: true });
-const [ref4, inView4] = useInView({ threshold: 0.3,triggerOnce: true });
+  const [ref2, inView2] = useInView({ threshold: 0.6, triggerOnce: true });
+  const [ref3, inView3] = useInView({ threshold: 0.3, triggerOnce: true });
+  const [ref4, inView4] = useInView({ threshold: 0.3, triggerOnce: true });
+  const lottieRef = useRef<LottieRefCurrentProps>(null);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    // Set a 2-second timer before hiding the loading screen
+    const timer = setTimeout(() => {
+      setIsLoading(false);
+    }, 2000);
+
+    // Cleanup the timer if component unmounts
+    return () => clearTimeout(timer);
+  }, []); // Empty dependency array means this runs once on mount
+
+  useEffect(() => {
+    const link = document.createElement('link');
+    link.href = 'https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap';
+    link.rel = 'stylesheet';
+    document.head.appendChild(link);
+  }, []);
 
   const handleMouseMove = (event: React.MouseEvent) => {
     const carousel = event.currentTarget;
@@ -32,12 +53,18 @@ const [ref4, inView4] = useInView({ threshold: 0.3,triggerOnce: true });
     carousel.scrollTo({ left: scrollPosition, behavior: 'smooth' });
   };
 
-  useEffect(() => {
-    const link = document.createElement('link');
-    link.href = 'https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap';
-    link.rel = 'stylesheet';
-    document.head.appendChild(link);
-  }, []);
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center h-screen">
+        <Lottie
+          lottieRef={lottieRef}
+          animationData={loadingAnimation}
+          loop={true}
+          className="w-[400px] h-[400px]"
+        />
+      </div>
+    );
+  }
 
   return (
     (<div className="flex flex-col min-h-dvh font-roboto">
