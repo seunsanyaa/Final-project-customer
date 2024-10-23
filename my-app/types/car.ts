@@ -19,5 +19,5 @@ export interface Specifications {
   fuelType: string;
   transmission: string;
   drive: string;
-  seats: string;
+  doors: string;
 }
