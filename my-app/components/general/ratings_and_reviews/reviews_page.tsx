@@ -2,10 +2,11 @@ import { useState } from 'react'
 import { Star, ChevronDown, ChevronUp } from 'lucide-react'
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
+import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/card"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { Separator } from "@/components/ui/separator"
+import { cn } from "@/lib/utils"
 
 // Mock data for previous reviews
 const previousReviews = [
@@ -43,20 +44,20 @@ export  function Reviews_Page() {
       
       <section className="mb-12">
         <h2 className="text-2xl font-semibold mb-4">Your Previous Reviews</h2>
-        <div className="space-y-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
           {previousReviews.map((review) => (
-            <Card key={review.id}>
-              <CardHeader>
-                <CardTitle>{review.carName}</CardTitle>
-                <CardDescription>Reviewed on {review.date}</CardDescription>
+            <Card key={review.id} className="flex flex-col h-48">
+              <CardHeader className="pb-2">
+                <CardTitle className="text-lg">{review.carName}</CardTitle>
+                <CardDescription className="text-xs">Reviewed on {review.date}</CardDescription>
               </CardHeader>
-              <CardContent>
-                <div className="flex items-center mb-2">
+              <CardContent className="pt-0 overflow-hidden">
+                <div className="flex items-center mb-1">
                   {[...Array(5)].map((_, i) => (
-                    <Star key={i} className={`w-5 h-5 ${i < review.rating ? 'text-yellow-400 fill-yellow-400' : 'text-gray-300'}`} />
+                    <Star key={i} className={`w-4 h-4 ${i < review.rating ? 'text-yellow-400 fill-yellow-400' : 'text-gray-300'}`} />
                   ))}
                 </div>
-                <p>{review.review}</p>
+                <p className="text-sm line-clamp-3">{review.review}</p>
               </CardContent>
             </Card>
           ))}
