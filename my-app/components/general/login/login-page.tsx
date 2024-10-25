@@ -18,6 +18,8 @@ export function LoginPage() {
     
     // Here you would typically handle the login logic
     alert(`Login attempt with: ${JSON.stringify({ email, password })}`);
+    
+    // Ensure redirect happens after login logic is complete
     router.push('/');
   }
 
