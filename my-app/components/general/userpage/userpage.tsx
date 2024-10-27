@@ -15,6 +15,7 @@ interface PersonalInfo {
   dob: string;
   license: string;
   nationality: string;
+  address: string; // Added address field
 }
 
 interface ContactInfo {
@@ -39,6 +40,7 @@ export function User_page() {
     dob: "1985-06-15",
     license: "ABC123456",
     nationality: "United States",
+    address: "", // Initialize address
   });
   const [contactInfo, setContactInfo] = useState<ContactInfo>({
     email: "john.doe@example.com",
@@ -301,6 +303,17 @@ export function User_page() {
                       <div className="text-black">{extractedInfo.expirationDate}</div> // Show extracted expiration date
                     )}
                   </div>
+                  <div className="grid gap-2">
+                 <Label className="text-black">Address</Label>
+                 {isEditing ? (
+                 <input
+                 value={personalInfo.address || extractedInfo.address} // Show extracted address if available
+                onChange={(e) => setPersonalInfo({ ...personalInfo, address: e.target.value })}
+                  />
+                  ) : (
+                 <div className="text-black">{personalInfo.address || extractedInfo.address}</div> // Show extracted address if available
+                  )}
+                </div>
                 </div>
                 <div className="flex flex-col">
                   <Button 
