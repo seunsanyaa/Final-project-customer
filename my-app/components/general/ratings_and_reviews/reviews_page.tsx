@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Star, ChevronDown, ChevronUp } from 'lucide-react'
+import { Star, ChevronDown, ChevronUp, BookOpen, StarHalf } from 'lucide-react'
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/card"
@@ -46,6 +46,9 @@ export function Reviews_Page() {
   const [newRating, setNewRating] = useState<number>(0);
   const [submitError, setSubmitError] = useState<string | null>(null);
 
+  // Add state for sidebar dropdown
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+
   const handleExpandBooking = (bookingId: string) => {
     setExpandedBooking(expandedBooking === bookingId ? null : bookingId);
   };
@@ -82,48 +85,92 @@ export function Reviews_Page() {
   }
 
   return (
-    <div className="container mx-auto px-4 py-8">
-      <h1 className="text-3xl font-bold mb-6">Your Reviews & Bookings</h1>
-      
-      <section className="mb-12">
-        <h2 className="text-2xl font-semibold mb-4">Your Previous Reviews</h2>
-        {userReviews && userReviews.length > 0 ? (
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
-            {userReviews.map((review: Review) => (
-              <Card key={review._id} className="flex flex-col h-48">
-                <CardHeader className="pb-2">
-                  <CardTitle className="text-lg">
-                    {review.carDetails ? `${review.carDetails.maker} ${review.carDetails.model}` : 'Car Details Unavailable'}
-                  </CardTitle>
-                  <CardDescription className="text-xs">
-                    Reviewed on {new Date(review.reviewDate).toLocaleDateString()}
-                  </CardDescription>
-                </CardHeader>
-                <CardContent className="pt-0 overflow-hidden">
-                  <div className="flex items-center mb-1">
-                    {[...Array(5)].map((_, i) => (
-                      <Star
-                        key={i}
-                        className={`w-4 h-4 ${i < review.numberOfStars ? 'text-foreground fill-foreground' : 'text-gray-300'}`}
-                      />
-                    ))}
-                  </div>
-                  <p className="text-sm line-clamp-3">{review.comment}</p>
-                </CardContent>
-              </Card>
-            ))}
+    <div className="flex min-h-screen">
+      {/* Sidebar */}
+      <div className="w-25 bg-muted p-4 border-r">
+        <div className="space-y-2">
+          <div>
+            <button
+              onClick={() => setIsDropdownOpen(!isDropdownOpen)}
+              className="flex items-center justify-between w-full p-2 text-left hover:bg-muted-foreground/10 rounded-md text-sm"
+            >
+              <div className="flex items-center gap-2">
+                <BookOpen className="w-4 h-4" />
+                <span>Reviews & Ratings</span>
+              </div>
+              {isDropdownOpen ? (
+                <ChevronUp className="w-4 h-4" />
+              ) : (
+                <ChevronDown className="w-4 h-4" />
+              )}
+            </button>
+            
+            {isDropdownOpen && (
+              <div className="ml-4 space-y-1 mt-1">
+                <a
+                  href="/Rating_Reviews"
+                  className="flex items-center gap-2 p-2 text-xs hover:bg-muted-foreground/10 rounded-md"
+                >
+                  <BookOpen className="w-3 h-3" />
+                  <span>My Ratings</span>
+                </a>
+                <a
+                  href="/Rating_Reviews/all_ratings"
+                  className="flex items-center gap-2 p-2 text-xs hover:bg-muted-foreground/10 rounded-md"
+                >
+                  <StarHalf className="w-3 h-3" />
+                  <span>All Ratings</span>
+                </a>
+              </div>
+            )}
           </div>
-        ) : (
-          <p>You have not submitted any reviews yet.</p>
-        )}
-      </section>
+        </div>
+      </div>
 
-      <Separator className="my-8" />
-      
-      <section>
-        <h2 className="text-2xl font-semibold mb-4">Your Previous Bookings</h2>
-        <PreviousBookings customerId={userId} />
-      </section>
+      {/* Main content */}
+      <div className="flex-1 container mx-auto px-4 py-8">
+        <h1 className="text-3xl font-bold mb-6">Your Reviews & Bookings</h1>
+        
+        <section className="mb-12">
+          <h2 className="text-2xl font-semibold mb-4">Your Previous Reviews</h2>
+          {userReviews && userReviews.length > 0 ? (
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+              {userReviews.map((review: Review) => (
+                <Card key={review._id} className="flex flex-col h-48">
+                  <CardHeader className="pb-2">
+                    <CardTitle className="text-lg">
+                      {review.carDetails ? `${review.carDetails.maker} ${review.carDetails.model}` : 'Car Details Unavailable'}
+                    </CardTitle>
+                    <CardDescription className="text-xs">
+                      Reviewed on {new Date(review.reviewDate).toLocaleDateString()}
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent className="pt-0 overflow-hidden">
+                    <div className="flex items-center mb-1">
+                      {[...Array(5)].map((_, i) => (
+                        <Star
+                          key={i}
+                          className={`w-4 h-4 ${i < review.numberOfStars ? 'text-foreground fill-foreground' : 'text-gray-300'}`}
+                        />
+                      ))}
+                    </div>
+                    <p className="text-sm line-clamp-3">{review.comment}</p>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          ) : (
+            <p>You have not submitted any reviews yet.</p>
+          )}
+        </section>
+
+        <Separator className="my-8" />
+        
+        <section>
+          <h2 className="text-2xl font-semibold mb-4">Your Previous Bookings</h2>
+          <PreviousBookings customerId={userId} />
+        </section>
+      </div>
     </div>
   )
 }
