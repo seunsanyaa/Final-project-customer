@@ -53,26 +53,22 @@ export function Homepage_v2() {
     carousel.scrollTo({ left: scrollPosition, behavior: 'smooth' });
   };
 
-  if (isLoading) {
-    return (
-      <div className="flex items-center justify-center h-screen">
-        <Lottie
-          lottieRef={lottieRef}
-          animationData={loadingAnimation}
-          loop={true}
-          className="w-[400px] h-[400px]"
-        />
-      </div>
-    );
-  }
+  // if (isLoading) {
+  //   return (
+  //     <div className="flex items-center justify-center h-screen">
+  //       <Lottie
+  //         lottieRef={lottieRef}
+  //         animationData={loadingAnimation}
+  //         loop={true}
+  //         className="w-[400px] h-[400px]"
+  //       />
+  //     </div>
+  //   );
+  // }
 
   return (
-<<<<<<< Updated upstream
-    (<div className="flex flex-col min-h-dvh font-roboto">
-=======
     <div className="flex flex-col min-h-dvh font-roboto">
       {/* <Loader />  */}
->>>>>>> Stashed changes
       <Navi className="bg-gradient-to-r from-gray-800 to-gray-600"/>
       <main className="flex-1 top-0 mt-0">
       <section  ref={ref1}className={`relative top-0 md:py-16 w-full h-[610px] px-4 md:px-6 lg:px-10 bg-cover bg-center bg-no-repeat ${
@@ -431,5 +427,5 @@ export function Homepage_v2() {
       </main>
       <Footer/> 
     </div>)
-  );
+  
 }
