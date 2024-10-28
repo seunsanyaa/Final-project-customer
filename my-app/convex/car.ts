@@ -2,6 +2,86 @@ import { v } from 'convex/values';
 import { mutation, query, action } from './_generated/server';
 import { api } from './_generated/api';
 
+// Action to fetch and store car specifications
+export const fetchAndStoreCarSpecifications = action({
+	args: {
+		maker: v.string(),
+		model: v.string(),
+		year: v.number(),
+		trim: v.string(),
+		registrationNumber: v.string(),
+	},
+	handler: async (ctx, args) => {
+		const { maker, model, year, trim, registrationNumber } = args;
+		const trimFirstWord = trim.split(' ')[0];
+		const apiUrl = `https://www.carqueryapi.com/api/0.3/?callback=?&cmd=getTrims&make=${encodeURIComponent(
+			maker
+		)}&model=${encodeURIComponent(model)}&year=${year}&trim=${encodeURIComponent(trimFirstWord)}`;
+
+		try {
+			const response = await fetch(apiUrl);
+			const text = await response.text();
+			const jsonMatch = text.match(/\{.+\}/);
+			if (!jsonMatch) {
+				throw new Error('Invalid API response');
+			}
+
+			const json = JSON.parse(jsonMatch[0]);
+
+			if (!json.Trims || json.Trims.length === 0) {
+				throw new Error('No specifications found for the given car details');
+			}
+
+			const matchingTrim = json.Trims.find((t: any) => t.model_trim === trim);
+			if (!matchingTrim) {
+				throw new Error(`No matching trim found for trim "${trim}"`);
+			}
+
+			const specifications = {
+				registrationNumber: registrationNumber,
+				engineType: matchingTrim.model_engine_type || "N/A",
+				engineCylinders: matchingTrim.model_engine_cyl || "N/A",
+				engineHorsepower: matchingTrim.model_engine_power_ps
+					? `${matchingTrim.model_engine_power_ps} PS`
+					: "N/A",
+				fuelType: matchingTrim.model_engine_fuel || "N/A",
+				transmission: matchingTrim.model_transmission_type || "N/A",
+				drive: matchingTrim.model_drive || "N/A",
+				doors: matchingTrim.model_doors || "N/A",
+			};
+
+			// Call the addSpecification mutation
+			const result:any = await ctx.runMutation(api.car.addSpecification, { specifications });
+			return result;
+		} catch (error) {
+			console.error('Error fetching car specifications:', error);
+			throw new Error('Failed to fetch specifications');
+		}
+	},
+});
+
+// New Mutation to Add Specifications
+export const addSpecification = mutation({
+	args: {
+		specifications: v.object({
+			registrationNumber: v.string(),
+			engineType: v.string(),
+			engineCylinders: v.string(),
+			engineHorsepower: v.string(),
+			fuelType: v.string(),
+			transmission: v.string(),
+			drive: v.string(),
+			doors: v.string(),
+		}),
+	},
+	handler: async (ctx, { specifications }) => {
+		await ctx.db.insert('specifications', specifications);
+		console.log(`Specifications for car ID ${specifications.registrationNumber} have been stored.`);
+		return `Specifications for car ID ${specifications.registrationNumber} have been stored.`;
+	},
+});
+
+// Modified createCar mutation
 export const createCar = mutation({
 	args: {
 		model: v.string(),
@@ -25,18 +105,18 @@ export const createCar = mutation({
 
 		if (existingCar) {
 			return `Car with registration number ${args.registrationNumber} already exists.`;
-			}
+		}
 
 		const carId = await ctx.db.insert('cars', {
 			...args,
 			disabled: false,
 		});
-		await createCarSpecifications(ctx, { carId, ...args });
 
-		return `Car with ID ${carId} has been created.`;
+		
 	},
 });
 
+// Existing mutations, queries, and actions...
 export const deleteCar = mutation({
 	args: {
 		registrationNumber: v.string(),
@@ -90,6 +170,7 @@ export const updateCar = mutation({
 		};
 
 		await ctx.db.patch(existingCar._id, updatedData);
+
 		return `Car with registration number ${args.registrationNumber} has been updated.`;
 	},
 });
@@ -207,68 +288,47 @@ export const getCarSpecifications = action({
 	},
 });
 
-export const createCarSpecifications = mutation({
+export const getFilteredCars = query({
 	args: {
-		carId: v.id('cars'),
-		maker: v.string(),
-		model: v.string(),
-		year: v.number(),
-		trim: v.string(),
+		maker: v.optional(v.string()),
+		model: v.optional(v.string()),
+		year: v.optional(v.number()),
+		engineType: v.optional(v.string()),
+		engineCylinders: v.optional(v.string()),
+		fuelType: v.optional(v.string()),
+		transmission: v.optional(v.string()),
+		drive: v.optional(v.string()),
+		doors: v.optional(v.string()),
+		engineHorsepower: v.optional(v.string()),
 	},
 	handler: async (ctx, args) => {
-		const { maker, model, year, trim } = args;
-		// Extract the first word of the trim if it contains multiple words
-		const trimFirstWord = trim.split(' ')[0];
+		const cars = await ctx.db.query("cars").collect();
+		const specs = await ctx.db.query("specifications").collect();
 
-		// Log the full URL with the first word of the trim
-		console.log(`https://www.carqueryapi.com/api/0.3/?callback=?&cmd=getTrims&make=${encodeURIComponent(maker)}&model=${encodeURIComponent(model)}&year=${year}&trim=${encodeURIComponent(trimFirstWord)}`);
+		const specsMap = specs.reduce((acc, spec) => {
+			acc[spec.registrationNumber] = spec;
+			return acc;
+		}, {} as Record<string, typeof specs[0]>);
 
-		// Construct the API URL with the first word of the trim
-		const apiUrl = `https://www.carqueryapi.com/api/0.3/?callback=?&cmd=getTrims&make=${encodeURIComponent(maker)}&model=${encodeURIComponent(model)}&year=${year}&trim=${encodeURIComponent(trimFirstWord)}`;
+		return cars.filter((car) => {
+			const carSpecs = specsMap[car.registrationNumber];
+			
+			// Basic car filters
+			if (args.maker && !car.maker.toLowerCase().includes(args.maker.toLowerCase())) return false;
+			if (args.model && !car.model.toLowerCase().includes(args.model.toLowerCase())) return false;
+			if (args.year && car.year !== args.year) return false;
 
-		try {
-			const response = await fetch(apiUrl);
-			const text = await response.text();
-			console.log('API Response:', text);
-			// Extract JSON from JSONP response
-			const jsonMatch = text.match(/\{.+\}/);
-			if (!jsonMatch) {
-				throw new Error('Invalid API response');
-			}
+			// Specification filters - only apply if specs exist and filter is provided
+			if (!carSpecs) return true; // Show cars without specs unless specifically filtering for specs
 
-			const json = JSON.parse(jsonMatch[0]);
-
-			if (!json.Trims || json.Trims.length === 0) {
-				throw new Error('No specifications found for the given car details');
-			}
-
-			// Find the trim that exactly matches the provided trim
-			const matchingTrim = json.Trims.find((t: any) => t.model_trim === trim);
-
-			if (!matchingTrim) {
-				throw new Error(`No matching trim found for trim "${trim}"`);
-			}
-
-			const carData = matchingTrim;
-
-			// Create new entry in specifications table
-			const specificationId = await ctx.db.insert('specifications', {
-				carId: args.carId,
-				engineType: carData.model_engine_type || "N/A",
-				engineCylinders: carData.model_engine_cyl || "N/A",
-				engineHorsepower: carData.model_engine_power_ps
-					? `${carData.model_engine_power_ps} PS`
-					: "N/A",
-				fuelType: carData.model_engine_fuel || "N/A",
-				transmission: carData.model_transmission_type || "N/A",
-				drive: carData.model_drive || "N/A",
-				doors: carData.model_doors || "N/A",
-			});
-
-			return `Specifications created with ID: ${specificationId}`;
-		} catch (error) {
-			console.error('Error creating car specifications:', error);
-			throw new Error('Failed to create specifications');
-		}
+			if (args.engineType && !carSpecs.engineType.toLowerCase().includes(args.engineType.toLowerCase())) return false;
+			if (args.engineCylinders && !carSpecs.engineCylinders.toLowerCase().includes(args.engineCylinders.toLowerCase())) return false;
+			if (args.fuelType && !carSpecs.fuelType.toLowerCase().includes(args.fuelType.toLowerCase())) return false;
+			if (args.transmission && !carSpecs.transmission.toLowerCase().includes(args.transmission.toLowerCase())) return false;
+			if (args.drive && !carSpecs.drive.toLowerCase().includes(args.drive.toLowerCase())) return false;
+			if (args.doors && !carSpecs.doors.toLowerCase().includes(args.doors.toLowerCase())) return false;
+			if (args.engineHorsepower && !carSpecs.engineHorsepower.toLowerCase().includes(args.engineHorsepower.toLowerCase())) return false;
+			return true;
+		});
 	},
 });
