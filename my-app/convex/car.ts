@@ -31,6 +31,8 @@ export const createCar = mutation({
 			...args,
 			disabled: false,
 		});
+		await createCarSpecifications(ctx, { carId, ...args });
+
 		return `Car with ID ${carId} has been created.`;
 	},
 });
@@ -201,6 +203,72 @@ export const getCarSpecifications = action({
 		} catch (error) {
 			console.error('Error fetching car specifications:', error);
 			throw new Error('Failed to fetch specifications');
+		}
+	},
+});
+
+export const createCarSpecifications = mutation({
+	args: {
+		carId: v.id('cars'),
+		maker: v.string(),
+		model: v.string(),
+		year: v.number(),
+		trim: v.string(),
+	},
+	handler: async (ctx, args) => {
+		const { maker, model, year, trim } = args;
+		// Extract the first word of the trim if it contains multiple words
+		const trimFirstWord = trim.split(' ')[0];
+
+		// Log the full URL with the first word of the trim
+		console.log(`https://www.carqueryapi.com/api/0.3/?callback=?&cmd=getTrims&make=${encodeURIComponent(maker)}&model=${encodeURIComponent(model)}&year=${year}&trim=${encodeURIComponent(trimFirstWord)}`);
+
+		// Construct the API URL with the first word of the trim
+		const apiUrl = `https://www.carqueryapi.com/api/0.3/?callback=?&cmd=getTrims&make=${encodeURIComponent(maker)}&model=${encodeURIComponent(model)}&year=${year}&trim=${encodeURIComponent(trimFirstWord)}`;
+
+		try {
+			const response = await fetch(apiUrl);
+			const text = await response.text();
+			console.log('API Response:', text);
+			// Extract JSON from JSONP response
+			const jsonMatch = text.match(/\{.+\}/);
+			if (!jsonMatch) {
+				throw new Error('Invalid API response');
+			}
+
+			const json = JSON.parse(jsonMatch[0]);
+
+			if (!json.Trims || json.Trims.length === 0) {
+				throw new Error('No specifications found for the given car details');
+			}
+
+			// Find the trim that exactly matches the provided trim
+			const matchingTrim = json.Trims.find((t: any) => t.model_trim === trim);
+
+			if (!matchingTrim) {
+				throw new Error(`No matching trim found for trim "${trim}"`);
+			}
+
+			const carData = matchingTrim;
+
+			// Create new entry in specifications table
+			const specificationId = await ctx.db.insert('specifications', {
+				carId: args.carId,
+				engineType: carData.model_engine_type || "N/A",
+				engineCylinders: carData.model_engine_cyl || "N/A",
+				engineHorsepower: carData.model_engine_power_ps
+					? `${carData.model_engine_power_ps} PS`
+					: "N/A",
+				fuelType: carData.model_engine_fuel || "N/A",
+				transmission: carData.model_transmission_type || "N/A",
+				drive: carData.model_drive || "N/A",
+				doors: carData.model_doors || "N/A",
+			});
+
+			return `Specifications created with ID: ${specificationId}`;
+		} catch (error) {
+			console.error('Error creating car specifications:', error);
+			throw new Error('Failed to create specifications');
 		}
 	},
 });

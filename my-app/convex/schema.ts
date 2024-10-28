@@ -48,6 +48,17 @@ export default defineSchema({
 		.index('by_maker', ['maker'])
 		.index('by_registrationNumber', ['registrationNumber']),
 	// .index('by_fleetId', ['fleetId']), // Index for querying by fleetId
+	specifications: defineTable({
+		carId: v.id('cars'),
+		engineType: v.string(),
+		engineCylinders: v.string(),
+		engineHorsepower: v.string(),
+		fuelType: v.string(),
+		transmission: v.string(),
+		drive: v.string(),
+		doors: v.string(),
+	})
+		.index('by_carId', ['carId']),
 
 	bookings: defineTable({
 		customerId: v.string(),
