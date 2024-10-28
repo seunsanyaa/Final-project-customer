@@ -26,6 +26,7 @@ export default defineSchema({
 		licenseNumber: v.string(),
 		address: v.string(),
 		dateOfBirth: v.string(),
+		licensePicture: v.optional(v.string()),
 	})
 		.index('by_userId', ['userId'])
 		.index('by_licenseNumber', ['licenseNumber']),
@@ -48,6 +49,17 @@ export default defineSchema({
 		.index('by_maker', ['maker'])
 		.index('by_registrationNumber', ['registrationNumber']),
 	// .index('by_fleetId', ['fleetId']), // Index for querying by fleetId
+	specifications: defineTable({
+		registrationNumber: v.string(),
+		engineType: v.string(),
+		engineCylinders: v.string(),
+		engineHorsepower: v.string(),
+		fuelType: v.string(),
+		transmission: v.string(),
+		drive: v.string(),
+		doors: v.string(),
+	})
+		.index('by_registrationNumber', ['registrationNumber']),
 
 	bookings: defineTable({
 		customerId: v.string(),
