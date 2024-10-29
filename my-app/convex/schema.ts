@@ -44,6 +44,7 @@ export default defineSchema({
 		pictures: v.array(v.string()), // Array of picture URLs
 		pricePerDay: v.number(),
 		averageRating: v.optional(v.number()),
+		WAFdescription: v.optional(v.string()),
 	})
 		.index('by_model', ['model'])
 		.index('by_maker', ['maker'])
@@ -74,6 +75,7 @@ export default defineSchema({
 		customerInsurancetype: v.string(),
 		customerInsuranceNumber: v.string(),
 		reviewId: v.optional(v.string()),
+		
 	})
 		.index('by_customerId', ['customerId'])
 		.index('by_carId', ['carId']),

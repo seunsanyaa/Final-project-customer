@@ -67,7 +67,6 @@ export function Reviews_Page() {
         comment: newReview,
         numberOfStars: newRating,
       });
-
       console.log(`Review created with ID: ${reviewId}`);
       // Optionally refetch reviews or update UI
       setNewReview('');
@@ -150,7 +149,7 @@ export function Reviews_Page() {
                       {[...Array(5)].map((_, i) => (
                         <Star
                           key={i}
-                          className={`w-4 h-4 ${i < review.numberOfStars ? 'text-foreground fill-foreground' : 'text-gray-300'}`}
+                          className={`w-4 h-4 ${i < review.numberOfStars ? 'text-customyello fill-customyello' : 'text-gray-300'}`}
                         />
                       ))}
                     </div>

@@ -336,3 +336,74 @@ export const getFilteredCars = query({
 		});
 	},
 });
+
+export const getCarsWithReviews = query({
+	handler: async (ctx) => {
+		// Fetch all cars that have an averageRating
+		const cars = await ctx.db
+			.query("cars")
+			.filter((q) => q.neq(q.field("averageRating"), undefined))
+			.collect();
+		
+		return cars;
+	},
+});
+
+export const getCarWithReviews = query({
+	args: { registrationNumber: v.string() },
+	handler: async (ctx, args) => {
+		// Get the car
+		const car = await ctx.db
+			.query("cars")
+			.withIndex("by_registrationNumber", (q) => 
+				q.eq("registrationNumber", args.registrationNumber)
+			)
+			.first();
+
+		if (!car) {
+			throw new Error(`Car with registration number ${args.registrationNumber} not found`);
+		}
+
+		// Get all bookings for this car
+		const bookings = await ctx.db
+			.query("bookings")
+			.withIndex("by_carId", (q) => q.eq("carId", args.registrationNumber))
+			.collect();
+
+		// Get reviews for these bookings
+		const reviews = await Promise.all(
+			bookings
+				.filter(booking => booking.reviewId) // Only get bookings with reviews
+				.map(async (booking) => {
+					const review = await ctx.db
+						.query("reviews")
+						.withIndex("by_bookingId", (q) => q.eq("bookingId", booking._id))
+						.first();
+
+					if (review) {
+						// Get user details
+						const user = await ctx.db
+							.query("users")
+							.withIndex("by_userId", (q) => q.eq("userId", review.userId))
+							.first();
+
+						return {
+							...review,
+							userName: user ? `${user.firstName} ${user.lastName}` : "Anonymous",
+						};
+					}
+					return null;
+				})
+		);
+
+		// Filter out null reviews and sort by date (most recent first)
+		const validReviews = reviews
+			.filter((review): review is NonNullable<typeof review> => review !== null)
+			.sort((a, b) => new Date(b.reviewDate).getTime() - new Date(a.reviewDate).getTime());
+
+		return {
+			...car,
+			reviews: validReviews,
+		};
+	},
+});

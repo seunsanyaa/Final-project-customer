@@ -8,58 +8,52 @@ import { Review } from "../types/review";
  * @param ctx - The Convex context.
  * @param carId - The registration number of the car.
  */
-async function updateCarAverageRating(ctx: any, carId: string): Promise<void> {
-  // Fetch all bookings for the given carId
+async function updateCarAverageRating(ctx: any, carId: string) {
+  // Get all reviews for this car by:
+  // 1. Get all bookings for this car
   const bookings = await ctx.db
     .query("bookings")
     .withIndex("by_carId", (q: any) => q.eq("carId", carId))
     .collect();
 
-  // Extract all reviewIds from these bookings
-  const reviewIds = bookings
-    .map((booking: Booking) => booking.reviewId)
-    .filter((reviewId: string) => reviewId !== undefined && reviewId !== null) as string[];
+  // 2. Filter bookings that have reviews
+  const bookingIds = bookings
+    .filter((booking: Booking) => booking.reviewId)
+    .map((booking: Booking) => booking._id);
 
-  if (reviewIds.length === 0) {
-    // If there are no reviews, set averageRating to undefined
-    const car = await ctx.db
+  if (bookingIds.length === 0) {
+    // No reviews exist, set averageRating to undefined
+    await ctx.db
       .query("cars")
       .withIndex("by_registrationNumber", (q: any) => q.eq("registrationNumber", carId))
-      .first();
-
-    if (car) {
-      await ctx.db.patch(car._id, { averageRating: undefined });
-    }
+      .first()
+      .then((car: Car) => {
+        if (car) {
+          ctx.db.patch(car._id, { averageRating: undefined });
+        }
+      });
     return;
   }
 
-  // Fetch all reviews using the collected reviewIds
-  const reviews = await ctx.db
-    .query("reviews")
-    .anyOf(reviewIds.map((id) => ({ _id: id })))
-    .collect();
+  // 3. Get all reviews for these bookings
+  const reviews = await Promise.all(
+    bookingIds.map((bookingId: string) => 
+      ctx.db
+        .query("reviews")
+        .withIndex("by_bookingId", (q: any) => q.eq("bookingId", bookingId))
+        .first()
+    )
+  );
 
-  if (reviews.length === 0) {
-    // No reviews found, set averageRating to undefined
-    const car = await ctx.db
-      .query("cars")
-      .withIndex("by_registrationNumber", (q: any) => q.eq("registrationNumber", carId))
-      .first();
+  // 4. Calculate average rating
+  const validReviews = reviews.filter(review => review !== null);
+  const totalStars = validReviews.reduce((sum, review) => sum + review.numberOfStars, 0);
+  const averageRating = totalStars / validReviews.length;
 
-    if (car) {
-      await ctx.db.patch(car._id, { averageRating: undefined });
-    }
-    return;
-  }
-
-  // Calculate the averageNumberOfStars
-  const totalStars = reviews.reduce((sum: number, review: Review) => sum + review.numberOfStars, 0);
-  const averageRating = totalStars / reviews.length;
-
-  // Update the car's averageRating
+  // 5. Update the car's averageRating
   const car = await ctx.db
     .query("cars")
-    .withIndex("by_registrationNumber", (q: any) => q.eq("registrationNumber", carId))
+    .withIndex("by_registrationNumber", (q: any ) => q.eq("registrationNumber", carId))
     .first();
 
   if (car) {
@@ -106,7 +100,7 @@ export const createReview = mutation({
     const carId = booking.carId;
 
     // Update the car's averageRating
-    //await updateCarAverageRating(ctx, carId);
+    await updateCarAverageRating(ctx, carId);
 
     return reviewId;
   },
@@ -126,11 +120,11 @@ export const getReviewsByUserId = query({
     // Enrich each review with car details
     const enrichedReviews = await Promise.all(
       reviews.map(async (review: Review) => {
-        const booking = await ctx.db.get(review.bookingId);
+        const booking = await ctx.db.get(review.bookingId) as Booking;
         if (booking) {
           const car = await ctx.db
             .query("cars")
-            .withIndex("by_registrationNumber", (q) => q.eq("registrationNumber", booking.carId))
+            .withIndex("by_registrationNumber", (q: any) => q.eq("registrationNumber", booking.carId))
             .first();
 
           return {
