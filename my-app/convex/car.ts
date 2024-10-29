@@ -82,6 +82,7 @@ export const addSpecification = mutation({
 });
 
 // Modified createCar mutation
+
 export const createCar = mutation({
 	args: {
 		model: v.string(),
@@ -94,6 +95,7 @@ export const createCar = mutation({
 		registrationNumber: v.string(),
 		pictures: v.array(v.string()),
 		pricePerDay: v.number(),
+		averageRating: v.optional(v.number()),
 	},
 	handler: async (ctx, args) => {
 		const existingCar = await ctx.db
@@ -112,7 +114,9 @@ export const createCar = mutation({
 			disabled: false,
 		});
 
-		
+		// Fetch and return the newly created car
+		const newCar = await ctx.db.get(carId);
+		return newCar;
 	},
 });
 
