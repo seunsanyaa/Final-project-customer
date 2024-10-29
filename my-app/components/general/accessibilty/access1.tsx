@@ -1,4 +1,3 @@
-
 "use client"
 import React from 'react';
 import Link from 'next/link'; 
@@ -67,7 +66,7 @@ export function Access1() {
                     <p className="text-black font-semibold">Accessible, Spacious, Family-Friendly</p> 
                     <p className="text-black">Starting from $120/day</p> 
                   </div>
-                  <Link href="/Search">
+                  <Link href="/carinfo?id=disi1">
                     <Button className="hover:bg-blue-500 hover:shadow-lg transition-all duration-300 rounded-lg hover:bg-muted" variant="outline">Rent Now</Button> 
                   </Link>
                 </div>
@@ -78,7 +77,7 @@ export function Access1() {
                     <p className="text-black font-semibold">Hybrid, Comfortable, Efficient</p> 
                     <p className="text-black">Starting from $110/day</p> 
                   </div>
-                  <Link href="/Search">
+                  <Link href="/carinfo?id=disi2">
                     <Button className="hover:bg-blue-500 hover:shadow-lg transition-all duration-300 rounded-lg hover:bg-muted" variant="outline">Rent Now</Button> 
                   </Link>
                 </div>
@@ -89,7 +88,7 @@ export function Access1() {
                     <p className="text-black font-semibold">Rugged, Spacious, Tech-Savvy</p> 
                     <p className="text-black">Starting from $100/day</p> 
                   </div>
-                  <Link href="/Search">
+                  <Link href="/carinfo?id=disi3">
                     <Button className="hover:bg-blue-500 hover:shadow-lg transition-all duration-300 rounded-lg hover:bg-muted" variant="outline">Rent Now</Button> 
                   </Link>
                 </div>
@@ -100,7 +99,7 @@ export function Access1() {
                     <p className="text-black font-semibold mb-0">Roomy, Family-Oriented, Versatile</p> 
                     <p className="text-black">Starting from $100/day</p> 
                   </div>
-                  <Link href="/Search">
+                  <Link href="/carinfo?id=disi4">
                     <Button className="hover:bg-blue-500 hover:shadow-lg  hover:bg-muted transition-all duration-300 rounded-lg mt-0" variant="outline">Rent Now</Button> 
                   </Link>
                 </div>
@@ -111,7 +110,7 @@ export function Access1() {
                     <p className="text-black font-semibold mb-0">Practical, Efficient, Functional</p> 
                     <p className="text-black">Starting from $70/day</p> 
                   </div>
-                  <Link href="/Search">
+                  <Link href="/carinfo?id=disi5">
                     <Button className="hover:bg-blue-500 hover:shadow-lg transition-all duration-300 rounded-lg mt-0 hover:bg-muted" variant="outline">Rent Now</Button> 
                   </Link>
                 </div>
@@ -122,7 +121,7 @@ export function Access1() {
                     <p className="text-black font-semibold mb-0">Luxurious, Spacious, Strong</p> 
                     <p className="text-black">Starting from $150/day</p> 
                   </div>
-                  <Link href="/Search">
+                  <Link href="/carinfo?id=disi6">
                     <Button className="hover:bg-blue-500 hover:shadow-lg transition-all duration-300 rounded-lg mt-0 hover:bg-muted" variant="outline">Rent Now</Button> 
                   </Link>
                 </div>

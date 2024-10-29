@@ -201,7 +201,10 @@ export const getCar = query({
 
 export const getAllCars = query({
 	handler: async (ctx) => {
-		const cars = await ctx.db.query('cars').collect();
+		const cars = await ctx.db
+			.query('cars')
+			.filter((q) => q.eq(q.field('disabled'), true))
+			.collect();
 		return cars;
 	},
 });
@@ -306,7 +309,10 @@ export const getFilteredCars = query({
 		engineHorsepower: v.optional(v.string()),
 	},
 	handler: async (ctx, args) => {
-		const cars = await ctx.db.query("cars").collect();
+		const cars = await ctx.db
+			.query("cars")
+			.filter((q) => q.eq(q.field('disabled'), false))
+			.collect();
 		const specs = await ctx.db.query("specifications").collect();
 
 		const specsMap = specs.reduce((acc, spec) => {
