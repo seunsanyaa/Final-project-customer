@@ -122,6 +122,9 @@ importers:
       react-leaflet:
         specifier: ^4.2.1
         version: 4.2.1(leaflet@1.9.4)(react-dom@18.0.0(react@18.0.0))(react@18.0.0)
+      react-router-dom:
+        specifier: ^6.27.0
+        version: 6.27.0(react-dom@18.0.0(react@18.0.0))(react@18.0.0)
       recharts:
         specifier: ^2.12.7
         version: 2.12.7(react-dom@18.0.0(react@18.0.0))(react@18.0.0)
@@ -153,6 +156,9 @@ importers:
       '@types/react-dom':
         specifier: ^18
         version: 18.0.0
+      '@types/react-router-dom':
+        specifier: ^5.3.3
+        version: 5.3.3
       eslint:
         specifier: ^8
         version: 8.0.0
@@ -1121,6 +1127,10 @@ packages:
       react: ^18.0.0
       react-dom: ^18.0.0
 
+  '@remix-run/router@1.20.0':
+    resolution: {integrity: sha512-mUnk8rPJBI9loFDZ+YzPGdeniYK+FTmRD1TMCz7ev2SNIozyKKpnGgsxO34u6Z4z/t0ITuu7voi/AshfsGsgFg==}
+    engines: {node: '>=14.0.0'}
+
   '@rushstack/eslint-patch@1.10.4':
     resolution: {integrity: sha512-WJgX9nzTqknM393q1QJDJmoW28kUfEnybeTfVNcNAPnIx210RXm2DiXiHzfNPJNIUUb1tJnz/l4QGtJ30PgWmA==}
 
@@ -1174,6 +1184,9 @@ packages:
   '@types/geojson@7946.0.14':
     resolution: {integrity: sha512-WCfD5Ht3ZesJUsONdhvm84dmzWOiOzOAqOncN0++w0lBw1o8OuDNJF2McvvCef/yBqb/HYRahp1BYtODFQ8bRg==}
 
+  '@types/history@4.7.11':
+    resolution: {integrity: sha512-qjDJRrmvBMiTx+jyLxvLfJU7UznFuokDv4f3WRuriHKERccVpFU+8XMQUAbDzoiJCsmexxRExQeMwwCdamSKDA==}
+
   '@types/json5@0.0.29':
     resolution: {integrity: sha512-dRLjCWHYg4oaA77cxO64oO+7JwCwnIzkZPdrrC71jQmQtlhM556pwKo5bUzqvZndkVbeFLIIi+9TC40JNF5hNQ==}
 
@@ -1192,6 +1205,12 @@ packages:
   '@types/react-leaflet@3.0.0':
     resolution: {integrity: sha512-p8R9mVKbCDDqOdW+M6GyJJuFn6q+IgDFYavFiOIvaWHuOe5kIHZEtCy1pfM43JIA6JiB3D/aDoby7C51eO+XSg==}
     deprecated: This is a stub types definition. react-leaflet provides its own type definitions, so you do not need this installed.
+
+  '@types/react-router-dom@5.3.3':
+    resolution: {integrity: sha512-kpqnYK4wcdm5UaWI3fLcELopqLrHgLqNsdpHauzlQktfkHL3npOSwtj1Uz9oKBAzs7lFtVkV8j83voAz2D8fhw==}
+
+  '@types/react-router@5.1.20':
+    resolution: {integrity: sha512-jGjmu/ZqS7FjSH6owMcD5qpq19+1RS9DeVRqfl1FeBMxTDQAGwlMWOcs52NDoXaNKyG3d1cYQFMs9rCrb88o9Q==}
 
   '@types/react@18.0.0':
     resolution: {integrity: sha512-7+K7zEQYu7NzOwQGLR91KwWXXDzmTFODRVizJyIALf6RfLv2GDpqpknX64pvRVILXCpXi7O/pua8NGk44dLvJw==}
@@ -2592,6 +2611,19 @@ packages:
     peerDependenciesMeta:
       '@types/react':
         optional: true
+
+  react-router-dom@6.27.0:
+    resolution: {integrity: sha512-+bvtFWMC0DgAFrfKXKG9Fc+BcXWRUO1aJIihbB79xaeq0v5UzfvnM5houGUm1Y461WVRcgAQ+Clh5rdb1eCx4g==}
+    engines: {node: '>=14.0.0'}
+    peerDependencies:
+      react: '>=16.8'
+      react-dom: '>=16.8'
+
+  react-router@6.27.0:
+    resolution: {integrity: sha512-YA+HGZXz4jaAkVoYBE98VQl+nVzI+cVI2Oj/06F5ZM+0u3TgedN9Y9kmMRo2mnkSK2nCpNQn0DVob4HCsY/WLw==}
+    engines: {node: '>=14.0.0'}
+    peerDependencies:
+      react: '>=16.8'
 
   react-smooth@4.0.1:
     resolution: {integrity: sha512-OE4hm7XqR0jNOq3Qmk9mFLyd6p2+j6bvbPJ7qlB7+oo0eNcL2l7WQzG6MBnT3EXY6xzkLMUBec3AfewJdA0J8w==}
@@ -4003,6 +4035,8 @@ snapshots:
       react: 18.0.0
       react-dom: 18.0.0(react@18.0.0)
 
+  '@remix-run/router@1.20.0': {}
+
   '@rushstack/eslint-patch@1.10.4': {}
 
   '@stablelib/base64@1.0.1': {}
@@ -4049,6 +4083,8 @@ snapshots:
 
   '@types/geojson@7946.0.14': {}
 
+  '@types/history@4.7.11': {}
+
   '@types/json5@0.0.29': {}
 
   '@types/leaflet@1.9.12':
@@ -4070,6 +4106,17 @@ snapshots:
       - leaflet
       - react
       - react-dom
+
+  '@types/react-router-dom@5.3.3':
+    dependencies:
+      '@types/history': 4.7.11
+      '@types/react': 18.0.0
+      '@types/react-router': 5.1.20
+
+  '@types/react-router@5.1.20':
+    dependencies:
+      '@types/history': 4.7.11
+      '@types/react': 18.0.0
 
   '@types/react@18.0.0':
     dependencies:
@@ -5625,6 +5672,18 @@ snapshots:
       use-sidecar: 1.1.2(@types/react@18.0.0)(react@18.0.0)
     optionalDependencies:
       '@types/react': 18.0.0
+
+  react-router-dom@6.27.0(react-dom@18.0.0(react@18.0.0))(react@18.0.0):
+    dependencies:
+      '@remix-run/router': 1.20.0
+      react: 18.0.0
+      react-dom: 18.0.0(react@18.0.0)
+      react-router: 6.27.0(react@18.0.0)
+
+  react-router@6.27.0(react@18.0.0):
+    dependencies:
+      '@remix-run/router': 1.20.0
+      react: 18.0.0
 
   react-smooth@4.0.1(react-dom@18.0.0(react@18.0.0))(react@18.0.0):
     dependencies:
