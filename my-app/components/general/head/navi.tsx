@@ -112,17 +112,21 @@ export const Navi: React.FC<NaviProps> = ({ className }) => {
           </SignedOut>
           <SignedIn>
             <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Avatar className="h-9 w-9 rounded-xl cursor-pointer">
-                  {/* Display user's avatar if available, otherwise fallback */}
-                  {user?.imageUrl ? (
-                    <AvatarImage src={user.imageUrl} alt="User Avatar" className="h-9 w-9 rounded-xl cursor-pointer"/>
-                  ) : (
-                    <AvatarFallback>U</AvatarFallback>
-                  )}
-                  <span className="sr-only">Toggle user menu</span>
-                </Avatar>
-              </DropdownMenuTrigger>
+            <DropdownMenuTrigger asChild>
+              <Avatar className="h-9 w-9 rounded-full cursor-pointer">
+                {user?.imageUrl ? (
+                  <AvatarImage
+                  src={user.imageUrl}
+                  alt="User Avatar"
+                  className="h-9 w-9"
+                  style={{ borderRadius: '9999px' }}
+                />
+                ) : (
+                  <AvatarFallback className="rounded-full">U</AvatarFallback>
+                )}
+                <span className="sr-only">Toggle user menu</span>
+              </Avatar>
+            </DropdownMenuTrigger>
               <DropdownMenuContent className="custom-user-menu" align="end">
                 {/* Custom Menu Items */}
                 <DropdownMenuItem>

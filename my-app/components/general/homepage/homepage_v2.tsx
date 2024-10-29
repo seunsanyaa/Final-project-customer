@@ -75,7 +75,7 @@ export function Homepage_v2() {
         inView1 ? 'animate-fadeInUp' : 'opacity-0'
        }`}
        style={{ backgroundImage: `url(https://res.cloudinary.com/dbsxjsktb/image/upload/v1729108115/benjamin-child-7Cdw956mZ4w-unsplash_ted8ag.jpg)`, 
-                backgroundColor: 'rgba(0, 0, 0, 0.5)' }} // Added dark overlay
+                backgroundColor: 'rgba(0, 0, 0, 0.5)' }} 
     >
     <div className="absolute inset-0 flex items-center justify-center">
       <Card className="bg-white p-8 rounded-5 shadow-2xl backdrop-blur-md bg-opacity-90" style={{ zIndex: 50 }}>
@@ -91,7 +91,7 @@ export function Homepage_v2() {
                 placeholder="Search by location or vehicle"
                 className="p-5 border-2 border-gray-800 rounded-lg w-full text-gray-800 placeholder:text-gray-500 shadow-lg focus:ring-4 focus:ring-blue-500 transition-transform ease-in-out duration-300 transform hover:scale-105"
               />          
-              <button type="submit" className="absolute inset-y-0 right-3 flex items-center bg-blue-500 hover:bg-blue-700 text-white p-2 shadow-md transition-transform ease-in-out duration-300 transform hover:scale-110">
+              <button type="submit" className="absolute inset-y-0 right-3 flex items-center bg-blue-500 hover:bg-blue-700 text-white p-2 transition-transform ease-in-out duration-300 transform hover:scale-110">
                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" className="w-5 h-5">
                   <path fill="currentColor" d="M416 208c0 45.9-14.9 88.3-40 122.7L502.6 457.4c12.5 12.5 12.5 32.8 0 45.3s-32.8 12.5-45.3 0L330.7 376c-34.4 25.2-76.8 40-122.7 40C93.1 416 0 322.9 0 208S93.1 0 208 0S416 93.1 416 208zM208 352a144 144 0 1 0 0-288 144 144 0 1 0 0 288z"/>
                 </svg>

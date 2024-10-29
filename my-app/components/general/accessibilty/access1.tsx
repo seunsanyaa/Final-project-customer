@@ -29,11 +29,37 @@ export function Access1() {
               </p>
             </div>
             <img
-              src="https://res.cloudinary.com/dbsxjsktb/image/upload/v1730143352/2024_Chevrolet_Traverse_Premier_xnqy7b.avif"
-              alt="Dodge Grand Caravan"
-              width={400}
-              height={300}
-              className="w-[600px] h-[500px] object-cover"
+              src="https://res.cloudinary.com/dbsxjsktb/image/upload/v1730212805/Honda_Odyssey4_odbyjm.jpg"
+              alt="Honda Odyssey"
+              width={100}
+              height={200}
+              className="w-[900px] h-[500px] object-cover"
+
+            />
+            {/* <img
+              src="https://res.cloudinary.com/dbsxjsktb/image/upload/v1730213376/Honda_Odyssey6_v5nbyg.webp"
+              alt="Honda Odyssey"
+              width={100}
+              height={200}
+              className="w-[900px] h-[500px] object-cover"
+
+            /> */}
+          </section>
+          <section className="flex justify-between items-center mb-8">
+            <img
+              src="https://res.cloudinary.com/dbsxjsktb/image/upload/v1730213376/Honda_Odyssey6_v5nbyg.webp"
+              alt="Honda Odyssey"
+              width={100}
+              height={200}
+              className="w-[500px] h-[400px] object-cover"
+
+            />
+            <img
+              src="https://res.cloudinary.com/dbsxjsktb/image/upload/v1730213363/Honda_Odyssey5_dnwhd3.jpg"
+              alt="Honda Odyssey"
+              width={100}
+              height={200}
+              className="w-[500px] h-[400px] object-cover"
 
             />
           </section>
@@ -110,6 +136,50 @@ export function Access1() {
               </div>
             </div>
           </section>
+          <section className="mb-8">
+            <h2 className="text-2xl font-bold mb-4">Accessibility Information</h2>
+            <div className="bg-card rounded-lg shadow-md p-6">
+              <p className="text-muted-foreground mb-4">
+                At Accessible Rentals, we are committed to providing a seamless and inclusive experience for all our
+                customers. Our fleet of vehicles is equipped with a variety of accessibility features, catering to the
+                diverse needs of individuals with disabilities.
+              </p>
+              <p className="text-muted-foreground mb-4">
+                Whether you require a wheelchair-accessible van, a car with hand controls, or a vehicle with specialized
+                features for the visually or hearing impaired, we have you covered. Our knowledgeable staff is dedicated
+                to assisting you in finding the perfect vehicle to meet your needs and ensuring a comfortable and
+                stress-free rental experience.
+              </p>
+              <p className="text-muted-foreground">
+                If you have any questions or need additional support, please don't hesitate to contact our accessibility
+                team. We are here to help you every step of the way.
+              </p>
+            </div>
+          </section>
+        </div>
+      </main>
+      <Footer/>
+    </div>
+  );
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
           {/* Driver Accessibility Features Section
           <section className="mb-8">
@@ -276,29 +346,3 @@ export function Access1() {
               </div>
             </div>
           </section> */}
-          <section className="mb-8">
-            <h2 className="text-2xl font-bold mb-4">Accessibility Information</h2>
-            <div className="bg-card rounded-lg shadow-md p-6">
-              <p className="text-muted-foreground mb-4">
-                At Accessible Rentals, we are committed to providing a seamless and inclusive experience for all our
-                customers. Our fleet of vehicles is equipped with a variety of accessibility features, catering to the
-                diverse needs of individuals with disabilities.
-              </p>
-              <p className="text-muted-foreground mb-4">
-                Whether you require a wheelchair-accessible van, a car with hand controls, or a vehicle with specialized
-                features for the visually or hearing impaired, we have you covered. Our knowledgeable staff is dedicated
-                to assisting you in finding the perfect vehicle to meet your needs and ensuring a comfortable and
-                stress-free rental experience.
-              </p>
-              <p className="text-muted-foreground">
-                If you have any questions or need additional support, please don't hesitate to contact our accessibility
-                team. We are here to help you every step of the way.
-              </p>
-            </div>
-          </section>
-        </div>
-      </main>
-      <Footer/>
-    </div>
-  );
-}
