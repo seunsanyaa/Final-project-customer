@@ -33,7 +33,7 @@ const [ref3, inView3] = useInView({ threshold: 0.3,triggerOnce: true });
               </div>
               <div className="relative h-[400px] sm:h-[500px] lg:h-auto">
                 <img
-                  src="/placeholder.svg"
+                  src="https://res.cloudinary.com/di8yfpruz/image/upload/v1730237440/View_of_Empire_State_Building_from_Rockefeller_Center_New_York_City_dllu__cropped_cmv9na.jpg"
                   width={800}
                   height={600}
                   alt="Map"
