@@ -147,3 +147,49 @@ export const getReviewsByUserId = query({
     return enrichedReviews;
   },
 });
+
+/**
+ * Retrieves the top 6 reviews of all time based on the number of stars.
+ * @returns An array of the top 6 reviews with enriched car details.
+ */
+export const getTopReviews = query({
+  handler: async (ctx) => {
+    // Fetch the top 6 reviews sorted by numberOfStars in descending order
+    const topReviews = await ctx.db
+      .query("reviews")
+      .order("numberOfStars", "descending")
+      .limit(6)
+      .collect<Review>();
+
+    // Enrich each review with car details
+    const enrichedTopReviews = await Promise.all(
+      topReviews.map(async (review) => {
+        const booking = await ctx.db.get<Booking>(review.bookingId);
+        if (booking) {
+          const car = await ctx.db
+            .query("cars")
+            .withIndex("by_registrationNumber", (q) =>
+              q.eq("registrationNumber", booking.carId)
+            )
+            .first<Car>();
+          
+          return {
+            ...review,
+            carDetails: car
+              ? {
+                  maker: car.maker,
+                  model: car.model,
+                  year: car.year,
+                  color: car.color,
+                  trim: car.trim,
+                }
+              : null,
+          };
+        }
+        return { ...review, carDetails: null };
+      })
+    );
+
+    return enrichedTopReviews;
+  },
+});
