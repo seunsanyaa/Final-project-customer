@@ -1,4 +1,4 @@
-
+import React, { useState } from "react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
@@ -16,7 +16,66 @@ import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator"; // Assuming this is imported correctly from your components
 import { Navi } from "../head/navi";
 import { Footer } from "../head/footer";
+
+interface PromotionCardProps {
+  title: string;
+  description: string;
+  expiration: string;
+  badgeType: string;
+}
+
+const PromotionCard: React.FC<PromotionCardProps> = ({ title, description, expiration, badgeType }) => (
+  <Card>
+    <img
+      src="/placeholder.svg"
+      width={400}
+      height={200}
+      alt="Promotion Image"
+      className="rounded-t-lg object-cover"
+      style={{ aspectRatio: "400/200", objectFit: "cover" }}
+    />
+    <CardContent className="p-6">
+      <h3 className="text-xl font-bold mb-2">{title}</h3>
+      <p className="text-muted-foreground mb-4">{description}</p>
+      <div className="flex justify-between items-center mb-4">
+        <div>
+          <CalendarDaysIcon className="mr-2 h-4 w-4" />
+          <span className="text-sm text-muted-foreground">Expires: {expiration}</span>
+        </div>
+        <Badge variant="secondary">{badgeType}</Badge>
+      </div>
+      <div className="text-sm text-muted-foreground">
+        <p>Offer valid for members. See terms and conditions for details.</p>
+      </div>
+    </CardContent>
+  </Card>
+);
+
+const promotions = [ // Define the promotions array
+  {
+    title: "20% Off Compact Car Rentals",
+    description: "Rent a compact car and save 20% on your next booking.",
+    expiration: "2024-09-30",
+    badgeType: "Discount",
+  },
+  {
+    title: "Complimentary Upgrade to Midsize",
+    description: "Rent a midsize car at the price of a compact.",
+    expiration: "2024-11-15",
+    badgeType: "Upgrade",
+  },
+  // ... add other promotions as needed ...
+];
+
 export function PromotionsPage() {
+  const [filter, setFilter] = useState("all");
+
+  const filteredPromotions = promotions.filter(promotion => {
+    if (filter === "expiring-soon") {
+      return new Date(promotion.expiration) < new Date(Date.now() + 7 * 24 * 60 * 60 * 1000); // Next 7 days
+    }
+    return true; // Show all promotions
+  });
 
   return (
     <>
@@ -33,7 +92,7 @@ export function PromotionsPage() {
                 New members can save big on their next car rental. Offer ends
                 soon, so don't miss out!
               </p>
-              <Button size="lg" variant="secondary">
+              <Button size="lg" variant="secondary" className="hover:bg-secondary-foreground hover:text-white transition duration-300">
                 Redeem Offer
               </Button>
             </div>
@@ -55,15 +114,13 @@ export function PromotionsPage() {
             <h2 className="text-2xl font-bold">Current Promotions</h2>
             <div className="flex items-center gap-4">
               <Label htmlFor="filter">Filter by:</Label>
-              <Select name="filter" defaultValue="all">
+              <Select name="filter" defaultValue="all" onValueChange={setFilter}>
                 <SelectTrigger className="w-48">
                   <SelectValue placeholder="All Promotions" />
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="all">All Promotions</SelectItem>
-                  <SelectItem value="discount">Discount Offers</SelectItem>
-                  <SelectItem value="upgrade">Upgrade Offers</SelectItem>
-                  <SelectItem value="free-rental">Free Rental Offers</SelectItem>
+                  <SelectItem value="expiring-soon">Expiring Soon</SelectItem>
                 </SelectContent>
               </Select>
               <Label htmlFor="sort">Sort by:</Label>
@@ -84,162 +141,42 @@ export function PromotionsPage() {
 
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
             {/* Repeat for each card */}
-            <Card>
-              <img
-                src="/placeholder.svg"
-                width={400}
-                height={200}
-                alt="Promotion Image"
-                className="rounded-t-lg object-cover"
-                style={{ aspectRatio: "400/200", objectFit: "cover" }}
-              />
-              <CardContent className="p-6">
-                <h3 className="text-xl font-bold mb-2">
-                  20% Off Compact Car Rentals
-                </h3>
-                <p className="text-muted-foreground mb-4">
-                  Rent a compact car and save 20% on your next booking.
-                </p>
-                <div className="flex justify-between items-center mb-4">
-                  <div>
-                    <CalendarDaysIcon className="mr-2 h-4 w-4" />
-                    <span className="text-sm text-muted-foreground">
-                      Expires: 2024-09-30
-                    </span>
-                  </div>
-                  <Badge variant="secondary">Discount</Badge>
-                </div>
-                <div className="text-sm text-muted-foreground">
-                  <p>
-                    Offer valid for new members only. Minimum rental period of 3
-                    days. See terms and conditions for details.
-                  </p>
-                </div>
-              </CardContent>
-            </Card>
-            <Card>
-            <img
-              src="/placeholder.svg"
-              width={400}
-              height={200}
-              alt="Promotion Image"
-              className="rounded-t-lg object-cover"
-              style={{ aspectRatio: "400/200", objectFit: "cover" }} />
-            <CardContent className="p-6">
-              <h3 className="text-xl font-bold mb-2">Complimentary Upgrade to Midsize</h3>
-              <p className="text-muted-foreground mb-4">Rent a midsize car at the price of a compact.</p>
-              <div className="flex justify-between items-center mb-4">
-                <div>
-                  <CalendarDaysIcon className="mr-2 h-4 w-4" />
-                  <span className="text-sm text-muted-foreground">Expires: 2024-11-15</span>
-                </div>
-                <Badge variant="secondary">Upgrade</Badge>
-              </div>
-              <div className="text-sm text-muted-foreground">
-                <p>Offer valid for members with 6 or more rentals in the past year. Blackout dates may apply.</p>
-              </div>
-            </CardContent>
-          </Card>
-          <Card>
-            <img
-              src="/placeholder.svg"
-              width={400}
-              height={200}
-              alt="Promotion Image"
-              className="rounded-t-lg object-cover"
-              style={{ aspectRatio: "400/200", objectFit: "cover" }} />
-            <CardContent className="p-6">
-              <h3 className="text-xl font-bold mb-2">Free Weekend Rental for New Members</h3>
-              <p className="text-muted-foreground mb-4">
-                Enjoy a free weekend rental when you sign up for our rewards program.
-              </p>
-              <div className="flex justify-between items-center mb-4">
-                <div>
-                  <CalendarDaysIcon className="mr-2 h-4 w-4" />
-                  <span className="text-sm text-muted-foreground">Expires: 2024-12-31</span>
-                </div>
-                <Badge variant="secondary">Free Rental</Badge>
-              </div>
-              <div className="text-sm text-muted-foreground">
-                <p>
-                  Offer valid for new members only. Minimum rental period of 2 days. See terms and conditions for
-                  details.
-                </p>
-              </div>
-            </CardContent>
-          </Card>
-          <Card>
-            <img
-              src="/placeholder.svg"
-              width={400}
-              height={200}
-              alt="Promotion Image"
-              className="rounded-t-lg object-cover"
-              style={{ aspectRatio: "400/200", objectFit: "cover" }} />
-            <CardContent className="p-6">
-              <h3 className="text-xl font-bold mb-2">10% Off SUV Rentals for Members</h3>
-              <p className="text-muted-foreground mb-4">Rent an SUV and save 10% on your next booking.</p>
-              <div className="flex justify-between items-center mb-4">
-                <div>
-                  <CalendarDaysIcon className="mr-2 h-4 w-4" />
-                  <span className="text-sm text-muted-foreground">Expires: 2025-03-31</span>
-                </div>
-                <Badge variant="secondary">Discount</Badge>
-              </div>
-              <div className="text-sm text-muted-foreground">
-                <p>Offer valid for members with 3 or more rentals in the past year. Blackout dates may apply.</p>
-              </div>
-            </CardContent>
-          </Card>
-          <Card>
-            <img
-              src="/placeholder.svg"
-              width={400}
-              height={200}
-              alt="Promotion Image"
-              className="rounded-t-lg object-cover"
-              style={{ aspectRatio: "400/200", objectFit: "cover" }} />
-            <CardContent className="p-6">
-              <h3 className="text-xl font-bold mb-2">Free Rental Day for Loyalty Members</h3>
-              <p className="text-muted-foreground mb-4">Earn a free rental day for every 5 rentals.</p>
-              <div className="flex justify-between items-center mb-4">
-                <div>
-                  <CalendarDaysIcon className="mr-2 h-4 w-4" />
-                  <span className="text-sm text-muted-foreground">Expires: 2025-06-30</span>
-                </div>
-                <Badge variant="secondary">Free Rental</Badge>
-              </div>
-              <div className="text-sm text-muted-foreground">
-                <p>
-                  Offer valid for members with 10 or more rentals in the past year. See terms and conditions for
-                  details.
-                </p>
-              </div>
-            </CardContent>
-          </Card>
-          <Card>
-            <img
-              src="/placeholder.svg"
-              width={400}
-              height={200}
-              alt="Promotion Image"
-              className="rounded-t-lg object-cover"
-              style={{ aspectRatio: "400/200", objectFit: "cover" }} />
-            <CardContent className="p-6">
-              <h3 className="text-xl font-bold mb-2">15% Off Luxury Car Rentals</h3>
-              <p className="text-muted-foreground mb-4">Treat yourself to a luxury car rental and save 15%.</p>
-              <div className="flex justify-between items-center mb-4">
-                <div>
-                  <CalendarDaysIcon className="mr-2 h-4 w-4" />
-                  <span className="text-sm text-muted-foreground">Expires: 2025-09-30</span>
-                </div>
-                <Badge variant="secondary">Discount</Badge>
-              </div>
-              <div className="text-sm text-muted-foreground">
-                <p>Offer valid for members with 15 or more rentals in the past year. Blackout dates may apply.</p>
-              </div>
-            </CardContent>
-          </Card>
+            <PromotionCard 
+              title="20% Off Compact Car Rentals" 
+              description="Rent a compact car and save 20% on your next booking." 
+              expiration="2024-09-30" 
+              badgeType="Discount" 
+            />
+            <PromotionCard 
+              title="Complimentary Upgrade to Midsize" 
+              description="Rent a midsize car at the price of a compact." 
+              expiration="2024-11-15" 
+              badgeType="Upgrade" 
+            />
+            <PromotionCard 
+              title="Free Weekend Rental for New Members" 
+              description="Enjoy a free weekend rental when you sign up for our rewards program." 
+              expiration="2024-12-31" 
+              badgeType="Free Rental" 
+            />
+            <PromotionCard 
+              title="10% Off SUV Rentals for Members" 
+              description="Rent an SUV and save 10% on your next booking." 
+              expiration="2025-03-31" 
+              badgeType="Discount" 
+            />
+            <PromotionCard 
+              title="Free Rental Day for Loyalty Members" 
+              description="Earn a free rental day for every 5 rentals." 
+              expiration="2025-06-30" 
+              badgeType="Free Rental" 
+            />
+            <PromotionCard 
+              title="15% Off Luxury Car Rentals" 
+              description="Treat yourself to a luxury car rental and save 15%." 
+              expiration="2025-09-30" 
+              badgeType="Discount" 
+            />
           </div>
         </div>
       </div>

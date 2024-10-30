@@ -112,38 +112,21 @@ export function Mybookings() {
   }
 
   
-<<<<<<< Updated upstream
-  if (loading) {
-    return (
-      <div className="flex items-center justify-center h-screen">
-        <Lottie
-          lottieRef={lottieRef}
-          animationData={loadingAnimation}
-          loop={false} // Disable looping
-          autoplay={true} // Ensure autoplay is enabled
-          className="w-48 h-48"
-        />
-      </div>
-    );
-  }
-
-  if (customerId === "") {
-=======
-
   // if (loading) {
   //   return (
   //     <div className="flex items-center justify-center h-screen">
   //       <Lottie
   //         lottieRef={lottieRef}
   //         animationData={loadingAnimation}
-  //         loop={true}
+  //         loop={false} // Disable looping
+  //         autoplay={true} // Ensure autoplay is enabled
   //         className="w-48 h-48"
   //       />
   //     </div>
   //   );
   // }
-    if (customerId === "") {
->>>>>>> Stashed changes
+
+  if (customerId === "") {
     return (
       <>
         <Navi />
@@ -166,7 +149,7 @@ export function Mybookings() {
         <h1 className="text-3xl font-bold mb-8">Your Car Bookings</h1>
        
         {currentBooking ? (
-           <Link href={`bookings/currentbooking?bookingId=${currentBooking?._id}`} className='hover:cursor-pointer'>
+           <Link href={`/bookings/currentbooking?bookingId=${currentBooking?._id}`} className='hover:cursor-pointer'>
            <div className="bg-background border rounded-lg p-6 shadow-sm">
              <div className="flex items-center justify-between">
                <div>
