@@ -1,6 +1,6 @@
 "use client"
 import Link from "next/link"
-import { useState, useEffect } from "react"
+import { useState, useEffect, useRef } from "react"
 import { Button } from "@/components/ui/button"
 import { Card, CardHeader, CardContent, CardFooter } from "@/components/ui/card"
 import { Dialog, DialogContent, DialogFooter } from "@/components/ui/dialog";
@@ -9,10 +9,10 @@ import { Navi } from '../head/navi';
 import { Footer } from '../head/footer';
 import { api } from "@/convex/_generated/api";
 import { useQuery, useMutation } from "convex/react";
-import {useUser} from "@clerk/nextjs"
-import { useRef } from "react"
-import Lottie, { LottieRefCurrentProps } from "lottie-react"
-import loadingAnimation from "@/public/animations/loadingAnimation.json"
+import { useUser } from "@clerk/nextjs"
+import dynamic from 'next/dynamic';
+
+const Lottie = dynamic(() => import('lottie-react'), { ssr: false });
 
 interface Booking {
   _id: string;
