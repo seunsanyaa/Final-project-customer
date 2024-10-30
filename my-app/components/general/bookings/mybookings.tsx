@@ -112,6 +112,7 @@ export function Mybookings() {
   }
 
   
+<<<<<<< Updated upstream
   if (loading) {
     return (
       <div className="flex items-center justify-center h-screen">
@@ -127,6 +128,22 @@ export function Mybookings() {
   }
 
   if (customerId === "") {
+=======
+
+  // if (loading) {
+  //   return (
+  //     <div className="flex items-center justify-center h-screen">
+  //       <Lottie
+  //         lottieRef={lottieRef}
+  //         animationData={loadingAnimation}
+  //         loop={true}
+  //         className="w-48 h-48"
+  //       />
+  //     </div>
+  //   );
+  // }
+    if (customerId === "") {
+>>>>>>> Stashed changes
     return (
       <>
         <Navi />

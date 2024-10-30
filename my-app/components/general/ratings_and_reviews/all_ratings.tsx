@@ -5,8 +5,10 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Separator } from "@/components/ui/separator"
 import { useQuery } from 'convex/react';
 import { api } from '@/convex/_generated/api';
+import { Navi } from '../head/navi';
 
 export default function CarReviews() {
+  
   const [selectedCarId, setSelectedCarId] = useState<string | null>(null);
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [expandedCar, setExpandedCar] = useState<string | null>(null);
@@ -60,6 +62,7 @@ export default function CarReviews() {
 
   if (selectedCarId && selectedCarWithReviews) {
     return (
+      
       <div className="flex min-h-screen">
         <div className="w-25 bg-muted p-4 border-r">
           <div className="space-y-2">
@@ -161,6 +164,8 @@ export default function CarReviews() {
   }
 
   return (
+    <>
+<Navi />
     <div className="flex min-h-screen">
       <div className="w-25 bg-muted p-4 border-r">
         <div className="space-y-2">
@@ -275,5 +280,6 @@ export default function CarReviews() {
         </div>
       </div>
     </div>
-  )
+    </> 
+)
 }

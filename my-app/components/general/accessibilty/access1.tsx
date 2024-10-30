@@ -10,6 +10,8 @@ import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "@
 import { Input } from "@/components/ui/input"
 import { Navi } from '../head/navi';
 import { Footer } from '../head/footer';
+import { Separator } from "@/components/ui/separator";
+
 
 export function Access1() {
   // Define ref3 and inView3 if they are not defined elsewhere
@@ -21,42 +23,46 @@ export function Access1() {
       <Navi/>
       <main className="flex-1 bg-background text-foreground py-8 px-6">
         <div className="container mx-auto">
-          <section className="flex justify-between items-center mb-8">
-            <div className="text-left">
-              <p className="text-4xl md:text-4xl lg:text-6xl font-bold">
-              Driving with Confidence, Accessible Rentals for All
-              </p>
-              <p className="text-muted-foreground mt-4">
-              Discover Renta’s accessible fleet, designed for comfort and ease. With spacious interiors and advanced features, our wheelchair-accessible vehicles make travel simple and enjoyable for everyone. Let us provide you with a seamless, comfortable journey wherever your destination awaits.              </p>
-            </div>
-            <img
-              src="https://res.cloudinary.com/dbsxjsktb/image/upload/v1730212805/Honda_Odyssey4_odbyjm.jpg"
-              alt="Honda Odyssey"
-              width={100}
-              height={200}
-              className="w-[700px] h-[500px] object-cover"
-
-            />
-          </section>
-          <section className="flex justify-between items-center mb-8">
-            <img
-              src="https://res.cloudinary.com/dbsxjsktb/image/upload/v1730213376/Honda_Odyssey6_v5nbyg.webp"
-              alt="Honda Odyssey"
-              width={100}
-              height={200}
-              className="w-[500px] h-[400px] object-cover"
-            />
-            <img
-              src="https://res.cloudinary.com/dbsxjsktb/image/upload/v1730213363/Honda_Odyssey5_dnwhd3.jpg"
-              alt="Honda Odyssey"
-              width={100}
-              height={200}
-              className="w-[500px] h-[400px] object-cover"
-            />
-          </section>
+          
+          <div className='bg-card rounded-lg shadow-lg p-6'>
+            <section className="flex justify-between items-center mb-8">
+              <div className="text-left">
+                <p className="text-4xl md:text-4xl lg:text-6xl font-bold">
+                Driving with Confidence, Accessible Rentals for All
+                </p>
+                <p className="text-muted-foreground mt-4">
+                Discover Renta’s accessible fleet, designed for comfort and ease. With spacious interiors and advanced features, our wheelchair-accessible vehicles make travel simple and enjoyable for everyone. Let us provide you with a seamless, comfortable journey wherever your destination awaits.              </p>
+              </div>
+              <img
+                src="https://res.cloudinary.com/dbsxjsktb/image/upload/v1730212805/Honda_Odyssey4_odbyjm.jpg"
+                alt="Honda Odyssey"
+                width={100}
+                height={200}
+                className="w-[700px] h-[500px] object-cover"
+              />
+            </section>
+            <section className="flex justify-between items-center mb-8">
+              <img
+                src="https://res.cloudinary.com/dbsxjsktb/image/upload/v1730213376/Honda_Odyssey6_v5nbyg.webp"
+                alt="Honda Odyssey"
+                width={100}
+                height={200}
+                className="w-[500px] h-[400px] object-cover"
+              />
+              <img
+                src="https://res.cloudinary.com/dbsxjsktb/image/upload/v1730213363/Honda_Odyssey5_dnwhd3.jpg"
+                alt="Honda Odyssey"
+                width={100}
+                height={200}
+                className="w-[500px] h-[400px] object-cover"
+              />
+            </section>
+          </div>
+          
+          {/* <hr className="my-8 w-full" /> */}
           <section ref={ref3} className={`relative w-full h-auto overflow-hidden bg-gradient-to-b from-gray-200 to-white ${ 
             inView3 ? 'animate-fadeInUp' : "opacity-0"}`} > 
-            <h2 className="text-2xl md:text-3xl lg:text-4xl font-bold tracking-tight leading-tight text-center">Experience Seamless Accessibility with Every Journey</h2> 
+            <h2 className="text-2xl md:text-3xl lg:text-4xl font-bold tracking-tight leading-tight text-center mt-10">Experience Seamless Accessibility with Every Journey</h2> 
             <div className="max-w-full mx-auto h-full"> 
               <div className="grid gap-6 grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-3 mt-20 pl-4 pr-4 mb-20"> 
                 <div className="flex flex-col items-center justify-center gap-4 p-6"> 

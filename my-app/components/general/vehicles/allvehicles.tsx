@@ -75,18 +75,18 @@ export default function AllVehicles() {
     });
   };
 
-  if (!cars) {
-    return (
-      <div className="flex items-center justify-center h-screen">
-        <Lottie
-          lottieRef={lottieRef}
-          animationData={loadingAnimation}
-          loop={true}
-          className="w-48 h-48"
-        />
-      </div>
-    );
-  }
+  // if (!cars) {
+  //   return (
+  //     <div className="flex items-center justify-center h-screen">
+  //       <Lottie
+  //         lottieRef={lottieRef}
+  //         animationData={loadingAnimation}
+  //         loop={true}
+  //         className="w-48 h-48"
+  //       />
+  //     </div>
+  //   );
+  // }
 
   return (
     <>
