@@ -1,26 +1,24 @@
 'use client'
 import React from 'react';
-import 'leaflet/dist/leaflet.css';
-import L from 'leaflet';
-
-
-L.Icon.Default.mergeOptions({
-  iconRetinaUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon-2x.png',
-  iconUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon.png',
-  shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png',
-});
-import MapComponent from '@/components/ui/map';
+import dynamic from 'next/dynamic';
 import { Navi } from '../head/navi';
+
+// Dynamically import MapComponent with SSR disabled
+const MapComponent = dynamic(
+  () => import('@/components/ui/map'),
+  { ssr: false } // This ensures the component only loads on the client side
+);
+
 export function Mappage() {
   return (
-    (<div className="flex flex-col min-h-screen">
+    <div className="flex flex-col min-h-screen">
       <Navi/>
       <main className="flex-1 bg-background py-8 px-4 sm:px-6 lg:px-8">
         <div className="max-w-screen max-h-[1vh] mx-auto grid grid-rows-2 sm:grid-rows-2 gap-6">
-        <MapComponent/>
+          <MapComponent/>
         </div>
       </main>
-    </div>)
+    </div>
   );
 }
 
