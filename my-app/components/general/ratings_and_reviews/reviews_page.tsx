@@ -102,10 +102,11 @@ export function Reviews_Page() {
 
   return (<>
   <Navi />
+  <Separator/>
     <div className="flex min-h-screen">
       
       {/* Sidebar */}
-      <div className="w-25  p-4 border-r bg-primary mt-1">
+      <div className="w-25  p-4 border-r bg-primary">
         <div className="space-y-2">
           <div>
             <button
