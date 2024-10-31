@@ -136,6 +136,8 @@ export const getReviewsByUserId = query({
                   year: car.year,
                   color: car.color,
                   trim: car.trim,
+                  pictures: car.pictures,
+                  registrationNumber: booking.carId,
                 }
               : null,
           };
@@ -158,8 +160,7 @@ export const getTopReviews = query({
     const topReviews = await ctx.db
       .query("reviews")
       .order("numberOfStars", "descending")
-      .limit(6)
-      .collect<Review>();
+      .take(6);
 
     // Enrich each review with car details
     const enrichedTopReviews = await Promise.all(
@@ -171,7 +172,7 @@ export const getTopReviews = query({
             .withIndex("by_registrationNumber", (q) =>
               q.eq("registrationNumber", booking.carId)
             )
-            .first<Car>();
+            .first();
           
           return {
             ...review,
@@ -182,6 +183,8 @@ export const getTopReviews = query({
                   year: car.year,
                   color: car.color,
                   trim: car.trim,
+                  pictures: car.pictures,
+                  registrationNumber: booking.carId,
                 }
               : null,
           };

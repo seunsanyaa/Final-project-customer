@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Star, ChevronDown, ChevronUp, BookOpen, StarHalf } from 'lucide-react'
+import { Star, ChevronDown, ChevronUp, BookOpen, StarHalf, X } from 'lucide-react'
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/card"
@@ -13,6 +13,8 @@ import { getReviewsByUserId, createReview } from '../../../convex/review'
 import PreviousBookings from './PreviousBookings'
 import { api } from '@/convex/_generated/api'
 import { Navi } from '../head/navi'
+import { Dialog, DialogContent } from "@/components/ui/dialog"
+
 type Review = {
   _id: string;
   bookingId: string;
@@ -27,6 +29,8 @@ type Review = {
     year: number;
     color: string;
     trim: string;
+    pictures: string[];
+    registrationNumber: string;
   } | null;
 };
 
@@ -49,6 +53,14 @@ export function Reviews_Page() {
 
   // Add state for sidebar dropdown
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+
+  const [expandedReview, setExpandedReview] = useState<string | null>(null);
+
+  const [selectedReview, setSelectedReview] = useState<Review | null>(null);
+
+  const toggleExpand = (reviewId: string) => {
+    setExpandedReview(expandedReview === reviewId ? null : reviewId);
+  };
 
   const handleExpandBooking = (bookingId: string) => {
     setExpandedBooking(expandedBooking === bookingId ? null : bookingId);
@@ -80,6 +92,10 @@ export function Reviews_Page() {
     }
   };
 
+  const handleReviewClick = (review: Review) => {
+    setSelectedReview(review);
+  };
+
   if (!user) {
     return <p>Please log in to view your reviews and bookings.</p>;
   }
@@ -89,12 +105,12 @@ export function Reviews_Page() {
     <div className="flex min-h-screen">
       
       {/* Sidebar */}
-      <div className="w-25 bg-muted p-4 border-r">
+      <div className="w-25  p-4 border-r bg-primary mt-1">
         <div className="space-y-2">
           <div>
             <button
               onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-              className="flex items-center justify-between w-full p-2 text-left hover:bg-muted-foreground/10 rounded-md text-sm"
+              className="flex items-center justify-between w-full p-2 text-left text-primary-foreground hover:bg-muted-foreground/10 rounded-md text-sm"
             >
               <div className="flex items-center gap-2">
                 <BookOpen className="w-4 h-4" />
@@ -108,7 +124,7 @@ export function Reviews_Page() {
             </button>
             
             {isDropdownOpen && (
-              <div className="ml-4 space-y-1 mt-1">
+              <div className="ml-4 space-y-1 mt-1 bg-primary text-primary-foreground">
                 <a
                   href="/Rating_Reviews"
                   className="flex items-center gap-2 p-2 text-xs hover:bg-muted-foreground/10 rounded-md"
@@ -136,27 +152,51 @@ export function Reviews_Page() {
         <section className="mb-12">
           <h2 className="text-2xl font-semibold mb-4">Your Previous Reviews</h2>
           {userReviews && userReviews.length > 0 ? (
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
-              {userReviews.map((review: Review) => (
-                <Card key={review._id} className="flex flex-col h-48">
-                  <CardHeader className="pb-2">
-                    <CardTitle className="text-lg">
-                      {review.carDetails ? `${review.carDetails.maker} ${review.carDetails.model}` : 'Car Details Unavailable'}
-                    </CardTitle>
-                    <CardDescription className="text-xs">
-                      Reviewed on {new Date(review.reviewDate).toLocaleDateString()}
-                    </CardDescription>
+            <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+              {userReviews.map((review) => (
+                <Card 
+                  key={review._id} 
+                  className="overflow-hidden cursor-pointer hover:shadow-lg transition-shadow"
+                  onClick={() => handleReviewClick(review)}
+                >
+                  <CardHeader className="p-0">
+                    {review.carDetails?.pictures ? (
+                      <img 
+                        src={review.carDetails.pictures[0]} 
+                        alt={`${review.carDetails.maker} ${review.carDetails.model}`} 
+                        className="w-full h-48 object-cover" 
+                      />
+                    ) : (
+                      <div className="w-full h-48 bg-muted flex items-center justify-center">
+                        No image available
+                      </div>
+                    )}
                   </CardHeader>
-                  <CardContent className="pt-0 overflow-hidden">
-                    <div className="flex items-center mb-1">
-                      {[...Array(5)].map((_, i) => (
-                        <Star
-                          key={i}
-                          className={`w-4 h-4 ${i < review.numberOfStars ? 'text-customyello fill-customyello' : 'text-gray-300'}`}
-                        />
-                      ))}
-                    </div>
-                    <p className="text-sm line-clamp-3">{review.comment}</p>
+                  <CardContent className="p-4">
+                    <CardTitle>{review.carDetails ? 
+                      `${review.carDetails.maker} ${review.carDetails.model} ${review.carDetails.year}` : 
+                      'Car Details Unavailable'}
+                    </CardTitle>
+                    <CardDescription className="flex items-center gap-2">
+                      Rating: 
+                      <div className="flex">
+                        {[...Array(5)].map((_, i) => (
+                          <Star
+                            key={i}
+                            className={`w-4 h-4 ${
+                              i < review.numberOfStars 
+                                ? 'text-customyello fill-customyello' 
+                                : 'text-primary-300'
+                            }`}
+                          />
+                        ))}
+                      </div>
+                    </CardDescription>
+                    <Separator className="my-4" />
+                    <p className="text-sm line-clamp-2">{review.comment}</p>
+                    <p className="text-xs text-muted-foreground mt-2">
+                      Reviewed on {new Date(review.reviewDate).toLocaleDateString()}
+                    </p>
                   </CardContent>
                 </Card>
               ))}
@@ -174,6 +214,99 @@ export function Reviews_Page() {
         </section>
       </div>
     </div>
+
+    {selectedReview && (
+      <Dialog open={!!selectedReview} onOpenChange={() => setSelectedReview(null)} >
+        <DialogContent className="max-w-3xl" style={{ opacity: 1, backgroundColor: '#ffffff', zIndex: 50 }}>
+          <div className="relative">
+            {/* <button
+              onClick={() => setSelectedReview(null)}
+              className="absolute right-0 top-0 p-2 hover:bg-muted rounded-full"
+            >
+              <X className="h-4 w-4" />
+            </button> */}
+            
+            {/* Car Image */}
+            <div className="w-full h-64 overflow-hidden rounded-t-lg">
+              {selectedReview.carDetails?.pictures ? (
+                <img 
+                  src={selectedReview.carDetails.pictures[0]} 
+                  alt={`${selectedReview.carDetails.maker} ${selectedReview.carDetails.model}`} 
+                  className="w-full h-full object-cover" 
+                />
+              ) : (
+                <div className="w-full h-full bg-muted flex items-center justify-center">
+                  No image available
+                </div>
+              )}
+            </div>
+
+            {/* Content */}
+            <div className="p-6">
+              {/* Car Title and Rating */}
+              <div className="mb-6">
+                <h2 className="text-2xl font-bold mb-2">
+                  {selectedReview.carDetails ? 
+                    `${selectedReview.carDetails.maker} ${selectedReview.carDetails.model} ${selectedReview.carDetails.year}` : 
+                    'Car Details Unavailable'
+                  }
+                </h2>
+                <div className="flex items-center gap-2">
+                  <span className="font-medium">Rating:</span>
+                  <div className="flex">
+                    {[...Array(5)].map((_, i) => (
+                      <Star
+                        key={i}
+                        className={`w-5 h-5 ${
+                          i < selectedReview.numberOfStars 
+                            ? 'text-customyello fill-customyello' 
+                            : 'text-gray-300'
+                        }`}
+                      />
+                    ))}
+                  </div>
+                </div>
+              </div>
+
+              {/* Review Text */}
+              <div className="mb-6">
+                <h3 className="font-semibold mb-2">Your Review</h3>
+                <p className="text-sm leading-relaxed">{selectedReview.comment}</p>
+                <p className="text-xs text-muted-foreground mt-2">
+                  Reviewed on {new Date(selectedReview.reviewDate).toLocaleDateString()}
+                </p>
+              </div>
+
+              {/* Car Details */}
+              {selectedReview.carDetails && (
+                <div className="mb-6">
+                  <h3 className="font-semibold mb-2">Car Details</h3>
+                  <div className="grid grid-cols-2 gap-2 text-sm">
+                    <p>Color: {selectedReview.carDetails.color}</p>
+                    <p>Trim: {selectedReview.carDetails.trim}</p>
+                  </div>
+                </div>
+              )}
+
+              {/* Book Again Button */}
+              <div className="flex justify-end mt-6">
+                <Button
+                  onClick={() => {
+                    const regNumber = selectedReview?.carDetails?.registrationNumber;
+                    if (regNumber) {
+                      window.location.href = `/carinfo?id=${regNumber}`;
+                    }
+                  }}
+                  className="bg-primary text-primary-foreground hover:bg-primary/90"
+                >
+                  Book Again  
+                </Button>
+              </div>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+    ) }
     </>
     
   )
