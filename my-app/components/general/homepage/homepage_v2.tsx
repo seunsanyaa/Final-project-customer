@@ -197,9 +197,9 @@ export function Homepage_v2() {
               </div>
             </div>
             <div className="grid gap-6 grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-3 mt-20 pl-4 pr-4 mb-20"> 
-              <div className="flex flex-col items-center justify-center gap-4 p-6"> 
+              <div className="flex flex-col items-center justify-center gap-4 p-6 transition-transform transform hover:scale-105 hover:shadow-lg bg-card hover:bg-gradient-to-r from-blue-500 to-green-500"> 
                 <img src="https://res.cloudinary.com/dbsxjsktb/image/upload/v1729522582/2021-toyota-camry-se-sedan-white_featured_yakvxp.avif" alt="Sedan" className="w-[300px] h-[220px] rounded-lg" /> 
-                <div className="text-center">
+                <div className="text-center mb-0 mt-0">
                   <h3 className="text-4xl font-semibold text-black mt-0">Sedans</h3>
                   <p className="text-black font-semibold">Comfortable and efficient.</p> 
                   <p className="text-black">Starting from $45/day</p> 
@@ -208,9 +208,9 @@ export function Homepage_v2() {
                   <Button className="hover:bg-blue-500 hover:shadow-lg transition-all duration-300 rounded-lg mt-0 hover:bg-muted">Rent Now</Button> 
                 </Link>
               </div>
-              <div className="flex flex-col items-center justify-center gap-4 p-6"> 
+              <div className="flex flex-col items-center justify-center gap-4 p-6 transition-transform transform hover:scale-105 hover:shadow-lg bg-card hover:bg-gradient-to-r from-blue-500 to-green-500"> 
                 <img src="https://res.cloudinary.com/dbsxjsktb/image/upload/v1729522583/2022-chevrolet-tahoe-lt-4wd-suv-beige_featured_bsxp0g.avif" alt="SUV" className="w-[300px] h-[220px] rounded-lg" /> 
-                <div className="text-center">
+                <div className="text-center mb-0 mt-0">
                   <h3 className="text-4xl font-semibold text-black">SUVs</h3>
                   <p className="text-black font-semibold">Spacious and versatile.</p> 
                   <p className="text-black">Starting from $50/day</p> 
@@ -219,9 +219,9 @@ export function Homepage_v2() {
                   <Button className="hover:bg-blue-500 hover:shadow-lg transition-all duration-300 rounded-lg hover:bg-muted">Rent Now</Button> 
                 </Link>
               </div>
-              <div className="flex flex-col items-center justify-center gap-4 p-6"> 
+              <div className="flex flex-col items-center justify-center gap-4 p-6 transition-transform transform hover:scale-105 hover:shadow-lg bg-card hover:bg-gradient-to-r from-blue-500 to-green-500"> 
                 <img src="https://res.cloudinary.com/dbsxjsktb/image/upload/v1729527582/2022-genesis-g80-4wd-sedan-white_featured_e84fej.avif" alt="Luxury" className="w-[300px] h-[220px] rounded-lg" /> 
-                <div className="text-center">
+                <div className="text-center mb-0 mt-0">
                   <h3 className="text-4xl font-semibold text-black mt-1">Luxury</h3>
                   <p className="text-black font-semibold">Indulge in style and comfort.</p> 
                   <p className="text-black">Starting from $70/day</p> 
@@ -230,7 +230,7 @@ export function Homepage_v2() {
                   <Button className="hover:bg-blue-500 hover:shadow-lg transition-all duration-300 rounded-lg hover:bg-muted">Rent Now</Button> 
                 </Link>
               </div>
-              <div className="flex flex-col items-center justify-center gap-4 p-6"> 
+              <div className="flex flex-col items-center justify-center gap-4 p-6 transition-transform transform hover:scale-105 hover:shadow-lg bg-card hover:bg-gradient-to-r from-blue-500 to-green-500"> 
                 <img src="https://res.cloudinary.com/dihvudxbt/image/upload/v1729200173/JKAR_22_Compact_Cargo_Van_AngularFront_US_ENG_280x210_wsqbrx.avif" alt="Van" className="w-[300px] h-[220px] rounded-lg" /> 
                 <div className="text-center mb-0 mt-0">
                   <h3 className="text-4xl font-semibold text-black">Vans</h3>
@@ -241,7 +241,7 @@ export function Homepage_v2() {
                   <Button className="hover:bg-blue-500 hover:shadow-lg  hover:bg-muted transition-all duration-300 rounded-lg mt-0">Rent Now</Button> 
                 </Link>
               </div>
-              <div className="flex flex-col items-center justify-center gap-4 p-6"> 
+              <div className="flex flex-col items-center justify-center gap-4 p-6 transition-transform transform hover:scale-105 hover:shadow-lg bg-card hover:bg-gradient-to-r from-blue-500 to-green-500"> 
                 <img src="https://res.cloudinary.com/dbsxjsktb/image/upload/v1729522582/2020-ford-mustang-ecoboost-premium-convertible-white_featured_c4qsq5.avif" alt="Van" className="w-[300px] h-[220px] rounded-lg" /> 
                 <div className="text-center mb-0 mt-0">
                   <h3 className="text-4xl font-semibold text-black">Convertible</h3>
@@ -252,7 +252,7 @@ export function Homepage_v2() {
                   <Button className="hover:bg-blue-500 hover:shadow-lg transition-all duration-300 rounded-lg mt-0 hover:bg-muted">Rent Now</Button> 
                 </Link>
               </div>
-              <div className="flex flex-col items-center justify-center gap-4 p-6 "> 
+              <div className="flex flex-col items-center justify-center gap-4 p-6 transition-transform transform hover:scale-105 hover:shadow-lg bg-card hover:bg-gradient-to-r from-blue-500 to-green-500"> 
                 <img src="https://res.cloudinary.com/dbsxjsktb/image/upload/v1729527063/2022-ram-1500-limited-swb-crew-pick-up-silver_featured_x2xwqj.avif" alt="Van" className="w-[300px] h-[220px] rounded-lg" /> 
                 <div className="text-center mb-0 mt-0">
                   <h3 className="text-4xl font-semibold text-black">Pickup Truck</h3>
