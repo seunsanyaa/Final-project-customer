@@ -196,7 +196,7 @@ export function Homepage_v2() {
                 </p>
               </div>
             </div>
-            <div className="grid gap-6 grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-3 mt-20 pl-4 pr-4 mb-20"> 
+            <div className="grid gap-6 grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-3 mt-20 pl-14 pr-14 ml-14 mr-14 mb-20"> 
               <div className="flex flex-col items-center justify-center gap-4 p-6 transition-transform transform hover:scale-105 hover:shadow-lg bg-card hover:bg-gradient-to-r from-blue-500 to-green-500"> 
                 <img src="https://res.cloudinary.com/dbsxjsktb/image/upload/v1729522582/2021-toyota-camry-se-sedan-white_featured_yakvxp.avif" alt="Sedan" className="w-[300px] h-[220px] rounded-lg" /> 
                 <div className="text-center mb-0 mt-0">
@@ -271,7 +271,7 @@ export function Homepage_v2() {
           inView4 ? 'animate-fadeInUp' : "opacity-0"}`}>
           <div className="max-w-10xl mx-auto space-y-6 md:space-y-8 lg:space-y-10 h-full">
             <div className="space-y-6 md:space-y-8">
-              <div className="text-center w-full mx-auto pt-5 md:pt-8 lg:pt-10">
+              <div className="text-center w-full mx-auto pt-5 md:pt-8 lg:pt-10 mb-14 pb-14">
                 <h2 className="text-2xl md:text-3xl lg:text-5xl font-bold tracking-tight leading-tight">What our customers say</h2>
                 <p className="text-gray-600 text-lg md:text-xl lg:text-2xl leading-relaxed">Hear from real people who have rented with us.</p>
               </div>
@@ -281,7 +281,7 @@ export function Homepage_v2() {
                     <div className="flex items-start gap-4">
                       <Avatar className="border w-12 h-12">
                         <AvatarImage src="/placeholder-user.jpg" />
-                        <AvatarFallback>JD</AvatarFallback>
+                        <AvatarFallback className="rounded-full">JD</AvatarFallback>
                       </Avatar>
                       <div className="space-y-1">
                         <div className="font-semibold">John Doe</div>
