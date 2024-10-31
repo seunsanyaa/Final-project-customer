@@ -196,7 +196,7 @@ export function Homepage_v2() {
                 </p>
               </div>
             </div>
-            <div className="grid gap-6 grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-3 mt-20 pl-4 pr-4 mb-20"> 
+            <div className="grid gap-6 grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-3 mt-20 pl-14 pr-14 ml-14 mr-14 mb-20"> 
               <div className="flex flex-col items-center justify-center gap-4 p-6 transition-transform transform hover:scale-105 hover:shadow-lg bg-card hover:bg-gradient-to-r from-blue-500 to-green-500"> 
                 <img src="https://res.cloudinary.com/dbsxjsktb/image/upload/v1729522582/2021-toyota-camry-se-sedan-white_featured_yakvxp.avif" alt="Sedan" className="w-[300px] h-[220px] rounded-lg" /> 
                 <div className="text-center mb-0 mt-0">
