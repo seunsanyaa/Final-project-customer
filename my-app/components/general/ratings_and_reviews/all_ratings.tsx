@@ -62,7 +62,8 @@ export default function CarReviews() {
 
   if (selectedCarId && selectedCarWithReviews) {
     return (
-      
+      <>
+      <Navi />
       <div className="flex min-h-screen">
         <div className="w-25 bg-muted p-4 border-r">
           <div className="space-y-2">
@@ -160,11 +161,13 @@ export default function CarReviews() {
           </div>
         </div>
       </div>
+      </>
     );
   }
 
   return (
     <>
+    <Navi />
     <div className="flex min-h-screen">
       <div className="w-25 bg-muted p-4 border-r">
         <div className="space-y-2">

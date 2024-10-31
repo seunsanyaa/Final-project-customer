@@ -12,6 +12,7 @@ import { useQuery, useMutation } from 'convex/react'
 import { getReviewsByUserId, createReview } from '../../../convex/review'
 import PreviousBookings from './PreviousBookings'
 import { api } from '@/convex/_generated/api'
+import { Navi } from '../head/navi'
 type Review = {
   _id: string;
   bookingId: string;
@@ -83,8 +84,10 @@ export function Reviews_Page() {
     return <p>Please log in to view your reviews and bookings.</p>;
   }
 
-  return (
+  return (<>
+  <Navi />
     <div className="flex min-h-screen">
+      
       {/* Sidebar */}
       <div className="w-25 bg-muted p-4 border-r">
         <div className="space-y-2">
@@ -171,7 +174,7 @@ export function Reviews_Page() {
         </section>
       </div>
     </div>
-     
+    </>
     
   )
 
