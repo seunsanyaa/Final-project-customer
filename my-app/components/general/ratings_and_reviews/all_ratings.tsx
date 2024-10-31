@@ -165,7 +165,6 @@ export default function CarReviews() {
 
   return (
     <>
-<Navi />
     <div className="flex min-h-screen">
       <div className="w-25 bg-muted p-4 border-r">
         <div className="space-y-2">

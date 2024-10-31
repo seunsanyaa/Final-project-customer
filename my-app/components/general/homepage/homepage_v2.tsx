@@ -205,7 +205,7 @@ export function Homepage_v2() {
                   <p className="text-black">Starting from $45/day</p> 
                 </div>
                 <Link href="/Search">
-                  <Button className="hover:bg-blue-500 hover:shadow-lg transition-all duration-300 rounded-lg hover:bg-muted" variant="outline">Rent Now</Button> 
+                  <Button className="hover:bg-blue-500 hover:shadow-lg transition-all duration-300 rounded-lg mt-0 hover:bg-muted">Rent Now</Button> 
                 </Link>
               </div>
               <div className="flex flex-col items-center justify-center gap-4 p-6"> 
@@ -216,7 +216,7 @@ export function Homepage_v2() {
                   <p className="text-black">Starting from $50/day</p> 
                 </div>
                 <Link href="/Search">
-                  <Button className="hover:bg-blue-500 hover:shadow-lg transition-all duration-300 rounded-lg hover:bg-muted" variant="outline">Rent Now</Button> 
+                  <Button className="hover:bg-blue-500 hover:shadow-lg transition-all duration-300 rounded-lg hover:bg-muted">Rent Now</Button> 
                 </Link>
               </div>
               <div className="flex flex-col items-center justify-center gap-4 p-6"> 
@@ -227,7 +227,7 @@ export function Homepage_v2() {
                   <p className="text-black">Starting from $70/day</p> 
                 </div>
                 <Link href="/Search">
-                  <Button className="hover:bg-blue-500 hover:shadow-lg transition-all duration-300 rounded-lg hover:bg-muted" variant="outline">Rent Now</Button> 
+                  <Button className="hover:bg-blue-500 hover:shadow-lg transition-all duration-300 rounded-lg hover:bg-muted">Rent Now</Button> 
                 </Link>
               </div>
               <div className="flex flex-col items-center justify-center gap-4 p-6"> 
@@ -238,7 +238,7 @@ export function Homepage_v2() {
                   <p className="text-black">Starting from $30/day</p> 
                 </div>
                 <Link href="/Search">
-                  <Button className="hover:bg-blue-500 hover:shadow-lg  hover:bg-muted transition-all duration-300 rounded-lg mt-0" variant="outline">Rent Now</Button> 
+                  <Button className="hover:bg-blue-500 hover:shadow-lg  hover:bg-muted transition-all duration-300 rounded-lg mt-0">Rent Now</Button> 
                 </Link>
               </div>
               <div className="flex flex-col items-center justify-center gap-4 p-6"> 
@@ -249,7 +249,7 @@ export function Homepage_v2() {
                   <p className="text-black">Starting from $300/day</p> 
                 </div>
                 <Link href="/Search">
-                  <Button className="hover:bg-blue-500 hover:shadow-lg transition-all duration-300 rounded-lg mt-0 hover:bg-muted" variant="outline">Rent Now</Button> 
+                  <Button className="hover:bg-blue-500 hover:shadow-lg transition-all duration-300 rounded-lg mt-0 hover:bg-muted">Rent Now</Button> 
                 </Link>
               </div>
               <div className="flex flex-col items-center justify-center gap-4 p-6 "> 
@@ -260,7 +260,7 @@ export function Homepage_v2() {
                   <p className="text-black">Starting from $120/day</p> 
                 </div>
                 <Link href="/Search">
-                  <Button className="hover:bg-blue-500 hover:shadow-lg transition-all duration-300 rounded-lg mt-0 hover:bg-muted" variant="outline">Rent Now</Button> 
+                  <Button className="hover:bg-blue-500 hover:shadow-lg transition-all duration-300 rounded-lg mt-0 hover:bg-muted">Rent Now</Button> 
                 </Link>
               </div>
             </div>
