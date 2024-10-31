@@ -79,17 +79,17 @@ export function Homepage_v2() {
     >
     <div className="absolute inset-0 flex items-center justify-center">
       <Card className="bg-white p-8 rounded-5 shadow-2xl backdrop-blur-md bg-opacity-90" style={{ zIndex: 50 }}>
-        <div className="text-center w-full max-w-[800px]">
-          <h1 className="text-7xl font-bold tracking-tight bg-gradient-to-r from-blue-500 to-teal-500 bg-clip-text text-transparent drop-shadow-xl font-poppins">
+        <div className="text-center w-full max-w-[600px]">
+          <h1 className="text-5xl font-bold tracking-tight bg-gradient-to-r from-blue-500 to-teal-500 bg-clip-text text-transparent drop-shadow-xl font-poppins">
             Find your perfect ride
           </h1>
           
-          <form className="flex gap-4 justify-center mt-8">
+          <form className="flex gap-4 justify-center mt-5">
             <div className="relative w-full max-w-[600px]">
               <input
                 type="text"
                 placeholder="Search by location or vehicle"
-                className="p-5 border-2 border-gray-800 rounded-lg w-full text-gray-800 placeholder:text-gray-500 shadow-lg focus:ring-4 focus:ring-blue-500 transition-transform ease-in-out duration-300 transform hover:scale-105"
+                className="p-5 border-2 border-gray-800 rounded-lg w-full text-gray-800 placeholder:text-gray-500 shadow-lg focus:ring-4 focus:ring-blue-500 transition-transform ease-in-out duration-300 transform hover:scale-105 h-5"
               />          
               <button type="submit" className="absolute inset-y-0 right-3 flex items-center bg-blue-500 hover:bg-blue-700 text-white p-2 transition-transform ease-in-out duration-300 transform hover:scale-110">
                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" className="w-5 h-5">
