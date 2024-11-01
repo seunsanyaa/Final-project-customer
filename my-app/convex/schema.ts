@@ -112,5 +112,20 @@ export default defineSchema({
 	})
 		.index('by_bookingId', ['bookingId'])
 		.index('by_userId', ['userId']),
-});
 
+	promotions: defineTable({
+    promotionTitle: v.string(),
+    promotionDescription: v.string(),
+    promotionImage: v.string(),
+    promotionType: v.union(v.literal('discount'), v.literal('offer'), v.literal('upgrade')),
+    promotionValue: v.number(),
+    promotionStartDate: v.string(),
+    promotionEndDate: v.string(),
+    status: v.union(v.literal('active'), v.literal('inactive'), v.literal('expired'), v.literal('scheduled')),
+    goldenMembersOnly: v.boolean(),
+    target: v.union(v.literal('all'), v.literal('specific'), v.literal('none')),
+    specificTarget: v.array(v.string()),
+  })
+		.index('by_promotionTitle', ['promotionTitle']),
+});
+	

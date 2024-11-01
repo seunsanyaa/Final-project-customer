@@ -16,18 +16,22 @@ import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator"; // Assuming this is imported correctly from your components
 import { Navi } from "../head/navi";
 import { Footer } from "../head/footer";
+import { useQuery } from "convex/react";
+import { api } from "@/convex/_generated/api";
 
 interface PromotionCardProps {
   title: string;
   description: string;
-  expiration: string;
-  badgeType: string;
+  endDate: string;
+  type: 'discount' | 'offer' | 'upgrade';
+  image: string;
+  goldenMembersOnly: boolean;
 }
 
-const PromotionCard: React.FC<PromotionCardProps> = ({ title, description, expiration, badgeType }) => (
+const PromotionCard: React.FC<PromotionCardProps> = ({ title, description, endDate, type, image, goldenMembersOnly }) => (
   <Card>
     <img
-      src="/placeholder.svg"
+      src={image || "/placeholder.svg"}
       width={400}
       height={200}
       alt="Promotion Image"
@@ -40,41 +44,30 @@ const PromotionCard: React.FC<PromotionCardProps> = ({ title, description, expir
       <div className="flex justify-between items-center mb-4">
         <div>
           <CalendarDaysIcon className="mr-2 h-4 w-4" />
-          <span className="text-sm text-muted-foreground">Expires: {expiration}</span>
+          <span className="text-sm text-muted-foreground">Expires: {new Date(endDate).toLocaleDateString()}</span>
         </div>
-        <Badge variant="secondary">{badgeType}</Badge>
+        <Badge variant="secondary">{type}</Badge>
       </div>
       <div className="text-sm text-muted-foreground">
-        <p>Offer valid for members. See terms and conditions for details.</p>
+        <p>
+          {goldenMembersOnly 
+            ? "Offer valid for Golden members Only. See terms and conditions for details."
+            : "Offer valid for members. See terms and conditions for details."}
+        </p>
       </div>
     </CardContent>
   </Card>
 );
 
-const promotions = [ // Define the promotions array
-  {
-    title: "20% Off Compact Car Rentals",
-    description: "Rent a compact car and save 20% on your next booking.",
-    expiration: "2024-09-30",
-    badgeType: "Discount",
-  },
-  {
-    title: "Complimentary Upgrade to Midsize",
-    description: "Rent a midsize car at the price of a compact.",
-    expiration: "2024-11-15",
-    badgeType: "Upgrade",
-  },
-  // ... add other promotions as needed ...
-];
-
 export function PromotionsPage() {
   const [filter, setFilter] = useState("all");
+  const promotions = useQuery(api.promotions.getAllPromotions) ?? [];
 
   const filteredPromotions = promotions.filter(promotion => {
     if (filter === "expiring-soon") {
-      return new Date(promotion.expiration) < new Date(Date.now() + 7 * 24 * 60 * 60 * 1000); // Next 7 days
+      return new Date(promotion.promotionEndDate) < new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
     }
-    return true; // Show all promotions
+    return true;
   });
 
   return (
@@ -140,43 +133,17 @@ export function PromotionsPage() {
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-            {/* Repeat for each card */}
-            <PromotionCard 
-              title="20% Off Compact Car Rentals" 
-              description="Rent a compact car and save 20% on your next booking." 
-              expiration="2024-09-30" 
-              badgeType="Discount" 
-            />
-            <PromotionCard 
-              title="Complimentary Upgrade to Midsize" 
-              description="Rent a midsize car at the price of a compact." 
-              expiration="2024-11-15" 
-              badgeType="Upgrade" 
-            />
-            <PromotionCard 
-              title="Free Weekend Rental for New Members" 
-              description="Enjoy a free weekend rental when you sign up for our rewards program." 
-              expiration="2024-12-31" 
-              badgeType="Free Rental" 
-            />
-            <PromotionCard 
-              title="10% Off SUV Rentals for Members" 
-              description="Rent an SUV and save 10% on your next booking." 
-              expiration="2025-03-31" 
-              badgeType="Discount" 
-            />
-            <PromotionCard 
-              title="Free Rental Day for Loyalty Members" 
-              description="Earn a free rental day for every 5 rentals." 
-              expiration="2025-06-30" 
-              badgeType="Free Rental" 
-            />
-            <PromotionCard 
-              title="15% Off Luxury Car Rentals" 
-              description="Treat yourself to a luxury car rental and save 15%." 
-              expiration="2025-09-30" 
-              badgeType="Discount" 
-            />
+            {filteredPromotions.map((promotion) => (
+              <PromotionCard 
+                key={promotion._id}
+                title={promotion.promotionTitle}
+                description={promotion.promotionDescription}
+                endDate={promotion.promotionEndDate}
+                type={promotion.promotionType}
+                image={promotion.promotionImage}
+                goldenMembersOnly={promotion.goldenMembersOnly}
+              />
+            ))}
           </div>
         </div>
       </div>

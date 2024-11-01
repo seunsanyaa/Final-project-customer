@@ -20,6 +20,7 @@ import type * as clerk from "../clerk.js";
 import type * as customers from "../customers.js";
 import type * as http from "../http.js";
 import type * as payment from "../payment.js";
+import type * as promotions from "../promotions.js";
 import type * as review from "../review.js";
 import type * as staff from "../staff.js";
 import type * as users from "../users.js";
@@ -40,6 +41,7 @@ declare const fullApi: ApiFromModules<{
   customers: typeof customers;
   http: typeof http;
   payment: typeof payment;
+  promotions: typeof promotions;
   review: typeof review;
   staff: typeof staff;
   users: typeof users;
