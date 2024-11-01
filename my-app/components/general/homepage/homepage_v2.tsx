@@ -18,7 +18,7 @@ import { Navi } from "../head/navi";
 import { Footer } from "../head/footer";
 import { useEffect, useRef, useState } from 'react'; // Added for font loading
 import Lottie, { LottieRefCurrentProps } from "lottie-react"; // Import Lottie
-import loadingAnimation from "@/public/animations/loadingAnimation.json"; // Import your animation
+import loadingAnimation from "@/public/animations/intro.json"; // Import your animation
 
 export function Homepage_v2() {
   const [ref1, inView1] = useInView({ threshold: 0.6, triggerOnce: true });
@@ -53,18 +53,18 @@ export function Homepage_v2() {
     carousel.scrollTo({ left: scrollPosition, behavior: 'smooth' });
   };
 
-  // if (isLoading) {
-  //   return (
-  //     <div className="flex items-center justify-center h-screen">
-  //       <Lottie
-  //         lottieRef={lottieRef}
-  //         animationData={loadingAnimation}
-  //         loop={true}
-  //         className="w-[400px] h-[400px]"
-  //       />
-  //     </div>
-  //   );
-  // }
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center h-screen">
+        <Lottie
+          lottieRef={lottieRef}
+          animationData={loadingAnimation}
+          loop={true}
+          className="w-[400px] h-[400px]"
+        />
+      </div>
+    );
+  }
 
   return (
     <div className="flex flex-col min-h-dvh font-roboto">
