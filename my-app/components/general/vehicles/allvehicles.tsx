@@ -117,7 +117,7 @@ export default function AllVehicles() {
         <div className="container mx-auto px-4 py-8">
           <div className="mb-12">
             <h1 className="text-3xl font-bold mb-6">Find Your Perfect Rental Car</h1>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4 mt-4 bg-card rounded-lg shadow-xl p-4 relative overflow-hidden">
               <Input
                 placeholder="Make"
                 value={inputValues.maker}
@@ -144,7 +144,7 @@ export default function AllVehicles() {
                   <SelectTrigger className="w-[180px] bg-background">
                     <SelectValue placeholder="Body Type" />
                   </SelectTrigger>
-                  <SelectContent className="w-[180px] bg-background">
+                  <SelectContent className="w-[180px] bg-card rounded-lg shadow-2xl p-2 relative overflow-hidden">
                     <SelectItem value="placeholder" className="bg-background">All Types</SelectItem>
                     {(bodyTypes ?? []).map((type) => (
                       <SelectItem key={type} value={type} className="bg-background">
@@ -153,7 +153,7 @@ export default function AllVehicles() {
                     ))}
                   </SelectContent>
                 </Select>
-                <Button className="md:w-auto border-2 hover:bg-muted" onClick={handleSearch}>
+                <Button className="hover:bg-blue-500 hover:shadow-lg transition-all duration-300 rounded-lg hover:bg-muted" onClick={handleSearch}>
                   <Search className="w-4 h-4 mr-2" />
                   Search
                 </Button>
@@ -162,15 +162,15 @@ export default function AllVehicles() {
 
             <div className="text-center">
               <Button 
-                className="text-blue-500 hover:bg-muted border-2"
+                className="hover:bg-blue-500 hover:shadow-lg transition-all duration-300 rounded-lg hover:bg-muted"
                 onClick={() => setShowAdvanced(!showAdvanced)}
               >
                 {showAdvanced ? 'Hide Advanced Search' : 'Advanced Search'}
               </Button>
               
               {showAdvanced && (
-                <div className="mt-4 border rounded-lg p-4 bg-background">
-                  <h3 className="text-lg font-semibold mb-4">Advanced Search</h3>
+                <div className="mt-4 bg-card rounded-lg shadow-2xl p-6 relative overflow-hidden">
+                  <h3 className="text-xl mb-4 font-bold border rounded-lg">Advanced Search</h3>
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                     
 
@@ -181,6 +181,7 @@ export default function AllVehicles() {
                         value={inputValues.engineType}
                         onChange={(e) => handleInputChange('engineType', e.target.value)}
                         placeholder="e.g., V6, Inline-4"
+                        className=" bg-card rounded-lg shadow-lg relative"
                       />
                     </div>
                     <div className="space-y-2">
@@ -190,9 +191,10 @@ export default function AllVehicles() {
                         value={inputValues.engineHorsepower}
                         onChange={(e) => handleInputChange('engineHorsepower', e.target.value)}
                         placeholder="e.g., 300, 400"
+                        className=" bg-card rounded-lg shadow-lg relative"
                       />
                     </div>
-                    <div className="space-y-2">
+                    {/* <div className="space-y-2">
                       <Label htmlFor="cylinders">Cylinders</Label>
                       <Input
                         id="cylinders"
@@ -200,7 +202,7 @@ export default function AllVehicles() {
                         onChange={(e) => handleInputChange('engineCylinders', e.target.value)}
                         placeholder="e.g., 4, 6, 8"
                       />
-                    </div>
+                    </div> */}
 
                     <div className="space-y-2">
                       <Label htmlFor="fuelType">Fuel Type</Label>
@@ -209,6 +211,7 @@ export default function AllVehicles() {
                         value={inputValues.fuelType}
                         onChange={(e) => handleInputChange('fuelType', e.target.value)}
                         placeholder="e.g., Gasoline, Diesel"
+                        className=" bg-card rounded-lg shadow-lg relative"
                       />
                     </div>
 
@@ -219,6 +222,7 @@ export default function AllVehicles() {
                         value={inputValues.transmission}
                         onChange={(e) => handleInputChange('transmission', e.target.value)}
                         placeholder="e.g., Automatic, Manual"
+                        className=" bg-card rounded-lg shadow-lg relative"
                       />
                     </div>
 
@@ -229,6 +233,7 @@ export default function AllVehicles() {
                         value={inputValues.drive}
                         onChange={(e) => handleInputChange('drive', e.target.value)}
                         placeholder="e.g., AWD, FWD, RWD"
+                        className=" bg-card rounded-lg shadow-lg relative"
                       />
                     </div>
 
@@ -239,6 +244,7 @@ export default function AllVehicles() {
                         value={inputValues.doors}
                         onChange={(e) => handleInputChange('doors', e.target.value)}
                         placeholder="e.g., 2, 4"
+                        className=" bg-card rounded-lg shadow-lg relative"
                       />
                     </div>
                   </div>
@@ -246,7 +252,7 @@ export default function AllVehicles() {
                   <div className="flex justify-end mt-4">
                     <Button 
                       onClick={handleSearch}
-                      className="bg-blue-500 hover:bg-blue-600 text-white"
+                      className="hover:bg-blue-500 hover:shadow-lg transition-all duration-300 rounded-lg hover:bg-muted"
                     >
                       Search
                     </Button>
@@ -255,32 +261,42 @@ export default function AllVehicles() {
               )}
             </div>
           </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {(displayedCars ?? []).map((car) => (
-              <Card key={car._id} className="overflow-hidden">
-                <Image
-                  src={car.pictures[0]}
-                  alt={`${car.maker} ${car.model}`}
-                  width={400}
-                  height={200}
-                  className="w-full h-48 object-cover "
-                />
-                <CardContent className="p-4 text-center">
-                  <h2 className="text-xl font-semibold mb-2">
-                    {car.maker} {car.model}
-                  </h2>
-                  <p className="text-muted-foreground mb-4">Year: {car.year}</p>
-                  <Link href={`/carinfo?id=${car.registrationNumber}`}>
-                    <Button className="w-auto border-2 hover:bg-muted">Book Now</Button>
-                  </Link>
-                </CardContent>
-              </Card>
-            ))}
-            {(displayedCars?.length ?? 0) === 0 && (
-              <p>No cars found matching your criteria.</p>
-            )}
-          </div>
+          <section className="relative w-full h-auto overflow-hidden bg-gradient-to-b from-gray-200 to-white">
+            <div className="max-w-full mx-auto h-full">
+              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-3 mt-20 mx-14 mb-20">
+                {(displayedCars ?? []).map((car) => (
+                  <Card
+                    key={car._id}
+                    className="flex flex-col items-center justify-center p-0 transition-transform transform hover:scale-105 hover:shadow-lg bg-card hover:bg-gradient-to-r from-blue-500 to-green-500 border-none"
+                    style={{ border: "none" }}
+                  >
+                    <Image
+                      src={car.pictures[0]}
+                      alt={`${car.maker} ${car.model}`}
+                      width={400}
+                      height={200}
+                      className="w-[300px] h-[220px] border-none"
+                      style={{ border: "none" }}
+                    />
+                    <CardContent className="p-0 text-center border-none" style={{ border: "none" }}>
+                      <h2 className="text-xl font-semibold mb-2">
+                        {car.maker} {car.model}
+                      </h2>
+                      <p className="text-muted-foreground mb-4">Year: {car.year}</p>
+                      <Link href={`/carinfo?id=${car.registrationNumber}`}>
+                        <Button className="hover:bg-blue-500 hover:shadow-lg transition-all duration-300 rounded-lg mt-0 hover:bg-muted">
+                          Book Now
+                        </Button>
+                      </Link>
+                    </CardContent>
+                  </Card>
+                ))}
+                {(displayedCars?.length ?? 0) === 0 && (
+                  <p>No cars found matching your criteria.</p>
+                )}
+              </div>
+            </div>
+          </section>
         </div>
       </main>
       <Separator />
