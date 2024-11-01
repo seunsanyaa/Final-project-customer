@@ -170,7 +170,7 @@ export default function AllVehicles() {
               
               {showAdvanced && (
                 <div className="mt-4 bg-card rounded-lg shadow-2xl p-6 relative overflow-hidden">
-                  <h3 className="text-xl mb-4 font-bold border rounded-lg">Advanced Search</h3>
+                  <h3 className="text-xl mb-4 font-bold">Advanced Search</h3>
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                     
 
