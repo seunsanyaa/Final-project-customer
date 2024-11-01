@@ -8,6 +8,13 @@ import Image from "next/image";
 import Link from "next/link";
 import { useState, useEffect, useRef } from "react";
 import { Label } from "@/components/ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 import { api } from "@/convex/_generated/api";
 import { Footer } from "../head/footer";
@@ -88,6 +95,20 @@ export default function AllVehicles() {
   //   );
   // }
 
+  // Add new state for body type
+  const [selectedBodyType, setSelectedBodyType] = useState<string>("");
+
+  // Add new query for body type filtered cars
+  const carsByBodyType = useQuery(api.car.getCarsByBodyType, {
+    bodyType: selectedBodyType,
+  });
+
+  // Use either filtered cars or body type filtered cars
+  const displayedCars = selectedBodyType ? carsByBodyType : cars;
+
+  // Add this near the top where other queries are defined
+  const bodyTypes = useQuery(api.car.getUniqueBodyTypes);
+
   return (
     <>
       <Navi />
@@ -107,18 +128,32 @@ export default function AllVehicles() {
                 value={inputValues.model}
                 onChange={(e) => handleInputChange('model', e.target.value)}
               />
-              <div className="flex items-center">
+              <div className="flex items-center gap-2">
                 <Input
                   placeholder="Year"
                   type="number"
                   min="1990"
                   max="2024"
                   value={inputValues.year}
-                  onChange={(e) =>
-                    handleInputChange('year', e.target.value)
-                  }
+                  onChange={(e) => handleInputChange('year', e.target.value)}
                 />
-                <Button className="md:w-auto border-2 ml-2 hover:bg-muted" onClick={handleSearch}>
+                <Select
+                  value={selectedBodyType}
+                  onValueChange={(value) => setSelectedBodyType(value)}
+                >
+                  <SelectTrigger className="w-[180px]">
+                    <SelectValue placeholder="Body Type" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="placeholder">All Types</SelectItem>
+                    {(bodyTypes ?? []).map((type) => (
+                      <SelectItem key={type} value={type}>
+                        {type}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <Button className="md:w-auto border-2 hover:bg-muted" onClick={handleSearch}>
                   <Search className="w-4 h-4 mr-2" />
                   Search
                 </Button>
@@ -222,7 +257,7 @@ export default function AllVehicles() {
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {(cars ?? []).map((car) => (
+            {(displayedCars ?? []).map((car) => (
               <Card key={car._id} className="overflow-hidden">
                 <Image
                   src={car.pictures[0]}
@@ -242,7 +277,7 @@ export default function AllVehicles() {
                 </CardContent>
               </Card>
             ))}
-            {(cars?.length ?? 0) === 0 && (
+            {(displayedCars?.length ?? 0) === 0 && (
               <p>No cars found matching your criteria.</p>
             )}
           </div>

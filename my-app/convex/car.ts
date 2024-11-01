@@ -48,6 +48,7 @@ export const fetchAndStoreCarSpecifications = action({
 				transmission: matchingTrim.model_transmission_type || "N/A",
 				drive: matchingTrim.model_drive || "N/A",
 				doors: matchingTrim.model_doors || "N/A",
+				bodyType: matchingTrim.model_body || "N/A",
 			};
 
 			// Call the addSpecification mutation
@@ -72,6 +73,7 @@ export const addSpecification = mutation({
 			transmission: v.string(),
 			drive: v.string(),
 			doors: v.string(),
+			bodyType: v.string(),
 		}),
 	},
 	handler: async (ctx, { specifications }) => {
@@ -203,7 +205,7 @@ export const getAllCars = query({
 	handler: async (ctx) => {
 		const cars = await ctx.db
 			.query('cars')
-			.filter((q) => q.eq(q.field('disabled'), true))
+			.filter((q) => q.eq(q.field('disabled'), false))
 			.collect();
 		return cars;
 	},
@@ -285,6 +287,7 @@ export const getCarSpecifications = action({
 				transmission: carData.model_transmission_type || "N/A",
 				drive: carData.model_drive || "N/A",
 				doors: carData.model_doors || "N/A",
+				bodyType: carData.model_body || "N/A",
 			};
 
 			return specifications;
@@ -471,5 +474,49 @@ export const getCarWithReviews = query({
 			...car,
 			reviews: validReviews,
 		};
+	},
+});
+
+export const getCarsByBodyType = query({
+	args: {
+		bodyType: v.optional(v.string()),
+	},
+	handler: async (ctx, args) => {
+		if (args.bodyType === "placeholder") {
+			args.bodyType = undefined;
+		}
+		const cars = await ctx.db
+			.query("cars")
+			.filter((q) => q.eq(q.field('disabled'), false))
+			.collect();
+		const specs = await ctx.db.query("specifications").collect();
+
+		// Create a map of specifications by registration number
+		const specsMap = specs.reduce((acc, spec) => {
+			acc[spec.registrationNumber] = spec;
+			return acc;
+		}, {} as Record<string, typeof specs[0]>);
+
+		// Filter cars based on body type
+		return cars.filter((car) => {
+			const carSpecs = specsMap[car.registrationNumber];
+			if (!args.bodyType) return true; // If no body type specified, return all cars
+			if (!carSpecs) return false; // If no specs exist for this car, exclude it
+			return carSpecs.bodyType.toLowerCase().includes(args.bodyType.toLowerCase());
+		});
+	},
+});
+
+export const getUniqueBodyTypes = query({
+	handler: async (ctx) => {
+		const specs = await ctx.db.query("specifications").collect();
+		
+		// Get unique body types and sort them
+		const uniqueBodyTypes = Array.from(new Set(
+			specs.map(spec => spec.bodyType)
+			.filter(type => type !== "N/A")
+		)).sort();
+		
+		return uniqueBodyTypes;
 	},
 });

@@ -59,8 +59,10 @@ export default defineSchema({
 		transmission: v.string(),
 		drive: v.string(),
 		doors: v.string(),
+		bodyType: v.string(),
 	})
-		.index('by_registrationNumber', ['registrationNumber']),
+		.index('by_registrationNumber', ['registrationNumber'])
+		.index('by_bodyType',['bodyType']),
 
 	bookings: defineTable({
 		customerId: v.string(),

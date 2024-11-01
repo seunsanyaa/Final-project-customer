@@ -61,6 +61,9 @@ const Specifications: React.FC<SpecificationsProps> = ({ maker, model, year, tri
         <li>
           <span className="font-medium">Doors:</span> {specifications.doors}
         </li>
+        <li>
+          <span className="font-medium">Body Type:</span> {specifications.bodyType}
+        </li>
       </ul>
     </div>
   );
