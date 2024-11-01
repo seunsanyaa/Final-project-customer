@@ -141,13 +141,13 @@ export default function AllVehicles() {
                   value={selectedBodyType}
                   onValueChange={(value) => setSelectedBodyType(value)}
                 >
-                  <SelectTrigger className="w-[180px]">
+                  <SelectTrigger className="w-[180px] bg-background">
                     <SelectValue placeholder="Body Type" />
                   </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="placeholder">All Types</SelectItem>
+                  <SelectContent className="w-[180px] bg-background">
+                    <SelectItem value="placeholder" className="bg-background">All Types</SelectItem>
                     {(bodyTypes ?? []).map((type) => (
-                      <SelectItem key={type} value={type}>
+                      <SelectItem key={type} value={type} className="bg-background">
                         {type}
                       </SelectItem>
                     ))}
