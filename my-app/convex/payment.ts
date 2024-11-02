@@ -121,3 +121,36 @@ export const getLatestPayment = query({
 		return latestPayment;
 	},
 });
+
+export const editPayment = mutation({
+	args: {
+		paymentId: v.id('payments'),
+		// Optional fields that can be updated
+		amount: v.optional(v.number()),
+		paymentDate: v.optional(v.string()),
+		paymentType: v.optional(v.string()),
+		paymentIntentId: v.optional(v.string()),
+		bookingId: v.optional(v.id('bookings')),
+	},
+	handler: async (ctx, args) => {
+		const existingPayment = await ctx.db.get(args.paymentId);
+		
+		if (!existingPayment) {
+			throw new Error(`Payment with ID ${args.paymentId} does not exist.`);
+		}
+
+		// Create an update object with only the fields that were provided
+		const updateFields: any = {};
+		if (args.amount !== undefined) updateFields.amount = args.amount;
+		if (args.paymentDate !== undefined) updateFields.paymentDate = args.paymentDate;
+		if (args.paymentType !== undefined) updateFields.paymentType = args.paymentType;
+		if (args.paymentIntentId !== undefined) updateFields.paymentIntentId = args.paymentIntentId;
+		if (args.bookingId !== undefined) updateFields.bookingId = args.bookingId;
+
+		// Update the payment
+		await ctx.db.patch(args.paymentId, updateFields);
+
+		// Return the updated payment
+		return await ctx.db.get(args.paymentId);
+	},
+});
