@@ -172,8 +172,6 @@ export default function AllVehicles() {
                 <div className="mt-4 bg-card rounded-lg shadow-2xl p-6 relative overflow-hidden">
                   <h3 className="text-xl mb-4 font-bold">Advanced Search</h3>
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                    
-
                     <div className="space-y-2">
                       <Label htmlFor="engineType">Engine Type</Label>
                       <Input
@@ -284,7 +282,7 @@ export default function AllVehicles() {
                       </h2>
                       <p className="text-muted-foreground mb-4">Year: {car.year}</p>
                       <Link href={`/carinfo?id=${car.registrationNumber}`}>
-                        <Button className="hover:bg-blue-500 hover:shadow-lg transition-all duration-300 rounded-lg mt-0 hover:bg-muted">
+                        <Button className="hover:bg-blue-500 hover:shadow-lg transition-all duration-300 rounded-lg mt-0 mb-5 hover:bg-muted">
                           Book Now
                         </Button>
                       </Link>
