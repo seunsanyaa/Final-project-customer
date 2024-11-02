@@ -8,9 +8,10 @@ export const createPayment = mutation({
 		amount: v.number(),
 		paymentDate: v.string(),
 		paymentType: v.string(),
-		paymentIntentId: v.string(),
+		paymentIntentId: v.optional(v.string()),
 	},
 	handler: async (ctx, args) => {
+		if (args.paymentIntentId) {
 		const existingPayment = await ctx.db
 			.query('payments')
 			.withIndex('by_paymentIntentId', (q) => q.eq('paymentIntentId', args.paymentIntentId))
@@ -18,8 +19,8 @@ export const createPayment = mutation({
 
 		if (existingPayment) {
 			return { paymentId: existingPayment._id, receiptNumber: existingPayment.receiptNumber };
+			}
 		}
-
 		const timestamp = Date.now();
 		const randomPart = Math.floor(Math.random() * 10000).toString().padStart(4, '0');
 		let receiptNumber = `REC-${timestamp}-${randomPart}`;
@@ -42,7 +43,7 @@ export const createPayment = mutation({
 			amount: args.amount,
 			paymentDate: args.paymentDate,
 			paymentType: args.paymentType,
-			paymentIntentId: args.paymentIntentId,
+			paymentIntentId: args.paymentIntentId || "paid cash",
 		});
 
 		return { paymentId, receiptNumber };

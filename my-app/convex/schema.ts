@@ -1,5 +1,6 @@
 import { defineSchema, defineTable } from 'convex/server';
 import { v } from 'convex/values';
+import { optional } from 'zod';
 
 export default defineSchema({
 	users: defineTable({
@@ -48,6 +49,7 @@ export default defineSchema({
 		pricePerDay: v.number(),
 		averageRating: v.optional(v.number()),
 		WAFdescription: v.optional(v.string()),
+		categories: v.optional(v.array(v.string())),
 	})
 		.index('by_model', ['model'])
 		.index('by_maker', ['maker'])
