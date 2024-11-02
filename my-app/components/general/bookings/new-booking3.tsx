@@ -193,7 +193,7 @@ export function NewBooking3() {
             <div className="space-y-6">
               <h2 className="text-2xl font-semibold">Choose Extras</h2>
               <div className="grid gap-4">
-                <Card className="w-full mx-auto mt-1 rounded-lg p-1 bg-white shadow-lg"style={{ border: "none" }}>
+                <Card className={`w-full mx-auto mt-1 rounded-lg p-1 bg-white shadow-lg ${extras.insurance ? 'bg-muted' : ''}`} style={{ border: "none" }}>
                   <CardContent>
                     <div className="flex items-center justify-between">
                       <div>
@@ -210,7 +210,7 @@ export function NewBooking3() {
                     </div>
                   </CardContent>
                 </Card>
-                <Card className="w-full mx-auto mt-1 rounded-lg p-1 bg-white shadow-lg"style={{ border: "none" }}>
+                <Card className={`w-full mx-auto mt-1 rounded-lg p-1 bg-white shadow-lg ${extras.gps ? 'bg-muted' : ''}`} style={{ border: "none" }}>
                   <CardContent>
                     <div className="flex items-center justify-between">
                       <div>
@@ -227,7 +227,7 @@ export function NewBooking3() {
                     </div>
                   </CardContent>
                 </Card>
-                <Card className="w-full mx-auto mt-1 rounded-lg p-1 bg-white shadow-lg"style={{ border: "none" }}>
+                <Card className={`w-full mx-auto mt-1 rounded-lg p-1 bg-white shadow-lg ${extras.childSeat ? 'bg-muted' : ''}`} style={{ border: "none" }}>
                   <CardContent>
                     <div className="flex items-center justify-between">
                       <div>
