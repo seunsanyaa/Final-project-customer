@@ -141,53 +141,59 @@ export function NewBooking3() {
           <p className="text-muted-foreground">Choose your extras, and complete your booking.</p>
         </div>
         <div className="grid md:grid-cols-[2fr_1fr] gap-8 md:gap-5 pl-0 pr-0">
-          <div className="mt-2 mb-2 space-y-2">
-            <div className="space-y-6">
-              <div className="mt-6 grid gap-4 md:grid-cols-2">
-                <div>
-                  <Label htmlFor="pickup-date">Pickup Date & Time</Label>
-                  <Input 
-                    type="datetime-local" 
-                    id="pickup-date" 
-                    className="mt-1 w-full" 
-                    value={pickupDateTime}
-                    onChange={(e) => handlePickupChange(e.target.value)}
-                  />
+          <div className="mt-2 mb-1 space-y-1">
+          <Card className="w-full mx-auto mt-1 rounded-lg p-1 bg-white shadow-lg" style={{ border: "none" }}>
+              <CardContent>
+                <div className="space-y-6">
+                  <div className="mt-6 grid gap-4 md:grid-cols-2">
+                    <div>
+                      <Label htmlFor="pickup-date">Pickup Date & Time</Label>
+                      <Input 
+                        type="datetime-local" 
+                        id="pickup-date" 
+                        className="mt-1 w-full bg-card rounded-lg shadow-lg relative" 
+                        value={pickupDateTime}
+                        onChange={(e) => handlePickupChange(e.target.value)}
+                      />
+                    </div>
+                    <div>
+                      <Label htmlFor="dropoff-date">Drop-off Date & Time</Label>
+                      <Input 
+                        type="datetime-local" 
+                        id="dropoff-date" 
+                        className="mt-1 w-full bg-card rounded-lg shadow-lg relative" 
+                        value={dropoffDateTime}
+                        onChange={(e) => handleDropoffChange(e.target.value)}
+                      />
+                    </div>
+                    <div>
+                      <Label htmlFor="pickup">Pickup Location</Label>
+                      <Input 
+                        id="pickup" 
+                        placeholder="Enter location" 
+                        className="mt-1 w-full bg-card rounded-lg shadow-lg relative"
+                        value={pickupLocation}
+                        onChange={(e) => setPickupLocation(e.target.value)}
+                      />
+                    </div>
+                    <div>
+                      <Label htmlFor="dropoff">Drop-off Location</Label>
+                      <Input 
+                        id="dropoff" 
+                        placeholder="Enter location" 
+                        className="mt-1 w-full bg-card rounded-lg shadow-lg relative"
+                        value={dropoffLocation}
+                        onChange={(e) => setDropoffLocation(e.target.value)}
+                      />
+                    </div>
+                  </div>
                 </div>
-                <div>
-                  <Label htmlFor="dropoff-date">Drop-off Date & Time</Label>
-                  <Input 
-                    type="datetime-local" 
-                    id="dropoff-date" 
-                    className="mt-1 w-full" 
-                    value={dropoffDateTime}
-                    onChange={(e) => handleDropoffChange(e.target.value)}
-                  />
-                </div>
-                <div>
-                  <Label htmlFor="pickup">Pickup Location</Label>
-                  <Input 
-                    id="pickup" 
-                    placeholder="Enter location" 
-                    value={pickupLocation}
-                    onChange={(e) => setPickupLocation(e.target.value)}
-                  />
-                </div>
-                <div>
-                  <Label htmlFor="dropoff">Drop-off Location</Label>
-                  <Input 
-                    id="dropoff" 
-                    placeholder="Enter location" 
-                    value={dropoffLocation}
-                    onChange={(e) => setDropoffLocation(e.target.value)}
-                  />
-                </div>
-              </div>
-            </div>
+              </CardContent>
+            </Card>
             <div className="space-y-6">
               <h2 className="text-2xl font-semibold">Choose Extras</h2>
               <div className="grid gap-4">
-                <Card>
+                <Card className="w-full mx-auto mt-1 rounded-lg p-1 bg-white shadow-lg"style={{ border: "none" }}>
                   <CardContent>
                     <div className="flex items-center justify-between">
                       <div>
@@ -204,7 +210,7 @@ export function NewBooking3() {
                     </div>
                   </CardContent>
                 </Card>
-                <Card>
+                <Card className="w-full mx-auto mt-1 rounded-lg p-1 bg-white shadow-lg"style={{ border: "none" }}>
                   <CardContent>
                     <div className="flex items-center justify-between">
                       <div>
@@ -221,7 +227,7 @@ export function NewBooking3() {
                     </div>
                   </CardContent>
                 </Card>
-                <Card>
+                <Card className="w-full mx-auto mt-1 rounded-lg p-1 bg-white shadow-lg"style={{ border: "none" }}>
                   <CardContent>
                     <div className="flex items-center justify-between">
                       <div>
@@ -241,7 +247,7 @@ export function NewBooking3() {
               </div>
             </div>
             <div className="mt-2" ref={bookingSummaryRef}>
-              <Card>
+              <Card className="w-full mx-auto mt-2 rounded-lg p-8 bg-white shadow-2xl"style={{ border: "none" }}>
                 <CardHeader>
                   <CardTitle>Booking Summary</CardTitle>
                 </CardHeader>
@@ -304,11 +310,11 @@ export function NewBooking3() {
                 </CardContent>
                 <CardFooter>
                   <div className="flex gap-2">
-                    <Button variant="outline" className="border-2 hover:bg-muted">
+                    <Button  className="px-6 py-3 text-lg font-semibold text-white bg-blue-600 hover:bg-blue-500 rounded-lg transition-colors hover:bg-muted shadow-2xl">
                       Go Back
                     </Button>
                     <Button 
-                      className="border-2 hover:bg-muted" 
+                      className="px-6 py-3 text-lg font-semibold text-white bg-blue-600 hover:bg-blue-500 rounded-lg transition-colors hover:bg-muted shadow-2xl" 
                       disabled={!paymentMethod}
                       onClick={handleContinue}
                     >
@@ -320,7 +326,7 @@ export function NewBooking3() {
             </div>
           </div>
           <div className="space-y-6">
-            <Card className="w-full mx-auto">
+            <Card className="w-full mx-auto mt-12 rounded-lg p-8 bg-white shadow-2xl"style={{ border: "none" }}>
               <CardHeader>
                 <CardTitle>Payment Options</CardTitle>
               </CardHeader>
@@ -334,7 +340,7 @@ export function NewBooking3() {
                       <li>Choose from flexible plans that suit your budget.</li>
                     </ul>
                     <Button 
-                      className="w-fit border-2 hover:bg-muted" 
+                      className="w-fit px-6 py-3 text-lg font-semibold text-white bg-blue-600 hover:bg-blue-500 rounded-lg transition-colors hover:bg-muted shadow-2xl" 
                       onClick={() => handlePaymentSelection('installment')}
                     >
                       Choose Installment Plan
@@ -355,7 +361,7 @@ export function NewBooking3() {
                 </div>
                 <div className="grid gap-4 mt-6">
                   <Button 
-                    className="w-fit border-2 hover:bg-muted" 
+                    className="w-fit px-6 py-3 text-lg font-semibold text-white bg-blue-600 hover:bg-blue-500 rounded-lg transition-colors hover:bg-muted shadow-2xl" 
                     onClick={() => handlePaymentSelection('full')}
                   >
                     Pay Now
