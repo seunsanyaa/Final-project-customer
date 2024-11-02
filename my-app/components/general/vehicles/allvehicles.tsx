@@ -261,11 +261,11 @@ export default function AllVehicles() {
           </div>
           <section className="relative w-full h-auto overflow-hidden bg-gradient-to-b from-gray-200 to-white">
             <div className="max-w-full mx-auto h-full">
-              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-3 mt-20 mx-14 mb-20">
+              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-3 mt-20 mx-14 mb-20 relative z-0">
                 {(displayedCars ?? []).map((car) => (
                   <Card
                     key={car._id}
-                    className="flex flex-col items-center justify-center p-0 transition-transform transform hover:scale-105 hover:shadow-lg bg-card hover:bg-gradient-to-r from-blue-500 to-green-500 border-none"
+                    className="relative flex flex-col items-center justify-center p-0 transition-all duration-300 transform hover:scale-105 hover:shadow-2xl bg-card hover:bg-gradient-to-r from-blue-500 to-green-500 border-none hover:z-50"
                     style={{ border: "none" }}
                   >
                     <Image
