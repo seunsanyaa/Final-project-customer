@@ -138,3 +138,64 @@ export const redeemPromo = mutation({
     return { status: 'success' };
   },
 });
+
+// Add this new query to get redeemed promotions for a user
+export const getUserRedeemedPromotions = query({
+  args: { userId: v.string() },
+  handler: async (ctx, { userId }) => {
+    // Get the customer first
+    const customer = await ctx.db
+      .query("customers")
+      .withIndex("by_userId", (q) => q.eq("userId", userId))
+      .first();
+
+    if (!customer || !customer.promotions) {
+      return [];
+    }
+
+    // Fetch all promotions that the customer has redeemed
+    const redeemedPromotions = await Promise.all(
+      customer.promotions.map(async (promoId) => {
+        const promotion = await ctx.db.get(promoId);
+        if (!promotion) return null;
+        
+        return {
+          ...promotion,
+          isUsed: customer.usedPromotions?.includes(promoId) ?? false
+        };
+      })
+    );
+
+    // Filter out any null values and return valid promotions
+    return redeemedPromotions.filter(Boolean);
+  },
+});
+
+// Add this mutation to mark a promotion as used
+export const markPromotionAsUsed = mutation({
+  args: {
+    userId: v.string(),
+    promotionId: v.id("promotions"),
+  },
+  handler: async (ctx, { userId, promotionId }) => {
+    const customer = await ctx.db
+      .query("customers")
+      .withIndex("by_userId", (q) => q.eq("userId", userId))
+      .first();
+
+    if (!customer) {
+      throw new Error("Customer not found");
+    }
+
+    const usedPromotions = customer.usedPromotions || [];
+    
+    // Add the promotion to usedPromotions if not already there
+    if (!usedPromotions.includes(promotionId)) {
+      await ctx.db.patch(customer._id, {
+        usedPromotions: [...usedPromotions, promotionId],
+      });
+    }
+
+    return { status: "success" };
+  },
+});

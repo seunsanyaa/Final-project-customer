@@ -268,13 +268,13 @@ export function User_page() {
                 Account Details
               </Link>
               <Link
-                href="/User_Account/User_Rev"
+                href="/User_Account/User_Promotions"
                 className="text-muted-foreground hover:text-customyello transition-colors"
                 prefetch={false}>
-                My Ratings & Reviews
+                My Promotions
               </Link>
               <Link
-                href="#"
+                href="/User_Account/User_Bookings"
                 className="text-muted-foreground hover:text-customyello transition-colors"
                 prefetch={false}>
                 Previous Bookings
