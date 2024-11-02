@@ -1,27 +1,28 @@
-import React, { useState } from "react"; // Add React to the import
-import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar"
+import React, { useState, useEffect } from "react"; // Add React to the import
 import { Button } from "@/components/ui/button"
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card"
 import { Label } from "@/components/ui/label"
 import Link from "next/link"
-import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator } from "@/components/ui/dropdown-menu"
 import { Navi } from "../head/navi"
 import { Separator } from "@/components/ui/separator"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog"; // Import your Dialog component
 import { createWorker, OEM, LoggerMessage } from 'tesseract.js'; // Updated import for enums and types
+import { useMutation, useQuery } from "convex/react"; // Add this import
+import { api } from "@/convex/_generated/api"; // Add this import
+import { useUser } from "@clerk/nextjs"; // Add this import
 
 interface PersonalInfo {
   fullName: string;
   dob: string;
   license: string;
   nationality: string;
-  address: string; // Added address field
+  address: string;
+  expirationDate: string;
 }
 
 interface ContactInfo {
   email: string;
   phone: string;
-  username: string;
 }
 
 interface ExtractedInfo {
@@ -31,21 +32,27 @@ interface ExtractedInfo {
 }
 
 export function User_page() {
+  const { user } = useUser();
+  const userData = useQuery(api.users.getFullUser, { userId: user?.id ?? "" });
+  const customerData = useQuery(api.customers.getCustomerByUserId, { userId: user?.id ?? "" });
+
   // State to manage edit mode and input values
   const [isEditing, setIsEditing] = useState(false);
   const [isDialogOpen, setIsDialogOpen] = useState(false); // State for dialog visibility
 
+  // Update state initialization to use loaded data
   const [personalInfo, setPersonalInfo] = useState<PersonalInfo>({
-    fullName: "John Doe",
-    dob: "1985-06-15",
-    license: "ABC123456",
-    nationality: "United States",
-    address: "", // Initialize address
+    fullName: userData ? `${userData.firstName} ${userData.lastName}` : "",
+    dob: customerData?.dateOfBirth ?? "",
+    license: customerData?.licenseNumber ?? "",
+    nationality: customerData?.nationality ?? "",
+    address: customerData?.address ?? "",
+    expirationDate: customerData?.expirationDate ?? "",
   });
+
   const [contactInfo, setContactInfo] = useState<ContactInfo>({
-    email: "john.doe@example.com",
-    phone: "+1 (555) 123-4567",
-    username: "jdoe",
+    email: userData?.email ?? "",
+    phone: customerData?.phoneNumber ?? "",
   });
 
   // New state to manage extracted license information
@@ -55,7 +62,59 @@ export function User_page() {
     expirationDate: "",
   });
 
-  const handleEditToggle = () => {
+  const [errorMessage, setErrorMessage] = useState<string>("");
+
+  const updateUser = useMutation(api.users.editUser);
+  const updateCustomer = useMutation(api.customers.updateCustomer);
+
+  const isLicenseExpired = (expirationDate: string | undefined) => {
+    if (!expirationDate) return false;
+    
+    // Convert DD.MM.YYYY to YYYY-MM-DD for comparison
+    const [day, month, year] = expirationDate.split('.');
+    const expDate = new Date(`${year}-${month}-${day}`);
+    const today = new Date();
+    
+    // Reset time part for accurate date comparison
+    today.setHours(0, 0, 0, 0);
+    expDate.setHours(0, 0, 0, 0);
+    
+    return expDate < today;
+  };
+
+  const handleEditToggle = async () => {
+    if (!user?.id) return; // Guard clause for unauthenticated users
+    
+    if (isEditing) {
+      try {
+        // Check expiration before saving
+        if (isLicenseExpired(personalInfo.expirationDate)) {
+          setErrorMessage("License has expired. Please update the expiration date.");
+          return;
+        }
+
+        // Update user information with Clerk userId
+        await updateUser({
+          userId: user.id,
+          firstName: personalInfo.fullName.split(' ')[0],
+          lastName: personalInfo.fullName.split(' ')[1] || '',
+          email: contactInfo.email,
+        });
+
+        // Update customer information with same Clerk userId
+        await updateCustomer({
+          userId: user.id,
+          nationality: personalInfo.nationality,
+          phoneNumber: contactInfo.phone,
+          licenseNumber: personalInfo.license,
+          address: personalInfo.address,
+          dateOfBirth: personalInfo.dob,
+          expirationDate: personalInfo.expirationDate,
+        });
+      } catch (error) {
+        console.error('Error updating information:', error);
+      }
+    }
     setIsEditing((prev) => !prev);
   };
   
@@ -100,6 +159,7 @@ export function User_page() {
         ...prev,
         fullName: parsedInfo.fullName || prev.fullName,
         license: parsedInfo.license || prev.license,
+        expirationDate: parsedInfo.expirationDate || prev.expirationDate,
       }));
       setContactInfo((prev) => ({
         ...prev,
@@ -172,6 +232,25 @@ export function User_page() {
       expirationDate,
     };
   };
+
+  // Optional: Update state when data loads
+  useEffect(() => {
+    if (userData && customerData) {
+      setPersonalInfo({
+        fullName: `${userData.firstName} ${userData.lastName}`,
+        dob: customerData.dateOfBirth,
+        license: customerData.licenseNumber,
+        nationality: customerData.nationality,
+        address: customerData.address,
+        expirationDate: customerData.expirationDate ?? "",
+      });
+
+      setContactInfo({
+        email: userData.email,
+        phone: customerData.phoneNumber,
+      });
+    }
+  }, [userData, customerData, user?.id]);
 
   return (
     <div className="flex flex-col min-h-screen">
@@ -282,25 +361,22 @@ export function User_page() {
                     )}
                   </div>
                   <div className="grid gap-2">
-                    <Label className="text-black">Username</Label>
-                    {isEditing ? (
-                      <input
-                        value={contactInfo.username}
-                        onChange={(e) => setContactInfo({ ...contactInfo, username: e.target.value })}
-                      />
-                    ) : (
-                      <div className="text-black">{contactInfo.username}</div>
-                    )}
-                  </div>
-                  <div className="grid gap-2">
                     <Label className="text-black">Expiration Date</Label>
                     {isEditing ? (
                       <input
-                        value={extractedInfo.expirationDate} // Display extracted expiration date
-                        readOnly // Make it read-only since it should not be edited directly
+                        type="date"
+                        value={(personalInfo.expirationDate || extractedInfo.expirationDate)?.split('.').reverse().join('-')}
+                        onChange={(e) => setPersonalInfo({ 
+                          ...personalInfo, 
+                          expirationDate: e.target.value.split('-').reverse().join('.') 
+                        })}
                       />
                     ) : (
-                      <div className="text-black">{extractedInfo.expirationDate}</div> // Show extracted expiration date
+                      <div className="text-black">
+                        {(personalInfo.expirationDate || extractedInfo.expirationDate) ? 
+                          new Date((personalInfo.expirationDate || extractedInfo.expirationDate).split('.').reverse().join('-')).toLocaleDateString() 
+                          : ''}
+                      </div>
                     )}
                   </div>
                   <div className="grid gap-2">

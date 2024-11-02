@@ -140,20 +140,49 @@ export function Mybookings() {
   const currentBooking = bookings && bookings.length > 0 ? bookings[0] : null;
   const pastBookings = bookings?.filter(booking => new Date(booking.startDate) < new Date());
 
+  // Add these helper functions at the top of your component
+  const isBookingCurrent = (startDate: string, endDate: string): boolean => {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    const start = new Date(startDate);
+    start.setHours(0, 0, 0, 0);
+    
+    const end = new Date(endDate);
+    end.setHours(0, 0, 0, 0);
+
+    return today >= start && today <= end;
+  };
+
+  const isUpcomingBooking = (startDate: string): boolean => {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    const start = new Date(startDate);
+    start.setHours(0, 0, 0, 0);
+
+    return start > today;
+  };
+
+  // Modify the return statement to show different sections
   return (
     <>
       <Navi />
-
       <Separator />
       <div className="max-w-6xl mx-auto px-4 py-8 sm:px-6 md:py-12">
         <h1 className="text-3xl font-bold mb-8">Your Car Bookings</h1>
-       
-        {currentBooking ? (
-           <Link href={`/bookings/currentbooking?bookingId=${currentBooking?._id}`} className='hover:cursor-pointer'>
-           <div className="bg-background border rounded-lg p-6 shadow-sm">
-             <div className="flex items-center justify-between">
-               <div>
-                 <h2 className="text-2xl font-semibold">Current Booking</h2>
+         
+        {/* Current Booking Section */}
+        {bookings?.filter(booking => isBookingCurrent(booking.startDate, booking.endDate))[0] && (
+          <Link 
+            href={`/bookings/currentbooking?bookingId=${bookings.filter(booking => 
+              isBookingCurrent(booking.startDate, booking.endDate))[0]._id}`} 
+            className='hover:cursor-pointer mb-8 block'
+          >
+            <div className="bg-background border rounded-lg p-6 shadow-sm">
+              <div className="flex items-center justify-between">
+                <div>
+                  <h2 className="text-2xl font-semibold">Current Booking</h2>
       <p className="text-muted-foreground">Rental Dates: {currentBooking.startDate} - {currentBooking.endDate}</p>
       </div>
   <div className="text-right">
@@ -186,175 +215,213 @@ export function Mybookings() {
 </div>
 </div>
 </Link>
-        ) : (<div className="bg-background border rounded-lg p-6 shadow-sm">
-             <div className="flex items-center justify-between">
-               <div>
-                 <h2 className="text-2xl font-semibold">Current Booking</h2>
-          <p className="text-muted-foreground">No current bookings</p>
-        </div>
-      </div>
-    </div>
-  )}
-      
-    <Separator className="my-6" />
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-      <div className="bg-background rounded-lg shadow-md p-6 max-w-md">
-        <h2 className="text-xl font-bold mb-4">Filter Bookings</h2>
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          <div>
-            <label
-              htmlFor="start-date"
-              className="block text-sm font-medium text-muted-foreground">
-              Start Date
-            </label>
-            <input
-              type="date"
-              id="start-date"
-              value={filterStartDate || ""}
-              onChange={(e) => setFilterStartDate(e.target.value)}
-              className="mt-1 block w-full rounded-md border-input bg-background px-3 py-2 text-sm shadow-sm focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary" />
-          </div>
-          <div>
-            <label
-              htmlFor="end-date"
-              className="block text-sm font-medium text-muted-foreground">
-              End Date
-            </label>
-            <input
-              type="date"
-              id="end-date"
-              value={filterEndDate || ""}
-              onChange={(e) => setFilterEndDate(e.target.value || null)}
-              className="mt-1 block w-full rounded-md border-input bg-background px-3 py-2 text-sm shadow-sm focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary" />
-          </div>
-          <div>
-            <label
-              htmlFor="make"
-              className="block text-sm font-medium text-muted-foreground">
-              Make
-            </label>
-            <input
-              type="text"
-              id="make"
-              value={filterMake}
-              onChange={(e) => setFilterMake(e.target.value)}
-              className="mt-1 block w-full rounded-md border-input bg-background px-3 py-2 text-sm shadow-sm focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary" />
-          </div>
-          <div>
-            <label
-              htmlFor="model"
-              className="block text-sm font-medium text-muted-foreground">
-              Model
-            </label>
-            <input
-              type="text"
-              id="model"
-              value={filterModel}
-              onChange={(e) => setFilterModel(e.target.value)}
-              className="mt-1 block w-full rounded-md border-input bg-background px-3 py-2 text-sm shadow-sm focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary" />
-          </div>
-          <div>
-            <label
-              htmlFor="color"
-              className="block text-sm font-medium text-muted-foreground">
-              Color
-            </label>
-            <input
-              type="text"
-              id="color"
-              value={filterColor}
-              onChange={(e) => setFilterColor(e.target.value)}
-              className="mt-1 block w-full rounded-md border-input bg-background px-3 py-2 text-sm shadow-sm focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary" />
-          </div>
-        </div>
-        <div className="mt-4 justify-self-end">
-          <Button onClick={handleFilterChange} className="border-2 hover:bg-muted">Filter</Button>
-        </div>
-      </div>
-      <div className="col-span-2 lg:col-span-2">
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-          {filteredBookings.map((booking) => (
-            <Card key={booking._id}>
-              <CardHeader>
-                <div className="flex items-center justify-between">
-                  <div className="text-lg font-bold">{booking.make}</div>
-                  <div className="text-muted-foreground">{booking.model}</div>
-                </div>
-                <div className="text-muted-foreground">{booking.color}</div>
-              </CardHeader>
-              <CardContent>
-                <div className="grid grid-cols-2 gap-6">
-                  <div>
-                    <div className="text-sm font-medium">Start Date</div>
-                    <div>{booking.startDate}</div>
-                  </div>
-                  <div>
-                    <div className="text-sm font-medium">End Date</div>
-                    <div>{booking.endDate}</div>
-                  </div>
-                  <div>
-                    <div className="text-sm font-medium">Total Cost</div>
-                    <div>${booking.totalCost.toFixed(2)}</div>
-                  </div>
-                </div>
-              </CardContent>
-              <CardFooter className="flex justify-end">
-                <Button 
-                  onClick={() => handleViewDetails(booking)} 
-                  className="border-2 bg-transparent hover:bg-muted">
-                  View Details
-                </Button>
-              </CardFooter>
-            </Card>
-          ))}
-        </div>
-      </div>
-    </div>
-    <Separator/>
-    {selectedBooking && (
-      <Dialog
-        open={!!selectedBooking}
-        onOpenChange={(open) => setSelectedBooking(open ? selectedBooking : null)}>
-        <DialogContent className="sm:max-w-[425px]" style={{ opacity: 1, backgroundColor: '#ffffff', zIndex: 50 }}>
-          <div className="flex flex-col gap-6">
-            <div className="grid grid-cols-2 gap-6">
+        )}
+
+        <Separator className="my-8" />
+
+        {/* Filter Section - Keep your existing filter code */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="bg-background rounded-lg shadow-md p-6 max-w-md">
+            <h2 className="text-xl font-bold mb-4">Filter Bookings</h2>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
-                <div className="text-sm font-medium">Make</div>
-                <div>{selectedBooking?.make}</div>
+                <label
+                  htmlFor="start-date"
+                  className="block text-sm font-medium text-muted-foreground">
+                  Start Date
+                </label>
+                <input
+                  type="date"
+                  id="start-date"
+                  value={filterStartDate || ""}
+                  onChange={(e) => setFilterStartDate(e.target.value)}
+                  className="mt-1 block w-full rounded-md border-input bg-background px-3 py-2 text-sm shadow-sm focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary" />
               </div>
               <div>
-                <div className="text-sm font-medium">Model</div>
-                <div>{selectedBooking.model}</div>
+                <label
+                  htmlFor="end-date"
+                  className="block text-sm font-medium text-muted-foreground">
+                  End Date
+                </label>
+                <input
+                  type="date"
+                  id="end-date"
+                  value={filterEndDate || ""}
+                  onChange={(e) => setFilterEndDate(e.target.value || null)}
+                  className="mt-1 block w-full rounded-md border-input bg-background px-3 py-2 text-sm shadow-sm focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary" />
               </div>
               <div>
-                <div className="text-sm font-medium">Color</div>
-                <div>{selectedBooking.color}</div>
+                <label
+                  htmlFor="make"
+                  className="block text-sm font-medium text-muted-foreground">
+                  Make
+                </label>
+                <input
+                  type="text"
+                  id="make"
+                  value={filterMake}
+                  onChange={(e) => setFilterMake(e.target.value)}
+                  className="mt-1 block w-full rounded-md border-input bg-background px-3 py-2 text-sm shadow-sm focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary" />
               </div>
               <div>
-                <div className="text-sm font-medium">Start Date</div>
-                <div>{selectedBooking.startDate}</div>
+                <label
+                  htmlFor="model"
+                  className="block text-sm font-medium text-muted-foreground">
+                  Model
+                </label>
+                <input
+                  type="text"
+                  id="model"
+                  value={filterModel}
+                  onChange={(e) => setFilterModel(e.target.value)}
+                  className="mt-1 block w-full rounded-md border-input bg-background px-3 py-2 text-sm shadow-sm focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary" />
               </div>
               <div>
-                <div className="text-sm font-medium">End Date</div>
-                <div>{selectedBooking.endDate}</div>
-              </div>
-              <div>
-                <div className="text-sm font-medium">Total Cost</div>
-                <div>${selectedBooking.totalCost.toFixed(2)}</div>
+                <label
+                  htmlFor="color"
+                  className="block text-sm font-medium text-muted-foreground">
+                  Color
+                </label>
+                <input
+                  type="text"
+                  id="color"
+                  value={filterColor}
+                  onChange={(e) => setFilterColor(e.target.value)}
+                  className="mt-1 block w-full rounded-md border-input bg-background px-3 py-2 text-sm shadow-sm focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary" />
               </div>
             </div>
-          </div>
-          <DialogFooter>
-            <div>
+            <div className="mt-4 justify-self-end">
+              <Button onClick={handleFilterChange} className="border-2 hover:bg-muted">Filter</Button>
             </div>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-    )}
-    {!bookings && <p>Loading...</p>}
-    {bookings && bookings.length === 0 && <p>No bookings available.</p>}
-  </div>
-  <Footer/>
-</>
-);
+          </div>
+          <div className="col-span-2 lg:col-span-2">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+              {filteredBookings.map((booking) => (
+                <Card key={booking._id}>
+                  <CardHeader>
+                    <div className="flex items-center justify-between">
+                      <div className="text-lg font-bold">{booking.make}</div>
+                      <div className="text-muted-foreground">{booking.model}</div>
+                    </div>
+                    <div className="text-muted-foreground">{booking.color}</div>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="grid grid-cols-2 gap-6">
+                      <div>
+                        <div className="text-sm font-medium">Start Date</div>
+                        <div>{booking.startDate}</div>
+                      </div>
+                      <div>
+                        <div className="text-sm font-medium">End Date</div>
+                        <div>{booking.endDate}</div>
+                      </div>
+                      <div>
+                        <div className="text-sm font-medium">Total Cost</div>
+                        <div>${booking.totalCost.toFixed(2)}</div>
+                      </div>
+                    </div>
+                  </CardContent>
+                  <CardFooter className="flex justify-end">
+                    <Button 
+                      onClick={() => handleViewDetails(booking)} 
+                      className="border-2 bg-transparent hover:bg-muted">
+                      View Details
+                    </Button>
+                  </CardFooter>
+                </Card>
+              ))}
+            </div>
+          </div>
+        </div>
+
+        {/* Upcoming Bookings Section */}
+        <div className="mt-8">
+          <h2 className="text-2xl font-semibold mb-4">Upcoming Bookings</h2>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+            {filteredBookings
+              .filter(booking => isUpcomingBooking(booking.startDate))
+              .map((booking) => (
+                <Card key={booking._id}>
+                  <CardHeader>
+                    <div className="flex items-center justify-between">
+                      <div className="text-lg font-bold">{booking.make}</div>
+                      <div className="text-muted-foreground">{booking.model}</div>
+                    </div>
+                    <div className="text-muted-foreground">{booking.color}</div>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="grid grid-cols-2 gap-6">
+                      <div>
+                        <div className="text-sm font-medium">Start Date</div>
+                        <div>{booking.startDate}</div>
+                      </div>
+                      <div>
+                        <div className="text-sm font-medium">End Date</div>
+                        <div>{booking.endDate}</div>
+                      </div>
+                      <div>
+                        <div className="text-sm font-medium">Total Cost</div>
+                        <div>${booking.totalCost.toFixed(2)}</div>
+                      </div>
+                    </div>
+                  </CardContent>
+                  <CardFooter className="flex justify-end">
+                    <Button 
+                      onClick={() => handleViewDetails(booking)} 
+                      className="border-2 bg-transparent hover:bg-muted">
+                      View Details
+                    </Button>
+                  </CardFooter>
+                </Card>
+              ))}
+          </div>
+        </div>
+
+        {/* Completed Bookings Section */}
+        <div className="mt-8">
+          <h2 className="text-2xl font-semibold mb-4">Past Bookings</h2>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+            {filteredBookings
+              .filter(booking => !isBookingCurrent(booking.startDate, booking.endDate) && !isUpcomingBooking(booking.startDate))
+              .map((booking) => (
+                <Card key={booking._id}>
+                  <CardHeader>
+                    <div className="flex items-center justify-between">
+                      <div className="text-lg font-bold">{booking.make}</div>
+                      <div className="text-muted-foreground">{booking.model}</div>
+                    </div>
+                    <div className="text-muted-foreground">{booking.color}</div>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="grid grid-cols-2 gap-6">
+                      <div>
+                        <div className="text-sm font-medium">Start Date</div>
+                        <div>{booking.startDate}</div>
+                      </div>
+                      <div>
+                        <div className="text-sm font-medium">End Date</div>
+                        <div>{booking.endDate}</div>
+                      </div>
+                      <div>
+                        <div className="text-sm font-medium">Total Cost</div>
+                        <div>${booking.totalCost.toFixed(2)}</div>
+                      </div>
+                    </div>
+                  </CardContent>
+                  <CardFooter className="flex justify-end">
+                    <Button 
+                      onClick={() => handleViewDetails(booking)} 
+                      className="border-2 bg-transparent hover:bg-muted">
+                      View Details
+                    </Button>
+                  </CardFooter>
+                </Card>
+              ))}
+          </div>
+        </div>
+      </div>
+      <Separator/>
+      <Footer/>
+    </>
+  );
 }

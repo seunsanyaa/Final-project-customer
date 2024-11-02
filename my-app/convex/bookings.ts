@@ -73,18 +73,29 @@ export const deleteBooking = mutation({
 
 // Get bookings by customer ID
 export const getBookingsByCustomer = query({
-	// Validate the customerId argument against the 'bookings' table
-	args: { customerId: v.string() },  // Use string validation for customerId
+	args: { customerId: v.string() },
 	handler: async (ctx, args) => {
-		// Fetch all bookings for the given customerId
 		const bookings = await ctx.db
 			.query('bookings')
 			.withIndex('by_customerId', (q) => q.eq('customerId', args.customerId))
 			.collect();
 
-		// Fetch car details for each booking where carId matches registrationNumber
-		const bookingsWithCarDetails = await Promise.all(
+		const today = new Date();
+		today.setHours(0, 0, 0, 0);
+
+		// Instead of updating the DB, just modify the local object
+		const updatedBookings = await Promise.all(
 			bookings.map(async (booking) => {
+				const startDate = new Date(booking.startDate);
+				const endDate = new Date(booking.endDate);
+				startDate.setHours(0, 0, 0, 0);
+				endDate.setHours(0, 0, 0, 0);
+
+				// Only modify the local status without DB update
+				if (booking.status !== 'completed' && today > endDate) {
+					booking.status = 'completed';
+				}
+
 				const car = await ctx.db
 					.query('cars')
 					.withIndex('by_registrationNumber', (q) =>
@@ -101,25 +112,31 @@ export const getBookingsByCustomer = query({
 					model: car?.model || 'Not available',
 					color: car?.color || 'Not available',
 					trim: car?.trim || 'Not available',
-					customerName: 'Not available', // You can fetch and include customer details similarly
-					rewardsPointsUsed: 0, // Update as per your business logic
-					rewardsPointsCredited: 'Not available', // Update as needed
-					cancellationPolicy: 'Standard 24-hour cancellation policy applies', // Update if different
+					customerName: 'Not available',
+					rewardsPointsUsed: 0,
+					rewardsPointsCredited: 'Not available',
+					cancellationPolicy: 'Standard 24-hour cancellation policy applies',
+					isCurrentBooking: today >= startDate && today <= endDate
 				};
 			})
 		);
 
-		return bookingsWithCarDetails;
+		// Sort bookings: current bookings first, then by date
+		return updatedBookings.sort((a, b) => {
+			if (a.isCurrentBooking && !b.isCurrentBooking) return -1;
+			if (!a.isCurrentBooking && b.isCurrentBooking) return 1;
+			return new Date(b.startDate).getTime() - new Date(a.startDate).getTime();
+		});
 	},
 });
-  
-  
+
 export const addReview = mutation({
 	args: { reviewId: v.string(), bookingId: v.id('bookings') },
 	handler: async (ctx, args) => {
 		return await ctx.db.patch(args.bookingId, { reviewId: args.reviewId });
 	},
 });
+
 // Get bookings by car ID
 export const getBookingsByCar = query({
 	args: { carId: v.string() },
@@ -130,8 +147,6 @@ export const getBookingsByCar = query({
 			.collect();
 	},
 });
-
-
 
 // Add this new query
 export const getBookingDetails = query({
@@ -220,42 +235,84 @@ export const getCarByCarId = query({
  * Fetch bookings for a customer that do not have an associated review along with car details.
  */
 export const getPendingReviewsByCustomer = query({
-  args: { customerId: v.string() },
-  handler: async (ctx, args) => {
-    const { customerId } = args;
+	args: { customerId: v.string() },
+	handler: async (ctx, args) => {
+		const { customerId } = args;
 
-    // Fetch all bookings for the given customerId
-    const bookings = await ctx.db
-      .query('bookings')
-      .withIndex('by_customerId', (q) => q.eq('customerId', customerId))
-      .collect();
+		// Fetch all bookings for the given customerId
+		const bookings = await ctx.db
+			.query('bookings')
+			.withIndex('by_customerId', (q) => q.eq('customerId', customerId))
+			.collect();
 
-    // Filter out bookings that already have a reviewId
-    const pendingReviews = bookings.filter((booking) => !booking.reviewId);
+		// Filter out bookings that already have a reviewId
+		const pendingReviews = bookings.filter((booking) => !booking.reviewId);
 
-    // Fetch car details for each pending booking
-    const bookingsWithCarDetails = await Promise.all(
-      pendingReviews.map(async (booking) => {
-        const car = await ctx.db
-          .query('cars')
-          .withIndex('by_registrationNumber', (q) => q.eq('registrationNumber', booking.carId))
-          .first();
+		// Fetch car details for each pending booking
+		const bookingsWithCarDetails = await Promise.all(
+			pendingReviews.map(async (booking) => {
+				const car = await ctx.db
+					.query('cars')
+					.withIndex('by_registrationNumber', (q) => q.eq('registrationNumber', booking.carId))
+					.first();
 
-        return {
-          ...booking,
-          carDetails: car
-            ? {
-                maker: car.maker,
-                model: car.model,
-                year: car.year,
-                color: car.color,
-                trim: car.trim,
-              }
-            : null,
-        };
-      })
-    );
+				return {
+					...booking,
+					carDetails: car
+						? {
+								maker: car.maker,
+								model: car.model,
+								year: car.year,
+								color: car.color,
+								trim: car.trim,
+							}
+						: null,
+				};
+			})
+		);
 
-    return bookingsWithCarDetails;
-  },
+		return bookingsWithCarDetails;
+	},
+});
+
+// Add this mutation
+export const checkAndUpdateBookingStatus = mutation({
+	args: {
+		bookingId: v.id("bookings"),
+	},
+	handler: async (ctx, args) => {
+		const booking = await ctx.db.get(args.bookingId);
+		if (!booking) {
+			throw new Error("Booking not found");
+		}
+
+		const today = new Date();
+		today.setHours(0, 0, 0, 0);
+
+		const endDate = new Date(booking.endDate);
+		endDate.setHours(0, 0, 0, 0);
+
+		// Check if booking is past and fully paid
+		if (endDate < today && 
+			booking.paidAmount >= booking.totalCost && 
+			booking.status !== 'completed') {
+			
+			// Update to completed
+			await ctx.db.patch(args.bookingId, {
+				status: 'completed'
+			});
+
+			return {
+				success: true,
+				message: "Booking marked as completed",
+				status: 'completed'
+			};
+		}
+
+		return {
+			success: false,
+			message: "Booking not eligible for completion",
+			status: booking.status
+		};
+	},
 });

@@ -9,7 +9,9 @@ import { Footer } from '../head/footer';
 import { useQuery, useMutation } from 'convex/react';
 import { api } from '../../../convex/_generated/api';
 import { Id } from '../../../convex/_generated/dataModel';
-import { Dialog, DialogContent, DialogFooter } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Elements, PaymentElement, useStripe, useElements } from "@stripe/react-stripe-js";
+import { loadStripe } from "@stripe/stripe-js";
 
 export default function BookingDetails() {
   const router = useRouter();
@@ -26,6 +28,11 @@ export default function BookingDetails() {
     startDate: string;
     endDate: string;
   } | null>(null);
+
+  const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false);
+  const [paymentAmount, setPaymentAmount] = useState<number>(0);
+  const [clientSecret, setClientSecret] = useState<string | null>(null);
+  const stripePromise = loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY!);
 
   const bookingDetails = useQuery(
     api.bookings.getBookingDetails,
@@ -59,6 +66,79 @@ export default function BookingDetails() {
     setIsModalOpen(false);
   };
 
+  const handlePaymentClick = async (fullAmount: boolean) => {
+    if (!bookingDetails) return;
+    
+    const amountToPay = fullAmount 
+      ? bookingDetails.totalCost - bookingDetails.paidAmount
+      : Math.ceil((bookingDetails.totalCost - bookingDetails.paidAmount) / 2);
+    
+    setPaymentAmount(amountToPay);
+    
+    try {
+      const response = await fetch("/api/create-payment-intent", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ amount: Math.round(amountToPay * 100) }), // Convert to cents
+      });
+      
+      if (!response.ok) {
+        throw new Error('Failed to create payment intent');
+      }
+
+      const { clientSecret } = await response.json();
+      setClientSecret(clientSecret);
+      setIsPaymentModalOpen(true);
+    } catch (error) {
+      console.error('Payment error:', error);
+      // Handle error (show toast/alert)
+    }
+  };
+
+  const PaymentForm = () => {
+    const stripe = useStripe();
+    const elements = useElements();
+    const [isProcessing, setIsProcessing] = useState(false);
+
+    const handleSubmit = async (e: React.FormEvent) => {
+      e.preventDefault();
+      if (!stripe || !elements || !bookingDetails) return;
+
+      setIsProcessing(true);
+
+      try {
+        const result = await stripe.confirmPayment({
+          elements,
+          confirmParams: {
+            return_url: `${window.location.origin}/bookings/currentbooking/success?bookingId=${bookingDetails._id}`,
+          },
+        });
+
+        if (result.error) {
+          throw result.error;
+        }
+      } catch (error) {
+        console.error('Payment confirmation error:', error);
+        // Handle error (show toast/alert)
+      } finally {
+        setIsProcessing(false);
+      }
+    };
+
+    return (
+      <form onSubmit={handleSubmit} className="space-y-4 bg-background">
+        <PaymentElement className="bg-background" />
+        <Button 
+          type="submit" 
+          disabled={!stripe || isProcessing} 
+          className="w-full"
+        >
+          {isProcessing ? "Processing..." : `Pay $${paymentAmount.toFixed(2)}`}
+        </Button>
+      </form>
+    );
+  };
+
   if (!bookingId || typeof bookingId !== 'string') {
     return <div>Invalid booking ID</div>;
   }
@@ -77,9 +157,16 @@ export default function BookingDetails() {
             <div className="px-6 py-5 bg-muted">
               <div className="flex items-center justify-between">
                 <h1 className="text-2xl font-semibold">Booking Details</h1>
-                <Button variant="outline" size="sm" className='hover:bg-muted' onClick={handleModifyClick}>
-                  Modify Booking
-                </Button>
+                <div className="flex gap-2">
+                  {bookingDetails.totalCost > bookingDetails.paidAmount && (
+                    <Button variant="outline" size="sm" className='hover:bg-muted' onClick={() => handlePaymentClick(true)}>
+                      Pay Next Installment
+                    </Button>
+                  )}
+                  <Button variant="outline" size="sm" className='hover:bg-muted' onClick={handleModifyClick}>
+                    Modify Booking
+                  </Button>
+                </div>
               </div>
             </div>
             <div className="px-6 py-5 grid gap-6">
@@ -234,6 +321,29 @@ export default function BookingDetails() {
           <p>End Date: {bookingDetailsState.endDate}</p>
         </div>
       )}
+      {/* Dialog for payment */}
+      <Dialog open={isPaymentModalOpen} onOpenChange={setIsPaymentModalOpen}>
+        <DialogContent className="sm:max-w-[425px] bg-background">
+          <DialogHeader>
+            <DialogTitle>Complete Payment</DialogTitle>
+          </DialogHeader>
+          {clientSecret ? (
+            <Elements 
+              stripe={stripePromise} 
+              options={{
+                clientSecret,
+                appearance: { theme: 'stripe' },
+              }}
+            >
+              <PaymentForm  />
+            </Elements>
+          ) : (
+            <div className="flex justify-center p-4">
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" />
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

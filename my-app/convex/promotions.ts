@@ -104,3 +104,37 @@ export const getGoldenMemberPromotions = query({
       .collect();
   },
 });
+
+// Add this new mutation
+export const redeemPromo = mutation({
+  args: {
+    userId: v.string(),
+    promotionId: v.id('promotions'),
+  },
+  handler: async (ctx, args) => {
+    // Get the customer
+    const customer = await ctx.db
+      .query('customers')
+      .withIndex('by_userId', (q) => q.eq('userId', args.userId))
+      .first();
+
+    if (!customer) {
+      throw new Error('Customer not found');
+    }
+
+    // Get existing promotions array or initialize empty array
+    const existingPromos = customer.promotions || [];
+
+    // Check if promotion is already redeemed
+    if (existingPromos.includes(args.promotionId)) {
+      return { status: 'already_redeemed' };
+    }
+
+    // Add the new promotion ID to the array
+    await ctx.db.patch(customer._id, {
+      promotions: [...existingPromos, args.promotionId],
+    });
+
+    return { status: 'success' };
+  },
+});

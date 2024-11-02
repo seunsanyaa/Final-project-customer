@@ -3,6 +3,7 @@ import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import CalendarDaysIcon from "@/svgs/CalendarDaysIcon";
+import { useRouter } from "next/router";
 
 import {
   Select,
@@ -18,8 +19,11 @@ import { Navi } from "../head/navi";
 import { Footer } from "../head/footer";
 import { useQuery } from "convex/react";
 import { api } from "@/convex/_generated/api";
+import { useUser } from "@clerk/nextjs";
+import { useMutation } from "convex/react";
 
 interface PromotionCardProps {
+  _id: string;
   title: string;
   description: string;
   endDate: string;
@@ -28,36 +32,82 @@ interface PromotionCardProps {
   goldenMembersOnly: boolean;
 }
 
-const PromotionCard: React.FC<PromotionCardProps> = ({ title, description, endDate, type, image, goldenMembersOnly }) => (
-  <Card>
-    <img
-      src={image || "/placeholder.svg"}
-      width={400}
-      height={200}
-      alt="Promotion Image"
-      className="rounded-t-lg object-cover"
-      style={{ aspectRatio: "400/200", objectFit: "cover" }}
-    />
-    <CardContent className="p-6">
-      <h3 className="text-xl font-bold mb-2">{title}</h3>
-      <p className="text-muted-foreground mb-4">{description}</p>
-      <div className="flex justify-between items-center mb-4">
-        <div>
-          <CalendarDaysIcon className="mr-2 h-4 w-4" />
-          <span className="text-sm text-muted-foreground">Expires: {new Date(endDate).toLocaleDateString()}</span>
+const PromotionCard: React.FC<PromotionCardProps> = ({ _id, title, description, endDate, type, image, goldenMembersOnly }) => {
+  const { user } = useUser();
+  const router = useRouter();
+  const redeemPromo = useMutation(api.promotions.redeemPromo);
+  
+  const customerData = useQuery(api.customers.getCustomerByUserId, { 
+    userId: user?.id ?? "" 
+  });
+
+  const isRedeemed = customerData?.promotions?.includes(_id);
+  const isGoldenMember = customerData?.goldenMember ?? false;
+
+  const handleRedeem = async () => {
+    if (!user?.id) return;
+    
+    if (goldenMembersOnly && !isGoldenMember) {
+      router.push("/Golden");
+      return;
+    }
+    
+    try {
+      await redeemPromo({
+        userId: user.id,
+        promotionId: _id,
+      });
+    } catch (error) {
+      console.error('Error redeeming promotion:', error);
+    }
+  };
+
+  return (
+    <Card className={isRedeemed ? "opacity-50" : ""}>
+      <img
+        src={image || "/placeholder.svg"}
+        width={400}
+        height={200}
+        alt="Promotion Image"
+        className="rounded-t-lg object-cover"
+        style={{ aspectRatio: "400/200", objectFit: "cover" }}
+      />
+      <CardContent className="p-6">
+        <h3 className="text-xl font-bold mb-2">{title}</h3>
+        <p className="text-muted-foreground mb-4">{description}</p>
+        <div className="flex justify-between items-center mb-4">
+          <div>
+            <CalendarDaysIcon className="mr-2 h-4 w-4" />
+            <span className="text-sm text-muted-foreground">
+              Expires: {new Date(endDate).toLocaleDateString()}
+            </span>
+          </div>
+          <Badge variant="secondary">{type}</Badge>
         </div>
-        <Badge variant="secondary">{type}</Badge>
-      </div>
-      <div className="text-sm text-muted-foreground">
-        <p>
-          {goldenMembersOnly 
-            ? "Offer valid for Golden members Only. See terms and conditions for details."
-            : "Offer valid for members. See terms and conditions for details."}
-        </p>
-      </div>
-    </CardContent>
-  </Card>
-);
+        <div className="flex justify-between items-center">
+          <div className="text-sm text-muted-foreground">
+            <p>
+              {goldenMembersOnly 
+                ? "Offer valid for Golden members Only"
+                : "Offer valid for members"}
+            </p>
+          </div>
+          <Button 
+            onClick={handleRedeem}
+            disabled={isRedeemed}
+            variant={isRedeemed ? "ghost" : "default"}
+          >
+            {isRedeemed 
+              ? "Redeemed" 
+              : (goldenMembersOnly && !isGoldenMember)
+                ? "Upgrade" 
+                : "Redeem"}
+          </Button>
+        </div>
+      </CardContent>
+    </Card>
+  );
+};
 
 export function PromotionsPage() {
   const [filter, setFilter] = useState("all");
@@ -136,6 +186,7 @@ export function PromotionsPage() {
             {filteredPromotions.map((promotion) => (
               <PromotionCard 
                 key={promotion._id}
+                _id={promotion._id}
                 title={promotion.promotionTitle}
                 description={promotion.promotionDescription}
                 endDate={promotion.promotionEndDate}

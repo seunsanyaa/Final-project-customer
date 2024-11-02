@@ -30,6 +30,7 @@ export const createCustomer = mutation({
 			licenseNumber: args.licenseNumber,
 			address: args.address,
 			dateOfBirth: args.dateOfBirth,
+			goldenMember: false,
 		});
 	},
 });
@@ -62,6 +63,7 @@ export const updateCustomer = mutation({
 		licenseNumber: v.optional(v.string()), // Changed to optional string
 		address: v.optional(v.string()), // Changed to optional string
 		dateOfBirth: v.optional(v.string()), // Changed to optional string
+		expirationDate: v.optional(v.string()), // Changed to optional string
 	},
 	handler: async (ctx, args) => {
 		const existingCustomer = await ctx.db
@@ -105,5 +107,27 @@ export const getCustomerByUserId = query({
 		}
 
 		return customer; // Return the found customer
+	},
+});
+
+export const upgradeCustomer = mutation({
+	args: {
+		userId: v.string(),
+	},
+	handler: async (ctx, args) => {
+		const existingCustomer = await ctx.db
+			.query('customers')
+			.withIndex('by_userId', (q) => q.eq('userId', args.userId))
+			.first();
+
+		if (!existingCustomer) {
+			return `Customer with ID ${args.userId} does not exist.`;
+		}
+
+		await ctx.db.patch(existingCustomer._id, {
+			goldenMember: true,
+		});
+
+		return `Customer with ID ${args.userId} has been upgraded to Golden Member.`;
 	},
 });

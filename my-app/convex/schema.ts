@@ -27,6 +27,9 @@ export default defineSchema({
 		address: v.string(),
 		dateOfBirth: v.string(),
 		licensePicture: v.optional(v.string()),
+		goldenMember: v.boolean(),
+		promotions: v.optional(v.array(v.id('promotions'))),
+		expirationDate: v.optional(v.string()),
 	})
 		.index('by_userId', ['userId'])
 		.index('by_licenseNumber', ['licenseNumber']),
