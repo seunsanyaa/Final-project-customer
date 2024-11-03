@@ -19,12 +19,13 @@ import { useUser } from "@clerk/nextjs";
 
 // Add these types at the top of the file
 type Promotion = {
-  _id: string;
+  _id: Id<"promotions">;
   promotionType: 'discount' | 'offer' | 'upgrade' | 'permenant';
   promotionValue: number;
   promotionTitle: string;
   promotionDescription: string;
   specificTarget: string[];
+  target: 'all' | 'specific' | 'none';
 };
 
 export function NewBooking3() {
@@ -55,21 +56,39 @@ export function NewBooking3() {
     registrationNumber: registrationNumber as string 
   });
 
-  // Filter applicable promotions - updated to use _id
+  // Add new query for user promotions
+  const userPromotions = useQuery(api.promotions.getUserRedeemedPromotions, { 
+    userId: user?.id ?? '' 
+  });
+
+  // Update the applicablePromotions memo to include user promotions
   const applicablePromotions = useMemo(() => {
-    if (!promotions || !carDetails) return [];
+    if (!promotions || !carDetails || !userPromotions) return [];
     
-    return promotions.filter(promo => {
-      // Check if promotion is a discount
+    // Handle regular promotions (discount type)
+    const regularPromotions = promotions.filter(promo => {
       if (promo.promotionType !== 'discount') return false;
       
-      // Check if car _id or category is in specificTarget
+      // If target is 'all', promotion applies to all cars
+      if (promo.target === 'all') return true;
+      
+      // Otherwise, check specific targets
       return promo.specificTarget.some(target => 
-        target === carDetails._id || // Match car _id instead of registrationNumber
-        (carDetails.categories && carDetails.categories.includes(target)) // Match category
+        target === carDetails._id || 
+        (carDetails.categories && carDetails.categories.includes(target))
       );
     });
-  }, [promotions, carDetails]);
+
+    // Handle permanent promotions (only from user's redeemed promotions)
+    const permanentPromotions = userPromotions
+      .filter(promo => 
+        !promo.isUsed && 
+        promo.promotionType === 'permenant'
+      );
+    
+    // Combine both types of promotions
+    return [...regularPromotions, ...permanentPromotions];
+  }, [promotions, carDetails, userPromotions]);
 
   const scrollToBookingSummary = () => {
     bookingSummaryRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -124,6 +143,14 @@ export function NewBooking3() {
 
   const handleContinue = async () => {
     const total = calculateTotal();
+    
+    // If a user promotion is selected, mark it as used
+    if (selectedPromotion && userPromotions?.some(up => up._id === selectedPromotion)) {
+      await markPromotionAsUsed({
+        userId: user?.id as string,
+        promotionId: selectedPromotion
+      });
+    }
     
     const booking = {
       customerId: user?.id as string, // Cast to Id<"customers">
@@ -185,23 +212,34 @@ export function NewBooking3() {
       <div className="mt-6">
         <h2 className="text-2xl font-semibold mb-4">Available Discounts</h2>
         <div className="grid gap-4 md:grid-cols-2">
-          {applicablePromotions.map((promo) => (
-            <Card 
-              key={promo._id} 
-              className={`cursor-pointer ${selectedPromotion === promo._id ? 'border-2 border-blue-500' : ''}`}
-              onClick={() => setSelectedPromotion(promo._id === selectedPromotion ? null : promo._id)}
-            >
-              <CardContent className="p-6">
-                <h3 className="text-lg font-semibold">{promo.promotionTitle}</h3>
-                <p className="text-muted-foreground">{promo.promotionDescription}</p>
-                <p className="text-lg font-bold mt-2">{promo.promotionValue}% OFF</p>
-              </CardContent>
-            </Card>
-          ))}
+          {applicablePromotions.map((promo) => {
+            const isUserPromo = userPromotions?.some(up => up._id === promo._id);
+            
+            return (
+              <Card 
+                key={promo._id} 
+                className={`cursor-pointer ${
+                  selectedPromotion === promo._id ? 'border-2 border-blue-500' : ''
+                }`}
+                onClick={() => setSelectedPromotion(promo._id === selectedPromotion ? null : promo._id)}
+              >
+                <CardContent className="p-6">
+                  <h3 className="text-lg font-semibold">{promo.promotionTitle}</h3>
+                  <p className="text-muted-foreground">{promo.promotionDescription}</p>
+                  <p className="text-lg font-bold mt-2">{promo.promotionValue}% OFF</p>
+                  {isUserPromo && (
+                    <p className="text-sm text-blue-600 mt-1">Your Redeemed Promotion</p>
+                  )}
+                </CardContent>
+              </Card>
+            );
+          })}
         </div>
       </div>
     );
   };
+
+  const markPromotionAsUsed = useMutation(api.promotions.markPromotionAsUsed);
 
   return (
     <>
