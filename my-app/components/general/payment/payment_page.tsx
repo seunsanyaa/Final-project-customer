@@ -97,15 +97,14 @@ function PaymentForm({ agreedToTerms, setAgreedToTerms, total }: { agreedToTerms
       setIsProcessing(false);
     } else if (paymentIntent && paymentIntent.status === 'succeeded') {
       setIsProcessing(false);
-      // Pass booking information to the success page
       router.push({
         pathname: '/bookings/currentbooking/success',
         query: {
           bookingId: router.query.bookingId as string,
+          paymentIntentId: paymentIntent.id,
           amount: total,
           paymentDate: new Date().toISOString(),
-          paymentType: 'credit_card', // Or get this from Stripe response
-          paymentIntentId: paymentIntent.id,
+          paymentType: 'credit_card',
         }
       });
     }

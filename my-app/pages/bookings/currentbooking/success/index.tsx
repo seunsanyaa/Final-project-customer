@@ -27,7 +27,7 @@ export default function PaymentSuccess() {
   }, []);
 
   // Get all payment details from URL
-  const paymentIntent = searchParams?.get('payment_intent');
+  const paymentIntent = searchParams?.get('payment_intent') || searchParams?.get('paymentIntentId');
   const bookingId = searchParams?.get('bookingId');
   const getBooking = useQuery(api.bookings.getBooking, 
     bookingId ? { id: bookingId as Id<"bookings"> } : "skip"
@@ -44,12 +44,17 @@ export default function PaymentSuccess() {
       try {
         setIsLoading(true);
         
+        // Get amount from URL or use booking total
+        const amount = searchParams?.get('amount') 
+          ? parseFloat(searchParams.get('amount')!)
+          : getBooking.totalCost;
+
         // Create payment record
         const { paymentId, receiptNumber } = await createPayment({
           bookingId: bookingId as Id<"bookings">,
-          amount: getBooking.totalCost,
-          paymentDate: new Date().toISOString(),
-          paymentType: 'credit_card',
+          amount: amount,
+          paymentDate: searchParams?.get('paymentDate') || new Date().toISOString(),
+          paymentType: searchParams?.get('paymentType') || 'credit_card',
           paymentIntentId: paymentIntent,
         });
 
@@ -81,7 +86,7 @@ export default function PaymentSuccess() {
     if (isClient && getBooking) {
       processPayment();
     }
-  }, [bookingId, paymentIntent, getBooking, createPayment, updateBooking, paymentProcessed, isClient]);
+  }, [bookingId, paymentIntent, getBooking, createPayment, updateBooking, paymentProcessed, isClient, searchParams]);
 
   // Countdown and redirect
   useEffect(() => {

@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useMemo } from "react";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
@@ -7,38 +7,67 @@ import { Separator } from "@/components/ui/separator";
 import { useQuery, useMutation } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import { useUser } from "@clerk/nextjs";
+import { Badge } from "@/components/ui/badge";
 
 export default function UserPromotions() {
   const { user } = useUser();
-  const [bookingsCount, setBookingsCount] = useState(0);
-  
-  // Fetch customer bookings and promotions
   const bookings = useQuery(api.bookings.getBookingsByCustomer, { 
     customerId: user?.id || "" 
   });
-  const promotions = useQuery(api.promotions.getRegularMemberPromotions);
+  const permanentPromotions = useQuery(api.promotions.getPermanentPromotions);
   const redeemPromo = useMutation(api.promotions.redeemPromo);
+  const deactivatePromo = useMutation(api.promotions.deactivatePromo);
+  const userRedeemedPromotions = useQuery(api.promotions.getUserRedeemedPromotions, { 
+    userId: user?.id || "" 
+  });
 
-  // Calculate bookings count
-  useEffect(() => {
-    if (bookings) {
-      setBookingsCount(bookings.length);
-    }
+  // Calculate total money spent from bookings with proper rounding
+  const totalMoneySpent = useMemo(() => {
+    const total = bookings?.reduce((total, booking) => total + booking.totalCost, 0) || 0;
+    return Math.ceil(total * 100) / 100; // Round up to 2 decimal places
   }, [bookings]);
 
-  const bookingsRequired = 2;
-  const progressPercentage = (bookingsCount / bookingsRequired) * 100;
-
-  // Find the 5% discount promotion
-  const discountPromotion = promotions?.find(
-    promo => promo.promotionType === 'discount' && promo.promotionValue === 5
-  );
-
   const handleClaimReward = async (promotionId: string) => {
-    await redeemPromo({
-      userId: user?.id || "",
-      promotionId: promotionId
+    if (!user?.id) return;
+    try {
+      await redeemPromo({
+        userId: user.id,
+        promotionId,
+      });
+    } catch (error) {
+      console.error('Error redeeming promotion:', error);
+    }
+  };
+
+  const handleDeactivate = async (promotionId: string) => {
+    if (!user?.id) return;
+    try {
+      await deactivatePromo({
+        userId: user.id,
+        promotionId,
+      });
+    } catch (error) {
+      console.error('Error deactivating promotion:', error);
+    }
+  };
+
+  // Filter and process permanent promotions
+  const processedPermanentPromotions = useMemo(() => {
+    if (!permanentPromotions || !bookings) return [];
+
+    return permanentPromotions.filter(promotion => {
+      // Skip promotions that have both minimums as 0 or undefined
+      if ((!promotion.minimumRentals || promotion.minimumRentals === 0) && 
+          (!promotion.minimumMoneySpent || promotion.minimumMoneySpent === 0)) {
+        return false;
+      }
+      return true;
     });
+  }, [permanentPromotions, bookings]);
+
+  // Check if a promotion is active
+  const isPromotionActive = (promotionId: string) => {
+    return userRedeemedPromotions?.some(promo => promo._id === promotionId) ?? false;
   };
 
   return (
@@ -78,61 +107,116 @@ export default function UserPromotions() {
           <div className="max-w-screen mx-auto">
             <Card className="bg-white shadow-lg">
               <CardHeader>
-                <CardTitle className="text-2xl font-bold">Rewards Progress</CardTitle>
+                <CardTitle>Your Permanent Benefits Progress</CardTitle>
               </CardHeader>
               <CardContent>
-                {/* Progress Section */}
-                <div className="mb-6">
-                  <div className="flex justify-between items-center mb-2">
-                    <span className="text-sm font-medium">Bookings Progress</span>
-                    <span className="text-sm font-medium">{bookingsCount}/{bookingsRequired} Bookings</span>
-                  </div>
-                  <div className="w-full h-4 bg-gray-200 rounded-full">
-                    <div 
-                      className="h-full bg-customyello rounded-full transition-all duration-500"
-                      style={{ width: `${Math.min(progressPercentage, 100)}%` }}
-                    />
-                  </div>
-                  <p className="text-sm text-muted-foreground mt-2">
-                    {bookingsCount >= bookingsRequired 
-                      ? "You've unlocked special offers!"
-                      : `Make ${bookingsRequired - bookingsCount} more booking${bookingsRequired - bookingsCount !== 1 ? 's' : ''} to unlock special offers!`
-                    }
-                  </p>
-                </div>
-
-                {/* Available Rewards Section */}
-                <div className="space-y-4">
-                  <h3 className="text-lg font-semibold">Available Rewards</h3>
-                  
-                  {bookingsCount >= bookingsRequired ? (
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      {discountPromotion && (
-                        <Card className="border-2 border-customyello">
-                          <CardContent className="p-4">
-                            <h4 className="font-bold mb-2">{discountPromotion.promotionTitle}</h4>
-                            <p className="text-sm text-muted-foreground">
-                              {discountPromotion.promotionDescription}
+                {/* Permanent Promotions */}
+                {processedPermanentPromotions.map((promotion) => (
+                  <Card key={promotion._id} className="mb-4 p-4 border-green-500">
+                    <CardHeader>
+                      <CardTitle>{promotion.promotionTitle}</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <p className="text-muted-foreground mb-4">{promotion.promotionDescription}</p>
+                      <div className="space-y-4">
+                        {promotion.minimumMoneySpent && promotion.minimumMoneySpent > 0 && (
+                          <div>
+                            <div className="flex justify-between mb-2">
+                              <span>Spending Progress</span>
+                              <span>${totalMoneySpent.toFixed(2)} / ${promotion.minimumMoneySpent.toFixed(2)}</span>
+                            </div>
+                            <div className="w-full h-2 bg-gray-200 rounded-full overflow-hidden">
+                              <div 
+                                className="h-full bg-green-500 rounded-full transition-all duration-300" 
+                                style={{ 
+                                  width: `${Math.min((totalMoneySpent / (promotion.minimumMoneySpent || 1)) * 100, 100)}%`,
+                                  minWidth: '0%'
+                                }} 
+                              />
+                            </div>
+                            <p className="text-sm text-muted-foreground mt-2">
+                              ${Math.ceil((promotion.minimumMoneySpent - totalMoneySpent) * 100) / 100} more to unlock
                             </p>
-                            <Button 
-                              className="w-full mt-4" 
-                              variant="outline"
-                              onClick={() => handleClaimReward(discountPromotion._id)}
-                            >
-                              Claim Reward
-                            </Button>
+                          </div>
+                        )}
+
+                        {promotion.minimumRentals && promotion.minimumRentals > 0 && (
+                          <div>
+                            <div className="flex justify-between mt-4 mb-2">
+                              <span>Rental Progress</span>
+                              <span>{bookings?.length || 0} / {promotion.minimumRentals}</span>
+                            </div>
+                            <div className="w-full h-2 bg-gray-200 rounded-full overflow-hidden">
+                              <div 
+                                className="h-full bg-green-500 rounded-full transition-all duration-300" 
+                                style={{ 
+                                  width: `${Math.min(((bookings?.length || 0) / (promotion.minimumRentals || 1)) * 100, 100)}%`,
+                                  minWidth: '0%'
+                                }} 
+                              />
+                            </div>
+                            <p className="text-sm text-muted-foreground mt-2">
+                              {Math.max(0, promotion.minimumRentals - (bookings?.length || 0))} more rentals to unlock
+                            </p>
+                          </div>
+                        )}
+
+                        {isPromotionActive(promotion._id) ? (
+                          <Button
+                            className="w-full bg-green-500 hover:bg-green-600"
+                            disabled
+                          >
+                            Activated
+                          </Button>
+                        ) : (
+                          <Button
+                            className="w-full"
+                            disabled={
+                              (promotion.minimumMoneySpent && promotion.minimumMoneySpent > 0 && totalMoneySpent < promotion.minimumMoneySpent) || 
+                              (promotion.minimumRentals && promotion.minimumRentals > 0 && (bookings?.length || 0) < promotion.minimumRentals)
+                            }
+                            onClick={() => handleClaimReward(promotion._id)}
+                          >
+                            {((!promotion.minimumMoneySpent || totalMoneySpent >= promotion.minimumMoneySpent) && 
+                              (!promotion.minimumRentals || (bookings?.length || 0) >= promotion.minimumRentals))
+                              ? 'Activate Benefit' 
+                              : 'Complete Requirements'}
+                          </Button>
+                        )}
+                      </div>
+                    </CardContent>
+                  </Card>
+                ))}
+
+                {/* Active Benefits Section */}
+                {userRedeemedPromotions && userRedeemedPromotions.length > 0 && (
+                  <div className="mt-8">
+                    <h3 className="text-xl font-semibold mb-4">Your Active Benefits</h3>
+                    <div className="grid gap-4">
+                      {userRedeemedPromotions.map((promotion) => (
+                        <Card key={promotion._id} className="bg-gray-50">
+                          <CardContent className="p-4">
+                            <div className="flex justify-between items-start">
+                              <div>
+                                <h4 className="font-semibold">{promotion.promotionTitle}</h4>
+                                <p className="text-sm text-muted-foreground">{promotion.promotionDescription}</p>
+                                <Badge className="mt-2">Active</Badge>
+                              </div>
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                className="text-red-500 hover:text-red-700"
+                                onClick={() => handleDeactivate(promotion._id)}
+                              >
+                                Deactivate
+                              </Button>
+                            </div>
                           </CardContent>
                         </Card>
-                      )}
+                      ))}
                     </div>
-                  ) : (
-                    <div className="text-center py-6 bg-gray-50 rounded-lg">
-                      <p className="text-muted-foreground">
-                        Complete more bookings to unlock exciting rewards!
-                      </p>
-                    </div>
-                  )}
-                </div>
+                  </div>
+                )}
               </CardContent>
             </Card>
           </div>
