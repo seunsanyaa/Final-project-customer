@@ -1,5 +1,5 @@
 'use client'
-import React, { useRef, useState } from "react";
+import React, { useRef, useState, useMemo } from "react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
@@ -12,10 +12,21 @@ import { Navi } from '../head/navi';
 import { Footer } from '../head/footer';
 import { useRouter } from 'next/router';
 import CheckoutButton from "../payment/payment_button";
-import { useMutation } from 'convex/react';
+import { useMutation, useQuery } from 'convex/react';
 import { api } from '../../../convex/_generated/api';
 import { Id } from '../../../convex/_generated/dataModel';
 import { useUser } from "@clerk/nextjs";
+
+// Add these types at the top of the file
+type Promotion = {
+  _id: string;
+  promotionType: 'discount' | 'offer' | 'upgrade' | 'permenant';
+  promotionValue: number;
+  promotionTitle: string;
+  promotionDescription: string;
+  specificTarget: string[];
+};
+
 export function NewBooking3() {
   const bookingSummaryRef = useRef<HTMLDivElement>(null);
   const [paymentMethod, setPaymentMethod] = useState<string | null>(null);
@@ -34,6 +45,31 @@ export function NewBooking3() {
   const [totalDays, setTotalDays] = useState(1); // Assume a default of 1 day for simplicity
   let sentprice=0;
   const [sentPrice, setSentPrice] = useState<number | null>(null); // Define sentPrice as a state variable
+  const [selectedPromotion, setSelectedPromotion] = useState<string | null>(null);
+  
+  // Fetch all active promotions
+  const promotions = useQuery(api.promotions.getAllPromotions) || [];
+  
+  // Get car details - store the _id when received
+  const carDetails = useQuery(api.car.getCar, { 
+    registrationNumber: registrationNumber as string 
+  });
+
+  // Filter applicable promotions - updated to use _id
+  const applicablePromotions = useMemo(() => {
+    if (!promotions || !carDetails) return [];
+    
+    return promotions.filter(promo => {
+      // Check if promotion is a discount
+      if (promo.promotionType !== 'discount') return false;
+      
+      // Check if car _id or category is in specificTarget
+      return promo.specificTarget.some(target => 
+        target === carDetails._id || // Match car _id instead of registrationNumber
+        (carDetails.categories && carDetails.categories.includes(target)) // Match category
+      );
+    });
+  }, [promotions, carDetails]);
 
   const scrollToBookingSummary = () => {
     bookingSummaryRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -50,25 +86,38 @@ export function NewBooking3() {
   let totalcalc="";
   let totalprice=0;
   const calculateTotal = () => {
-    const basePrice = Number(pricePerDay); // Convert to number
+    const basePrice = Number(pricePerDay);
     const insurancePrice = extras.insurance ? 10 : 0;
     const gpsPrice = extras.gps ? 5 : 0;
     const childSeatPrice = extras.childSeat ? 8 : 0;
-    let totalstring="";
     let totalsum = basePrice + insurancePrice + gpsPrice + childSeatPrice;
-    let total=totalsum;
-    totalprice =total* totalDays; // Multiply by total days for full payment
-    totalcalc=`${totalprice} One time payment`;
-      if(paymentMethod==="full")
-      {sentprice=total;
-      return totalcalc;}
-    else if (paymentMethod === 'installment') {
-      total = totalDays < 7 ?  totalsum : (totalsum*totalDays)/Math.floor(totalDays / 7)  ;
-      total = parseFloat(total.toFixed(3));
-      sentprice=total;
+    
+    // Apply selected promotion discount if any
+    if (selectedPromotion && applicablePromotions.length > 0) {
+      const promotion = applicablePromotions.find(p => p._id === selectedPromotion);
+      if (promotion) {
+        totalsum = totalsum * (1 - promotion.promotionValue / 100);
+      }
     }
 
-    return totalDays<7?totalstring=`${total}/day for ${totalDays} days`:totalstring=`${total}/week for ${Math.floor(totalDays / 7)} weeks`
+    let total = totalsum;
+    // Round totalprice to 2 decimal places
+    totalprice = Math.ceil(total * totalDays * 100) / 100;
+    totalcalc = `${totalprice.toFixed(2)} One time payment`;
+    
+    if (paymentMethod === "full") {
+      sentprice = Math.ceil(total * 100) / 100;
+      return totalcalc;
+    } else if (paymentMethod === 'installment') {
+      total = totalDays < 7 ? totalsum : (totalsum * totalDays) / Math.floor(totalDays / 7);
+      // Round installment amount to 2 decimal places
+      total = Math.ceil(total * 100) / 100;
+      sentprice = total;
+    }
+
+    return totalDays < 7 
+      ? `${total.toFixed(2)}/day for ${totalDays} days` 
+      : `${total.toFixed(2)}/week for ${Math.floor(totalDays / 7)} weeks`;
   };
 
   const createBooking = useMutation(api.bookings.createBooking);
@@ -127,6 +176,31 @@ export function NewBooking3() {
       const differenceInDays = Math.ceil(differenceInTime / (1000 * 3600 * 24)); // Convert milliseconds to days
       setTotalDays(differenceInDays > 0 ? differenceInDays : 1); // Ensure at least 1 day
     }
+  };
+
+  const renderPromotions = () => {
+    if (applicablePromotions.length === 0) return null;
+
+    return (
+      <div className="mt-6">
+        <h2 className="text-2xl font-semibold mb-4">Available Discounts</h2>
+        <div className="grid gap-4 md:grid-cols-2">
+          {applicablePromotions.map((promo) => (
+            <Card 
+              key={promo._id} 
+              className={`cursor-pointer ${selectedPromotion === promo._id ? 'border-2 border-blue-500' : ''}`}
+              onClick={() => setSelectedPromotion(promo._id === selectedPromotion ? null : promo._id)}
+            >
+              <CardContent className="p-6">
+                <h3 className="text-lg font-semibold">{promo.promotionTitle}</h3>
+                <p className="text-muted-foreground">{promo.promotionDescription}</p>
+                <p className="text-lg font-bold mt-2">{promo.promotionValue}% OFF</p>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+      </div>
+    );
   };
 
   return (
@@ -310,9 +384,7 @@ export function NewBooking3() {
                 </CardContent>
                 <CardFooter>
                   <div className="flex gap-2">
-                    <Button  className="px-6 py-3 text-lg font-semibold text-white bg-blue-600 hover:bg-blue-500 rounded-lg transition-colors hover:bg-muted shadow-2xl">
-                      Go Back
-                    </Button>
+                    
                     <Button 
                       className="px-6 py-3 text-lg font-semibold text-white bg-blue-600 hover:bg-blue-500 rounded-lg transition-colors hover:bg-muted shadow-2xl" 
                       disabled={!paymentMethod}
@@ -371,8 +443,7 @@ export function NewBooking3() {
             </Card>
           </div>
         </div>
-       
-        
+        {renderPromotions()}
       </div>
       <Separator />
 

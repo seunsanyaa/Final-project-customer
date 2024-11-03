@@ -8,7 +8,7 @@ export const createPromotion = mutation({
     promotionTitle: v.string(),
     promotionDescription: v.string(),
     promotionImage: v.string(),
-    promotionType: v.union(v.literal('discount'), v.literal('offer'), v.literal('upgrade')),
+    promotionType: v.union(v.literal('discount'), v.literal('offer'), v.literal('upgrade'),v.literal('permenant')),
     promotionValue: v.number(),
     promotionStartDate: v.string(),
     promotionEndDate: v.string(),
@@ -30,7 +30,7 @@ export const updatePromotion = mutation({
     promotionTitle: v.optional(v.string()),
     promotionDescription: v.optional(v.string()),
     promotionImage: v.optional(v.string()),
-    promotionType: v.optional(v.union(v.literal('discount'), v.literal('offer'), v.literal('upgrade'))),
+    promotionType: v.optional(v.union(v.literal('discount'), v.literal('offer'), v.literal('upgrade'),v.literal('permenant'))),
     promotionValue: v.optional(v.number()),
     promotionStartDate: v.optional(v.string()),
     promotionEndDate: v.optional(v.string()),
@@ -199,3 +199,4 @@ export const markPromotionAsUsed = mutation({
     return { status: "success" };
   },
 });
+

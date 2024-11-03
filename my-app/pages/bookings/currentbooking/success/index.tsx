@@ -19,19 +19,25 @@ export default function PaymentSuccess() {
   const [isLoading, setIsLoading] = useState(true);
   const [paymentProcessed, setPaymentProcessed] = useState(false);
   const [countdown, setCountdown] = useState(5);
+  const [isClient, setIsClient] = useState(false);
 
-  // Get payment intent details from URL
+  // Wait for client-side rendering
+  useEffect(() => {
+    setIsClient(true);
+  }, []);
+
+  // Get all payment details from URL
   const paymentIntent = searchParams?.get('payment_intent');
-  const redirectStatus = searchParams?.get('redirect_status');
   const bookingId = searchParams?.get('bookingId');
-
   const getBooking = useQuery(api.bookings.getBooking, 
     bookingId ? { id: bookingId as Id<"bookings"> } : "skip"
   );
 
   useEffect(() => {
     const processPayment = async () => {
-      if (!bookingId || !paymentIntent || redirectStatus !== 'succeeded' || !getBooking || paymentProcessed) {
+      // Check if we have all required parameters and haven't processed payment yet
+      if (!bookingId || !paymentIntent || !getBooking || paymentProcessed) {
+        console.log("Missing required parameters:", { bookingId, paymentIntent, getBooking });
         return;
       }
 
@@ -41,14 +47,14 @@ export default function PaymentSuccess() {
         // Create payment record
         const { paymentId, receiptNumber } = await createPayment({
           bookingId: bookingId as Id<"bookings">,
-          amount: getBooking.totalCost - getBooking.paidAmount,
+          amount: getBooking.totalCost,
           paymentDate: new Date().toISOString(),
-          paymentType: 'stripe',
+          paymentType: 'credit_card',
           paymentIntentId: paymentIntent,
         });
 
         // Calculate new status
-        const newPaidAmount = (getBooking.paidAmount || 0) + (getBooking.totalCost - getBooking.paidAmount);
+        const newPaidAmount = (getBooking.paidAmount || 0) + getBooking.totalCost;
         let newStatus = getBooking.status;
 
         if (getBooking.status === 'pending') {
@@ -61,7 +67,7 @@ export default function PaymentSuccess() {
         await updateBooking({
           id: bookingId as Id<"bookings">,
           status: newStatus,
-          paidAmount: newPaidAmount
+          paidAmount: Math.ceil(newPaidAmount * 100) / 100
         });
 
         setPaymentProcessed(true);
@@ -72,8 +78,10 @@ export default function PaymentSuccess() {
       }
     };
 
-    processPayment();
-  }, [bookingId, paymentIntent, redirectStatus, getBooking, createPayment, updateBooking, paymentProcessed]);
+    if (isClient && getBooking) {
+      processPayment();
+    }
+  }, [bookingId, paymentIntent, getBooking, createPayment, updateBooking, paymentProcessed, isClient]);
 
   // Countdown and redirect
   useEffect(() => {
@@ -96,6 +104,11 @@ export default function PaymentSuccess() {
       };
     }
   }, [isLoading, paymentProcessed, bookingId, router]);
+
+  // Don't render until client-side
+  if (!isClient) {
+    return null;
+  }
 
   return (
     <>
