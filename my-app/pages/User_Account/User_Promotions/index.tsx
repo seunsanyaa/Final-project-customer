@@ -1,96 +1,45 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
 import Link from "next/link";
 import { Navi } from "@/components/general/head/navi";
 import { Separator } from "@/components/ui/separator";
-import { useQuery } from "convex/react";
+import { useQuery, useMutation } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import { useUser } from "@clerk/nextjs";
-import CalendarDaysIcon from "@/svgs/CalendarDaysIcon";
-import {
-  Select,
-  SelectTrigger,
-  SelectValue,
-  SelectContent,
-  SelectItem,
-} from "@/components/ui/select";
-import { Label } from "@/components/ui/label";
-
-interface RedeemedPromotionCardProps {
-  _id: string;
-  title: string;
-  description: string;
-  endDate: string;
-  type: 'discount' | 'offer' | 'upgrade';
-  image: string;
-  goldenMembersOnly: boolean;
-  isUsed: boolean;
-}
-
-const RedeemedPromotionCard: React.FC<RedeemedPromotionCardProps> = ({
-  title,
-  description,
-  endDate,
-  type,
-  image,
-  goldenMembersOnly,
-  isUsed
-}) => {
-  return (
-    <Card className={isUsed ? "opacity-50" : ""}>
-      <img
-        src={image || "/placeholder.svg"}
-        width={400}
-        height={200}
-        alt="Promotion Image"
-        className="rounded-t-lg object-cover"
-        style={{ aspectRatio: "400/200", objectFit: "cover" }}
-      />
-      <CardContent className="p-6">
-        <h3 className="text-xl font-bold mb-2">{title}</h3>
-        <p className="text-muted-foreground mb-4">{description}</p>
-        <div className="flex justify-between items-center mb-4">
-          <div className="flex items-center">
-            <CalendarDaysIcon className="mr-2 h-4 w-4" />
-            <span className="text-sm text-muted-foreground">
-              Expires: {new Date(endDate).toLocaleDateString()}
-            </span>
-          </div>
-          <Badge variant="secondary">{type}</Badge>
-        </div>
-        <div className="flex justify-between items-center">
-          <div className="text-sm text-muted-foreground">
-            {goldenMembersOnly ? "Golden Member Offer" : "Regular Member Offer"}
-          </div>
-          <Badge variant={isUsed ? "destructive" : "default"}>
-            {isUsed ? "Used" : "Available"}
-          </Badge>
-        </div>
-      </CardContent>
-    </Card>
-  );
-};
 
 export default function UserPromotions() {
   const { user } = useUser();
-  const [filter, setFilter] = useState("all");
+  const [bookingsCount, setBookingsCount] = useState(0);
   
-  // Use the new query instead of filtering manually
-  const redeemedPromotions = useQuery(api.promotions.getUserRedeemedPromotions, { 
-    userId: user?.id ?? "" 
-  }) ?? [];
-
-  const filteredPromotions = redeemedPromotions.filter(promotion => {
-    if (filter === "used") {
-      return promotion.isUsed;
-    }
-    if (filter === "available") {
-      return !promotion.isUsed;
-    }
-    return true;
+  // Fetch customer bookings and promotions
+  const bookings = useQuery(api.bookings.getBookingsByCustomer, { 
+    customerId: user?.id || "" 
   });
+  const promotions = useQuery(api.promotions.getRegularMemberPromotions);
+  const redeemPromo = useMutation(api.promotions.redeemPromo);
+
+  // Calculate bookings count
+  useEffect(() => {
+    if (bookings) {
+      setBookingsCount(bookings.length);
+    }
+  }, [bookings]);
+
+  const bookingsRequired = 2;
+  const progressPercentage = (bookingsCount / bookingsRequired) * 100;
+
+  // Find the 5% discount promotion
+  const discountPromotion = promotions?.find(
+    promo => promo.promotionType === 'discount' && promo.promotionValue === 5
+  );
+
+  const handleClaimReward = async (promotionId: string) => {
+    await redeemPromo({
+      userId: user?.id || "",
+      promotionId: promotionId
+    });
+  };
 
   return (
     <div className="flex flex-col min-h-screen">
@@ -127,51 +76,60 @@ export default function UserPromotions() {
 
         <main className="flex-1 bg-background py-8 px-4 sm:px-6 lg:px-8">
           <div className="max-w-screen mx-auto">
-            <Card className="bg-muted mb-6">
+            <Card className="bg-white shadow-lg">
               <CardHeader>
-                <div className="flex justify-between items-center">
-                  <CardTitle className="text-black">My Redeemed Promotions</CardTitle>
-                  <div className="flex items-center gap-4">
-                    <Label htmlFor="filter">Filter by:</Label>
-                    <Select name="filter" defaultValue="all" onValueChange={setFilter}>
-                      <SelectTrigger className="w-48">
-                        <SelectValue placeholder="All Promotions" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="all">All Promotions</SelectItem>
-                        <SelectItem value="available">Available</SelectItem>
-                        <SelectItem value="used">Used</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                </div>
+                <CardTitle className="text-2xl font-bold">Rewards Progress</CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                  {filteredPromotions.length > 0 ? (
-                    filteredPromotions.map((promotion) => (
-                      <RedeemedPromotionCard
-                        key={promotion._id}
-                        {...promotion}
-                        title={promotion.promotionTitle}
-                        description={promotion.promotionDescription}
-                        endDate={promotion.promotionEndDate}
-                        type={promotion.promotionType}
-                        image={promotion.promotionImage}
-                        goldenMembersOnly={promotion.goldenMembersOnly}
-                        isUsed={promotion.isUsed}
-                      />
-                    ))
+                {/* Progress Section */}
+                <div className="mb-6">
+                  <div className="flex justify-between items-center mb-2">
+                    <span className="text-sm font-medium">Bookings Progress</span>
+                    <span className="text-sm font-medium">{bookingsCount}/{bookingsRequired} Bookings</span>
+                  </div>
+                  <div className="w-full h-4 bg-gray-200 rounded-full">
+                    <div 
+                      className="h-full bg-customyello rounded-full transition-all duration-500"
+                      style={{ width: `${Math.min(progressPercentage, 100)}%` }}
+                    />
+                  </div>
+                  <p className="text-sm text-muted-foreground mt-2">
+                    {bookingsCount >= bookingsRequired 
+                      ? "You've unlocked special offers!"
+                      : `Make ${bookingsRequired - bookingsCount} more booking${bookingsRequired - bookingsCount !== 1 ? 's' : ''} to unlock special offers!`
+                    }
+                  </p>
+                </div>
+
+                {/* Available Rewards Section */}
+                <div className="space-y-4">
+                  <h3 className="text-lg font-semibold">Available Rewards</h3>
+                  
+                  {bookingsCount >= bookingsRequired ? (
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      {discountPromotion && (
+                        <Card className="border-2 border-customyello">
+                          <CardContent className="p-4">
+                            <h4 className="font-bold mb-2">{discountPromotion.promotionTitle}</h4>
+                            <p className="text-sm text-muted-foreground">
+                              {discountPromotion.promotionDescription}
+                            </p>
+                            <Button 
+                              className="w-full mt-4" 
+                              variant="outline"
+                              onClick={() => handleClaimReward(discountPromotion._id)}
+                            >
+                              Claim Reward
+                            </Button>
+                          </CardContent>
+                        </Card>
+                      )}
+                    </div>
                   ) : (
-                    <div className="col-span-full text-center py-8">
-                      <p className="text-muted-foreground">No promotions redeemed yet.</p>
-                      <Button 
-                        variant="outline" 
-                        className="mt-4"
-                        onClick={() => window.location.href = '/Promotions'}
-                      >
-                        Browse Available Promotions
-                      </Button>
+                    <div className="text-center py-6 bg-gray-50 rounded-lg">
+                      <p className="text-muted-foreground">
+                        Complete more bookings to unlock exciting rewards!
+                      </p>
                     </div>
                   )}
                 </div>
