@@ -78,7 +78,7 @@ const PreviousBookings: React.FC<{ customerId: string }> = ({ customerId }) => {
 
   return (
     <div className="container mx-auto px-4 py-8">
-      <h1 className="text-3xl font-bold mb-6">Your Previous Bookings</h1>
+      {/* <h1 className="text-3xl font-bold mb-6">Your Previous Bookings</h1> */}
       
       <section className="mb-12">
         <div className="space-y-4">
@@ -87,7 +87,7 @@ const PreviousBookings: React.FC<{ customerId: string }> = ({ customerId }) => {
             const isExpanded = expandedBooking === booking._id;
 
             return (
-              <Card key={booking._id}>
+              <Card key={booking._id} className="w-full mx-auto mt-1 rounded-lg p-1 bg-white shadow-2xl" style={{ border: "none" }}>
                 <CardHeader>
                   <CardTitle>{car ? `${car.maker} ${car.model} (${car.year})` : 'Car Details Not Available'}</CardTitle>
                   <CardDescription>{new Date(booking.startDate).toLocaleDateString()} to {new Date(booking.endDate).toLocaleDateString()}</CardDescription>
@@ -122,7 +122,7 @@ const PreviousBookings: React.FC<{ customerId: string }> = ({ customerId }) => {
                       className="w-full mb-4"
                     />
                     {error && <p className="text-red-500 mb-2">{error}</p>}
-                    <Button onClick={() => handleSubmitReview(booking._id)} disabled={isSubmitting}>
+                    <Button onClick={() => handleSubmitReview(booking._id)} disabled={isSubmitting} className="px-6 py-3 text-lg font-semibold text-white bg-blue-600 hover:bg-blue-500 rounded-lg transition-colors hover:bg-muted shadow-2xl">
                       {isSubmitting ? 'Submitting...' : 'Submit Review'}
                     </Button>
                   </CardFooter>

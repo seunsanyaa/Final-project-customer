@@ -70,13 +70,15 @@ export default function AllRatings() {
           Back to all reviews
         </button>
 
-        <Card className="mb-8">
+        <Card className="w-full mx-auto mt-1 rounded-lg p-1 bg-white shadow-xl" style={{ border: "none" }}>
           <CardHeader className="p-0">
             {selectedCarWithReviews.pictures && selectedCarWithReviews.pictures.length > 0 ? (
               <img 
                 src={selectedCarWithReviews.pictures[0]} 
                 alt={`${selectedCarWithReviews.maker} ${selectedCarWithReviews.model}`} 
-                className="w-full h-64 object-cover" 
+                width={500}
+                height={400}
+                className='mr-0 right-0'
               />
             ) : (
               <div className="w-full h-64 bg-muted flex items-center justify-center">
@@ -103,8 +105,8 @@ export default function AllRatings() {
               <span>({selectedCarWithReviews.averageRating?.toFixed(1)})</span>
             </CardDescription>
             <Button 
-              className="px-4 py-2 font-semibold text-white bg-blue-600 hover:bg-blue-500 rounded-md transition-colors border hover:bg-muted"
-              onClick={() => window.location.href = `/carinfo?id=${selectedCarWithReviews.registrationNumber}`}
+            className="px-6 py-3 text-lg font-semibold text-white bg-blue-600 hover:bg-blue-500 rounded-lg transition-colors hover:bg-muted shadow-2xl"              
+            onClick={() => window.location.href = `/carinfo?id=${selectedCarWithReviews.registrationNumber}`}
             >
               Book Now
             </Button>
@@ -126,7 +128,9 @@ export default function AllRatings() {
         {carsWithReviews.map((car) => (
           <Card 
             key={car._id} 
-            className="overflow-hidden cursor-pointer hover:shadow-lg transition-shadow"
+            // className="overflow-hidden cursor-pointer hover:shadow-lg transition-shadow"
+            className="w-full mx-auto mt-1 rounded-lg p-1 bg-white shadow-xl" 
+            style={{ border: "none" }}
             onClick={() => handleCarClick(car)}
           >
             <CardHeader className="p-0">

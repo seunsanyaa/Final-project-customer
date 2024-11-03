@@ -103,7 +103,8 @@ export default function MainPage({ userId }: MainPageProps) {
             {userReviews.map((review) => (
               <Card 
                 key={review._id} 
-                className="overflow-hidden cursor-pointer hover:shadow-lg transition-shadow"
+                // className="overflow-hidden cursor-pointer hover:shadow-lg transition-shadow"
+                className="w-full mx-auto mt-1 rounded-lg p-1 bg-white shadow-xl" style={{ border: "none" }}
                 onClick={() => handleReviewClick(review)}
               >
                 <CardHeader className="p-0">
@@ -162,7 +163,7 @@ export default function MainPage({ userId }: MainPageProps) {
 
       {selectedReview && (
         <Dialog open={!!selectedReview} onOpenChange={() => setSelectedReview(null)} >
-          <DialogContent className="max-w-3xl" style={{ opacity: 1, backgroundColor: '#ffffff', zIndex: 50 }}>
+          <DialogContent className="w-full mx-auto mt-1 rounded-lg p-1 bg-white shadow-xl" style={{ opacity: 1, backgroundColor: '#ffffff', zIndex: 50, border: "none" }}>
             <div className="relative">
               {/* <button
                 onClick={() => setSelectedReview(null)}

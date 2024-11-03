@@ -53,18 +53,18 @@ export function Homepage_v2() {
     carousel.scrollTo({ left: scrollPosition, behavior: 'smooth' });
   };
 
-  if (isLoading) {
-    return (
-      <div className="flex items-center justify-center h-screen">
-        <Lottie
-          lottieRef={lottieRef}
-          animationData={loadingAnimation}
-          loop={true}
-          className="w-[400px] h-[400px]"
-        />
-      </div>
-    );
-  }
+  // if (isLoading) {
+  //   return (
+  //     <div className="flex items-center justify-center h-screen">
+  //       <Lottie
+  //         lottieRef={lottieRef}
+  //         animationData={loadingAnimation}
+  //         loop={true}
+  //         className="w-[400px] h-[400px]"
+  //       />
+  //     </div>
+  //   );
+  // }
 
   return (
     <div className="flex flex-col min-h-dvh font-roboto">

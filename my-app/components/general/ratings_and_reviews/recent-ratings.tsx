@@ -47,7 +47,7 @@ export function RecentRatings() {
 
   return (
     <div className="min-h-screen bg-gradient-to-r from-blue-400 to-blue-600 flex items-center justify-center p-4">
-      <Card className="w-full max-w-2xl bg-white/95 backdrop-blur-sm">
+      <Card className="w-full mx-auto mt-1 rounded-lg p-1 bg-white shadow-xl" style={{ border: "none" }}>
         <CardHeader>
           <CardTitle className="text-2xl font-bold text-center text-blue-600">Recent Ratings</CardTitle>
         </CardHeader>
@@ -80,7 +80,7 @@ export function RecentRatings() {
           </div>
           <div className="grid gap-4">
             {filteredRatings.map((rating) => (
-              <Card key={rating.id} className="bg-white/50 backdrop-blur-sm">
+              <Card key={rating.id} className="w-full mx-auto mt-1 rounded-lg p-1 bg-white shadow-xl" style={{ border: "none" }}>
                 <CardContent className="p-4">
                   <div className="flex items-center justify-between">
                     <div className="flex items-center space-x-2">
