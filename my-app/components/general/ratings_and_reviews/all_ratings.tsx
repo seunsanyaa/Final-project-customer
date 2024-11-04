@@ -30,7 +30,7 @@ export default function AllRatings() {
   };
 
   const renderReview = (review: any) => (
-    <Card key={review._id} className="mb-4">
+    <Card key={review._id} className="w-full mx-auto mt-1 rounded-lg p-1 bg-white shadow-xl" style={{ border: "none" }}>
       <CardHeader>
         <div className="flex justify-between items-center">
           <div>
@@ -70,48 +70,53 @@ export default function AllRatings() {
           Back to all reviews
         </button>
 
-        <Card className="w-full mx-auto mt-1 rounded-lg p-1 bg-white shadow-xl" style={{ border: "none" }}>
-          <CardHeader className="p-0">
-            {selectedCarWithReviews.pictures && selectedCarWithReviews.pictures.length > 0 ? (
-              <img 
-                src={selectedCarWithReviews.pictures[0]} 
-                alt={`${selectedCarWithReviews.maker} ${selectedCarWithReviews.model}`} 
-                width={500}
-                height={400}
-                className='mr-0 right-0'
-              />
-            ) : (
-              <div className="w-full h-64 bg-muted flex items-center justify-center">
-                No image available
-              </div>
-            )}
-          </CardHeader>
-          <CardContent className="p-6">
-            <CardTitle className="text-2xl mb-2">{`${selectedCarWithReviews.maker} ${selectedCarWithReviews.model} ${selectedCarWithReviews.year}`}</CardTitle>
-            <CardDescription className="flex items-center gap-2 text-lg mb-4">
-              Average Rating: 
-              <div className="flex">
-                {[...Array(5)].map((_, i) => (
-                  <Star
-                    key={i}
-                    className={`w-5 h-5 ${
-                      i < Math.round(selectedCarWithReviews.averageRating || 0) 
-                        ? 'text-customyello fill-customyello' 
-                        : 'text-gray-300'
-                    }`}
-                  />
-                ))}
-              </div>
-              <span>({selectedCarWithReviews.averageRating?.toFixed(1)})</span>
-            </CardDescription>
-            <Button 
-            className="px-6 py-3 text-lg font-semibold text-white bg-blue-600 hover:bg-blue-500 rounded-lg transition-colors hover:bg-muted shadow-2xl"              
-            onClick={() => window.location.href = `/carinfo?id=${selectedCarWithReviews.registrationNumber}`}
-            >
-              Book Now
-            </Button>
-          </CardContent>
-        </Card>
+        <Card className="w-full mx-auto mt-1 rounded-lg p-1 bg-white shadow-xl mb-5" style={{ border: "none" }}>
+  <CardContent className="p-6 flex flex-col lg:flex-row items-start">
+    {/* Left Side: Text, Rating, and Button */}
+    <div className="flex flex-col space-y-4 lg:w-1/2">
+      <CardTitle className="text-2xl">{`${selectedCarWithReviews.maker} ${selectedCarWithReviews.model} ${selectedCarWithReviews.year}`}</CardTitle>
+      <CardDescription className="flex items-center gap-2 text-lg">
+        Average Rating:
+        <div className="flex">
+          {[...Array(5)].map((_, i) => (
+            <Star
+              key={i}
+              className={`w-5 h-5 ${
+                i < Math.round(selectedCarWithReviews.averageRating || 0)
+                  ? 'text-customyello fill-customyello'
+                  : 'text-gray-300'
+              }`}
+            />
+          ))}
+        </div>
+        <span>({selectedCarWithReviews.averageRating?.toFixed(1)})</span>
+      </CardDescription>
+      <Button
+        className="inline-flex items-center text-lg font-semibold text-white bg-blue-600 hover:bg-blue-500 rounded-lg transition-colors hover:bg-muted shadow-2xl max-w-xs"
+        onClick={() => window.location.href = `/carinfo?id=${selectedCarWithReviews.registrationNumber}`}
+      >
+        Book Now
+      </Button>
+    </div>
+    
+    {/* Right Side: Image */}
+    {selectedCarWithReviews.pictures && selectedCarWithReviews.pictures.length > 0 ? (
+      <img
+        src={selectedCarWithReviews.pictures[0]}
+        alt={`${selectedCarWithReviews.maker} ${selectedCarWithReviews.model}`}
+        width={300}
+        height={200}
+        className="mt-6 lg:mt-0 lg:ml-6 lg:w-1/3"
+      />
+    ) : (
+      <div className="w-full h-64 bg-muted flex items-center justify-center mt-6 lg:mt-0 lg:ml-6 lg:w-1/2">
+        No image available
+      </div>
+    )}
+  </CardContent>
+</Card>
+
+
 
         <h2 className="text-2xl font-bold mb-6">All Reviews</h2>
         <div className="space-y-6">
