@@ -111,52 +111,54 @@ export default function UserPromotions() {
               </CardHeader>
               <CardContent>
                 {/* Permanent Promotions */}
-                {processedPermanentPromotions.map((promotion) => (
+                {processedPermanentPromotions.map((promotion, index) => (
                   <Card key={promotion._id} className="mb-4 p-4 border-green-500">
                     <CardHeader>
                       <CardTitle>{promotion.promotionTitle}</CardTitle>
                     </CardHeader>
                     <CardContent>
                       <p className="text-muted-foreground mb-4">{promotion.promotionDescription}</p>
-                      <div className="space-y-4">
-                        {promotion.minimumMoneySpent && promotion.minimumMoneySpent > 0 && (
-                          <div>
-                            <div className="flex justify-between mb-2">
-                              <span>Spending Progress</span>
-                              <span>${totalMoneySpent.toFixed(2)} / ${promotion.minimumMoneySpent.toFixed(2)}</span>
+                      <div className="space-y-6">
+                        {/* Show Money Spent Progress Bar only for the last card */}
+                        {index === processedPermanentPromotions.length - 1 ? (
+                          <div className="mb-6">
+                            <div className="flex justify-between items-center mb-2">
+                              <span className="text-sm font-medium">Spending Progress</span>
+                              <span className="text-sm font-medium">
+                                ${totalMoneySpent.toFixed(2)} / ${(promotion.minimumMoneySpent || 0).toFixed(2)}
+                              </span>
                             </div>
-                            <div className="w-full h-2 bg-gray-200 rounded-full overflow-hidden">
+                            <div className="w-full h-4 bg-gray-200 rounded-full">
                               <div 
-                                className="h-full bg-green-500 rounded-full transition-all duration-300" 
+                                className="h-full bg-customyello rounded-full transition-all duration-500"
                                 style={{ 
-                                  width: `${Math.min((totalMoneySpent / (promotion.minimumMoneySpent || 1)) * 100, 100)}%`,
-                                  minWidth: '0%'
-                                }} 
+                                  width: `${Math.min((totalMoneySpent / (promotion.minimumMoneySpent || 1)) * 100, 100)}%` 
+                                }}
                               />
                             </div>
                             <p className="text-sm text-muted-foreground mt-2">
-                              ${Math.ceil((promotion.minimumMoneySpent - totalMoneySpent) * 100) / 100} more to unlock
+                              ${Math.max(0, Math.ceil((promotion.minimumMoneySpent - totalMoneySpent) * 100) / 100)} more to unlock
                             </p>
                           </div>
-                        )}
-
-                        {promotion.minimumRentals && promotion.minimumRentals > 0 && (
-                          <div>
-                            <div className="flex justify-between mt-4 mb-2">
-                              <span>Rental Progress</span>
-                              <span>{bookings?.length || 0} / {promotion.minimumRentals}</span>
+                        ) : (
+                          /* Show Bookings Progress Bar for first two cards */
+                          <div className="mb-6">
+                            <div className="flex justify-between items-center mb-2">
+                              <span className="text-sm font-medium">Rental Progress</span>
+                              <span className="text-sm font-medium">
+                                {bookings?.length || 0} / {promotion.minimumRentals || 0} Bookings
+                              </span>
                             </div>
-                            <div className="w-full h-2 bg-gray-200 rounded-full overflow-hidden">
+                            <div className="w-full h-4 bg-gray-200 rounded-full">
                               <div 
-                                className="h-full bg-green-500 rounded-full transition-all duration-300" 
+                                className="h-full bg-customyello rounded-full transition-all duration-500"
                                 style={{ 
-                                  width: `${Math.min(((bookings?.length || 0) / (promotion.minimumRentals || 1)) * 100, 100)}%`,
-                                  minWidth: '0%'
-                                }} 
+                                  width: `${Math.min(((bookings?.length || 0) / (promotion.minimumRentals || 1)) * 100, 100)}%` 
+                                }}
                               />
                             </div>
                             <p className="text-sm text-muted-foreground mt-2">
-                              {Math.max(0, promotion.minimumRentals - (bookings?.length || 0))} more rentals to unlock
+                              {Math.max(0, (promotion.minimumRentals || 0) - (bookings?.length || 0))} more bookings to unlock
                             </p>
                           </div>
                         )}
