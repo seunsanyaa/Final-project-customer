@@ -146,7 +146,7 @@ export default function UserPromotions() {
                             <div className="flex justify-between items-center mb-2">
                               <span className="text-sm font-medium">Rental Progress</span>
                               <span className="text-sm font-medium">
-                                {bookings?.length || 0} / {promotion.minimumRentals || 0} Bookings
+                                {Math.min(bookings?.length || 0, promotion.minimumRentals || 0)} / {promotion.minimumRentals || 0} Bookings
                               </span>
                             </div>
                             <div className="w-full h-4 bg-gray-200 rounded-full">
