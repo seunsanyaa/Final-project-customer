@@ -7,7 +7,7 @@ import { Separator } from "@/components/ui/separator";
 import { Navi } from "../head/navi";
 import { Footer } from "../head/footer";
 import { useRouter } from 'next/router';
-import Lottie, { LottieRefCurrentProps } from "lottie-react";
+// import Lottie, { LottieRefCurrentProps } from "lottie-react";
 import loadingAnimation from "@/public/animations/loadingAnimation.json"; // Import your animation
 
 export function Payment_Page() {
@@ -59,12 +59,12 @@ export function Payment_Page() {
         </Elements>
       ) : (
         <div className="flex items-center justify-center h-screen">
-        <Lottie
+        {/* <Lottie
           lottieRef={lottieRef}
           animationData={loadingAnimation}
           loop={true}
           className="w-48 h-48"
-        />
+        /> */}
       </div>
       )}
     </>
