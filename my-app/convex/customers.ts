@@ -2,15 +2,30 @@ import { v } from 'convex/values';
 
 import { mutation, query } from './_generated/server';
 
+// Helper function to calculate age from date of birth
+const calculateAge = (dob: string): number => {
+	const [day, month, year] = dob.split('.').map(Number);
+	const birthDate = new Date(year, month - 1, day);
+	const today = new Date();
+	let age = today.getFullYear() - birthDate.getFullYear();
+	const monthDiff = today.getMonth() - birthDate.getMonth();
+
+	// Adjust age if today's date is before the birthday
+	if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
+		age--;
+	}
+
+	return age;
+};
+
 export const createCustomer = mutation({
 	args: {
 		userId: v.string(),
 		nationality: v.string(),
-		age: v.number(),
+		dateOfBirth: v.string(),
 		phoneNumber: v.string(),
 		licenseNumber: v.string(),
 		address: v.string(),
-		dateOfBirth: v.string(),
 		expirationDate: v.optional(v.string()),
 	},
 	handler: async (ctx, args) => {
@@ -22,11 +37,22 @@ export const createCustomer = mutation({
 		if (existingCustomer) {
 			return `Customer with ID ${args.userId} already exists.`;
 		}
-		const user = await ctx.db.query('users').withIndex('by_userId', (q) => q.eq('userId', args.userId)).first();
+
+		const user = await ctx.db
+			.query('users')
+			.withIndex('by_userId', (q) => q.eq('userId', args.userId))
+			.first();
+
+		if (!user) {
+			return `User with ID ${args.userId} does not exist.`;
+		}
+
+		const age = calculateAge(args.dateOfBirth);
+
 		await ctx.db.insert('customers', {
-			userId: user?.userId ?? '',
+			userId: user.userId,
 			nationality: args.nationality,
-			age: args.age,
+			age: age, // Dynamically calculated age
 			phoneNumber: args.phoneNumber,
 			licenseNumber: args.licenseNumber,
 			address: args.address,
@@ -35,6 +61,8 @@ export const createCustomer = mutation({
 			goldenMember: false,
 			rewardPoints: 0,
 		});
+
+		return `Customer with ID ${args.userId} has been created.`;
 	},
 });
 
@@ -61,11 +89,10 @@ export const updateCustomer = mutation({
 	args: {
 		userId: v.string(),
 		nationality: v.optional(v.string()),
-		age: v.optional(v.number()),
+		dateOfBirth: v.optional(v.string()),
 		phoneNumber: v.optional(v.string()),
 		licenseNumber: v.optional(v.string()),
 		address: v.optional(v.string()),
-		dateOfBirth: v.optional(v.string()),
 		expirationDate: v.optional(v.string()),
 		rewardPoints: v.optional(v.number()),
 	},
@@ -79,9 +106,17 @@ export const updateCustomer = mutation({
 			return `Customer with ID ${args.userId} does not exist.`;
 		}
 
+		let updatedAge = existingCustomer.age;
+
+		// If dateOfBirth is being updated, recalculate age
+		if (args.dateOfBirth) {
+			updatedAge = calculateAge(args.dateOfBirth);
+		}
+
 		const updatedData = {
 			...existingCustomer,
 			...args,
+			age: updatedAge, // Ensure age is updated if dob changes
 		};
 
 		await ctx.db.patch(existingCustomer._id, updatedData);
@@ -93,11 +128,10 @@ export const upsertCustomer = mutation({
 	args: {
 		userId: v.string(),
 		nationality: v.optional(v.string()),
-		age: v.optional(v.number()),
+		dateOfBirth: v.optional(v.string()),
 		phoneNumber: v.optional(v.string()),
 		licenseNumber: v.optional(v.string()),
 		address: v.optional(v.string()),
-		dateOfBirth: v.optional(v.string()),
 		expirationDate: v.optional(v.string()),
 		rewardPoints: v.optional(v.number()),
 	},
@@ -108,23 +142,37 @@ export const upsertCustomer = mutation({
 			.first();
 
 		if (existingCustomer) {
+			let updatedAge = existingCustomer.age;
+
+			// If dateOfBirth is being updated, recalculate age
+			if (args.dateOfBirth) {
+				updatedAge = calculateAge(args.dateOfBirth);
+			}
+
 			// Prepare the fields to update, excluding userId
 			const { userId, ...updateFields } = args;
-			await ctx.db.patch(existingCustomer._id, updateFields);
+			const dataToUpdate = {
+				...updateFields,
+				age: args.dateOfBirth ? updatedAge : existingCustomer.age,
+			};
+
+			await ctx.db.patch(existingCustomer._id, dataToUpdate);
 			return `Customer with ID ${args.userId} has been updated.`;
 		} else {
 			// Ensure all required fields are provided for creation
-			const requiredFields = ['nationality', 'age', 'phoneNumber', 'licenseNumber', 'address', 'dateOfBirth'];
+			const requiredFields = ['nationality', 'dateOfBirth', 'phoneNumber', 'licenseNumber', 'address'];
 			for (const field of requiredFields) {
 				if (!(field in args) || args[field as keyof typeof args] === undefined) {
 					return `Missing required field: ${field} for creating a new customer.`;
 				}
 			}
 
+			const age = calculateAge(args.dateOfBirth!); // Non-null assertion since we've checked
+
 			await ctx.db.insert('customers', {
 				userId: args.userId,
 				nationality: args.nationality ?? '',
-				age: args.age ?? 0,
+				age: age, // Dynamically calculated age
 				phoneNumber: args.phoneNumber ?? '',
 				licenseNumber: args.licenseNumber ?? '',
 				address: args.address ?? '',

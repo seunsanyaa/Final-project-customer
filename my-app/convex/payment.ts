@@ -14,7 +14,7 @@ export const createPayment = mutation({
 		if (args.paymentIntentId) {
 		const existingPayment = await ctx.db
 			.query('payments')
-			.withIndex('by_paymentIntentId', (q) => q.eq('paymentIntentId', args.paymentIntentId))
+			.withIndex('by_paymentIntentId', (q) => q.eq('paymentIntentId', args.paymentIntentId as string))
 			.first();
 
 		if (existingPayment) {

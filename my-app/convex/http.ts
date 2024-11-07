@@ -1,6 +1,6 @@
 import { httpRouter } from 'convex/server';
-import { internal } from './_generated/api';
 import { httpAction } from './_generated/server';
+import { api, internal } from './_generated/api';
 
 // Create an HTTP router instance
 const http = httpRouter();
@@ -12,53 +12,60 @@ http.route({
 	handler: httpAction(async (ctx, request) => {
 		// Extract the payload and headers from the incoming request
 		const payloadString = await request.text();
-		const headerPayload = request.headers;
 
 		try {
+			// Log the incoming request for debugging
+			console.log('Received webhook:', {
+				headers: Object.fromEntries(request.headers.entries()),
+				body: payloadString,
+			});
+
 			// Run the clerk.fulfill action with the payload and necessary headers
 			const result = await ctx.runAction(internal.clerk.fulfill, {
 				payload: payloadString,
 				headers: {
-					'svix-id': headerPayload.get('svix-id')!,
-					'svix-timestamp': headerPayload.get('svix-timestamp')!,
-					'svix-signature': headerPayload.get('svix-signature')!,
+					svixId: request.headers.get('svix-id') ?? '',
+					svixTimestamp: request.headers.get('svix-timestamp') ?? '',
+					svixSignature: request.headers.get('svix-signature') ?? '',
 				},
 			});
 
-			console.log(result, 'convex result');
+			console.log('Webhook result:', result);
 
-			// Handle different types of webhook events
-			switch (result.type) {
-				case 'user.created':
-					// Create a new user in the system when a user is created in Clerk
-					await ctx.runMutation(internal.users.createUser, {
-						email: result.data?.email_addresses[0]?.email_address ?? '',
-						userId: result.data.id,
-						firstName: result.data.first_name ?? '',
-						lastName: result.data.last_name ?? '',
-						staff: false, // Add this line
-					});
-					break;
-
-				case 'user.deleted':
-					// Create a new user in the system when a user is created in Clerk
-					await ctx.runMutation(internal.users.deleteUser, {
-						userId: result.data.id,
-					});
-					break;
-
-				// Add more cases here for other event types if needed
+			if (result.type === 'user.created') {
+				const userId = await ctx.runMutation(api.users.createUser, {
+					email: result.data.email_addresses[0]?.email_address ?? '',
+					userId: result.data.id,
+					firstName: result.data.first_name ?? '',
+					lastName: result.data.last_name ?? '',
+					staff: false,
+				});
+				const customerId = await ctx.runMutation(api.customers.createCustomer, {
+					userId: result.data.id,
+					nationality: '',
+					dateOfBirth: '',
+					phoneNumber: '',
+					licenseNumber: '',
+					address: '',
+				});
+				console.log('Created user:', userId);
 			}
 
 			// Return a successful response
-			return new Response(null, {
+			return new Response(JSON.stringify({ success: true }), {
 				status: 200,
+				headers: {
+					'Content-Type': 'application/json',
+				},
 			});
 		} catch (err) {
 			// Log any errors and return a 400 status code
-			console.error(err);
-			return new Response('Webhook Error', {
+			console.error('Webhook error:', err);
+			return new Response(JSON.stringify({ error: err }), {
 				status: 400,
+				headers: {
+					'Content-Type': 'application/json',
+				},
 			});
 		}
 	}),

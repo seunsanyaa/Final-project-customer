@@ -178,3 +178,35 @@ export const editUser = mutation({
 		await ctx.db.patch(userToUpdate._id, updates);
 	},
 });
+
+// Add this new internal mutation for Clerk webhook
+export const createUserFromClerk = internalMutation({
+	args: {
+		email: v.string(),
+		userId: v.string(),
+		firstName: v.optional(v.string()),
+		lastName: v.optional(v.string()),
+	},
+	handler: async (ctx, args) => {
+		// Check if user already exists
+		const existingUser = await ctx.db
+			.query('users')
+			.withIndex('by_userId', (q) => q.eq('userId', args.userId))
+			.first();
+
+		if (existingUser) {
+			return existingUser._id;
+		}
+
+		// Create new user
+		const userId = await ctx.db.insert('users', {
+			email: args.email,
+			userId: args.userId,
+			firstName: args.firstName ?? '',
+			lastName: args.lastName ?? '',
+			staff: false, // Default to regular user
+		});
+
+		return userId;
+	},
+});

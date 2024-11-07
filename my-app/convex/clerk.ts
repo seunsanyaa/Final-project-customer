@@ -1,24 +1,39 @@
 'use node';
 
-import type { WebhookEvent } from '@clerk/clerk-sdk-node';
 import { v } from 'convex/values';
-import { Webhook } from 'svix';
 import { internalAction } from './_generated/server';
+import { Webhook } from 'svix';
 
-// Define an internal action to handle Clerk webhook verification
 export const fulfill = internalAction({
-    // Specify the expected arguments: headers and payload
-    args: { headers: v.any(), payload: v.string() },
-    handler: async (ctx, args) => {
-        // Create a new Webhook instance with the Clerk webhook secret
-        
-        const wh = new Webhook('whsec_JhzHsLxjzEHoBnVZau1W4gFjzVqtJcPI');
-        
-        // Verify the webhook payload using the provided headers
-        // This ensures the webhook is authentic and came from Clerk
-        const payload = wh.verify(args.payload, args.headers) as WebhookEvent;
-        
-        // Return the verified payload
-        return payload;
-    },
+  args: { 
+    payload: v.string(),
+    headers: v.object({
+      svixId: v.string(),
+      svixTimestamp: v.string(),
+      svixSignature: v.string(),
+    })
+  },
+	handler: async (ctx, args) => {
+		const WEBHOOK_SECRET = "whsec_xEIpDFkulG8bud0Aa5Gtphmaax3pjKJA";
+		if (!WEBHOOK_SECRET) {
+			throw new Error("Missing CLERK_WEBHOOK_SECRET");
+    }
+    
+    const wh = new Webhook(WEBHOOK_SECRET);
+    
+    try {
+      const headers = {
+        'svix-id': args.headers.svixId,
+        'svix-timestamp': args.headers.svixTimestamp,
+        'svix-signature': args.headers.svixSignature
+      };
+
+      const evt = wh.verify(args.payload, headers) as any;
+      console.log('Webhook verified:', evt);
+      return evt;
+    } catch (err) {
+      console.error('Webhook verification failed:', err);
+      throw new Error('Webhook verification failed');
+    }
+  },
 });

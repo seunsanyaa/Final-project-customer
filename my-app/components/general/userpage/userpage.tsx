@@ -1,15 +1,15 @@
-import React, { useState, useEffect } from "react"; // Add React to the import
-import { Button } from "@/components/ui/button"
-import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card"
-import { Label } from "@/components/ui/label"
-import Link from "next/link"
-import { Navi } from "../head/navi"
-import { Separator } from "@/components/ui/separator"
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog"; // Import your Dialog component
-import { createWorker, OEM, LoggerMessage } from 'tesseract.js'; // Updated import for enums and types
-import { useMutation, useQuery } from "convex/react"; // Add this import
-import { api } from "@/convex/_generated/api"; // Add this import
-import { useUser } from "@clerk/nextjs"; // Add this import
+import React, { useState, useEffect } from "react";
+import { Button } from "@/components/ui/button";
+import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
+import { Label } from "@/components/ui/label";
+import Link from "next/link";
+import { Navi } from "../head/navi";
+import { Separator } from "@/components/ui/separator";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
+import { createWorker, OEM, LoggerMessage } from 'tesseract.js';
+import { useMutation, useQuery } from "convex/react";
+import { api } from "@/convex/_generated/api";
+import { useUser } from "@clerk/nextjs";
 
 interface PersonalInfo {
   fullName: string;
@@ -65,53 +65,58 @@ export function User_page() {
   const [errorMessage, setErrorMessage] = useState<string>("");
 
   const upsertCustomer = useMutation(api.customers.upsertCustomer); // Use upsertCustomer mutation
+  const editUser = useMutation(api.users.editUser);
 
   const isLicenseExpired = (expirationDate: string | undefined) => {
     if (!expirationDate) return false;
-    
+
     // Convert DD.MM.YYYY to YYYY-MM-DD for comparison
     const [day, month, year] = expirationDate.split('.');
     const expDate = new Date(`${year}-${month}-${day}`);
     const today = new Date();
-    
+
     // Reset time part for accurate date comparison
     today.setHours(0, 0, 0, 0);
     expDate.setHours(0, 0, 0, 0);
-    
+
     return expDate < today;
   };
 
   const handleEditToggle = async () => {
-    if (!user?.id) return; // Guard clause for unauthenticated users
-    
+    if (!user?.id) return;
+
     if (isEditing) {
       try {
-        // Check expiration before saving
         if (isLicenseExpired(personalInfo.expirationDate)) {
           setErrorMessage("License has expired. Please update the expiration date.");
           return;
         }
 
-        // Use upsertCustomer mutation to either update or create
-        await upsertCustomer({
+        // Update user table
+        await editUser({
           userId: user.id,
-          nationality: personalInfo.nationality || undefined,
-          age: undefined, // Add age if available
-          phoneNumber: contactInfo.phone || undefined,
-          licenseNumber: personalInfo.license || undefined,
-          address: personalInfo.address || undefined,
-          dateOfBirth: personalInfo.dob || undefined,
-          expirationDate: personalInfo.expirationDate || undefined,
+          firstName: personalInfo.fullName.split(' ')[0],
+          lastName: personalInfo.fullName.split(' ')[1],
+          email: contactInfo.email,
         });
 
-        // Optionally, refetch customer data
+        // Update customer table
+        await upsertCustomer({
+          userId: user.id,
+          nationality: personalInfo.nationality,
+          phoneNumber: contactInfo.phone,
+          licenseNumber: personalInfo.license,
+          address: personalInfo.address,
+          dateOfBirth: personalInfo.dob,
+          expirationDate: personalInfo.expirationDate,
+        });
+
       } catch (error) {
-        console.error('Error upserting customer:', error);
+        console.error('Error updating user data:', error);
       }
     }
     setIsEditing((prev) => !prev);
   };
-  
 
   const handleScanClick = () => {
     setIsDialogOpen(true); // Open the dialog when Scan button is clicked
@@ -374,16 +379,16 @@ export function User_page() {
                     )}
                   </div>
                   <div className="grid gap-2">
-                 <Label className="text-black">Address</Label>
-                 {isEditing ? (
-                 <input
-                 value={personalInfo.address || extractedInfo.address} // Show extracted address if available
-                onChange={(e) => setPersonalInfo({ ...personalInfo, address: e.target.value })}
-                  />
-                  ) : (
-                 <div className="text-black">{personalInfo.address || extractedInfo.address}</div> // Show extracted address if available
-                  )}
-                </div>
+                    <Label className="text-black">Address</Label>
+                    {isEditing ? (
+                      <input
+                        value={personalInfo.address || extractedInfo.address} // Show extracted address if available
+                        onChange={(e) => setPersonalInfo({ ...personalInfo, address: e.target.value })}
+                      />
+                    ) : (
+                      <div className="text-black">{personalInfo.address || extractedInfo.address}</div> // Show extracted address if available
+                    )}
+                  </div>
                 </div>
                 <div className="flex flex-col">
                   <Button 
@@ -404,6 +409,11 @@ export function User_page() {
                   </Button>
                 </div>
               </CardContent>
+              {errorMessage && (
+                <div className="text-red-500 mt-2">
+                  {errorMessage}
+                </div>
+              )}
             </Card>
           </div>
         </main>
@@ -452,5 +462,5 @@ export function User_page() {
         </Dialog>
       </div>
     </div>
-    );
+  );
 }

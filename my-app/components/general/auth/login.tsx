@@ -51,7 +51,7 @@ export default function LoginComponent() {
               Verify your email address
             </h2>
             <p className="paragraph-muted pb-4 text-base font-normal">
-              We’ve sent a code to {router.query.email}.
+              We've sent a code to {router.query.email}.
             </p>
           </>
         );
