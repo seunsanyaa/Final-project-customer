@@ -202,3 +202,28 @@ export const getRewardPointsByUserId = query({
 		return customer.rewardPoints; // Return the reward points
 	},
 });
+
+export const addRewardPoints = mutation({
+	args: {
+		userId: v.string(),
+		points: v.number(),
+	},
+	handler: async (ctx, args) => {
+		const existingCustomer = await ctx.db
+			.query('customers')
+			.withIndex('by_userId', (q) => q.eq('userId', args.userId))
+			.first();
+
+		if (!existingCustomer) {
+			return `Customer with ID ${args.userId} does not exist.`;
+		}
+
+		const newRewardPoints = (existingCustomer.rewardPoints || 0) + args.points;
+
+		await ctx.db.patch(existingCustomer._id, {
+			rewardPoints: newRewardPoints,
+		});
+
+		return `Customer with ID ${args.userId} now has ${newRewardPoints} reward points.`;
+	},
+});

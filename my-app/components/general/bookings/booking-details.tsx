@@ -37,6 +37,7 @@ export default function BookingDetails() {
   });
 
   const updateBooking = useMutation(api.bookings.updateBooking);
+  const addRewardPoints = useMutation(api.customers.addRewardPoints);
 
   // If no active booking, show message
   if (!bookingDetails) {
@@ -79,6 +80,12 @@ export default function BookingDetails() {
       dropoffLocation,
       startDate: pickupDate,
       endDate: dropoffDate,
+    });
+
+    // Add reward points to the customer
+    await addRewardPoints({
+      userId: user?.id ?? '',
+      points: rewardPointsEarned,
     });
 
     setIsModalOpen(false);
