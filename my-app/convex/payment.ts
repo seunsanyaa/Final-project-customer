@@ -155,3 +155,78 @@ export const editPayment = mutation({
 		return await ctx.db.get(args.paymentId);
 	},
 });
+
+// Create a payment session
+export const createPaymentSession = mutation({
+	args: {
+		bookingId: v.id('bookings'),
+		totalAmount: v.optional(v.number()),
+		paidAmount: v.number(),
+		paymentType: v.string(),
+		userId: v.string(),
+	},
+	handler: async (ctx, args) => {
+		// Create a new payment session
+		const sessionId = await ctx.db.insert('paymentSessions', {
+			bookingId: args.bookingId,
+			totalAmount: args.totalAmount,
+			paidAmount: args.paidAmount,
+			paymentType: args.paymentType,
+			userId: args.userId,
+			status: 'pending',
+			createdAt: new Date().toISOString(),
+			expiresAt: new Date(Date.now() + 30 * 60 * 1000).toISOString(), // 30 minutes expiry
+		});
+
+		return { _id: sessionId };
+	},
+});
+
+// Get payment session details
+export const getPaymentSession = query({
+	args: { sessionId: v.id('paymentSessions') },
+	handler: async (ctx, args) => {
+		const session = await ctx.db.get(args.sessionId);
+		
+		if (!session) {
+			throw new Error("Payment session not found");
+		}
+
+		// Check if session has expired
+		if (new Date(session.expiresAt) < new Date()) {
+			throw new Error("Payment session has expired");
+		}
+
+		// Get booking details
+		const booking = await ctx.db.get(session.bookingId);
+		if (!booking) {
+			throw new Error("Associated booking not found");
+		}
+
+		return {
+			...session,
+			booking
+		};
+	},
+});
+
+// Update payment session status
+export const updatePaymentSessionStatus = mutation({
+	args: {
+		sessionId: v.id('paymentSessions'),
+		status: v.string(),
+	},
+	handler: async (ctx, args) => {
+		const session = await ctx.db.get(args.sessionId);
+		if (!session) {
+			throw new Error("Payment session not found");
+		}
+
+		await ctx.db.patch(args.sessionId, {
+			status: args.status,
+			updatedAt: new Date().toISOString(),
+		});
+
+		return await ctx.db.get(args.sessionId);
+	},
+});

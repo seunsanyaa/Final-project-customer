@@ -7,40 +7,61 @@ import { Separator } from "@/components/ui/separator";
 import { Navi } from "../head/navi";
 import { Footer } from "../head/footer";
 import { useRouter } from 'next/router';
-// import Lottie, { LottieRefCurrentProps } from "lottie-react";
-import loadingAnimation from "@/public/animations/loadingAnimation.json"; // Import your animation
+import { LottieRefCurrentProps } from "lottie-react";
+import { useQuery } from 'convex/react';
+import { api } from '../../../convex/_generated/api';
+import { useParams } from 'next/navigation';
+import { Id } from '../../../convex/_generated/dataModel';
 
 export function Payment_Page() {
+  const params = useParams();
+  const sessionId = params.sessionId as Id<"paymentSessions">;
   const router = useRouter();
-  const [total, setTotal] = useState<number | null>(null);
+
+  // Fetch payment session details
+  const paymentSession = useQuery(api.payment.getPaymentSession, {
+    sessionId
+  });
+
   const [agreedToTerms, setAgreedToTerms] = useState(false);
   const [clientSecret, setClientSecret] = useState<string | null>(null);
-  const lottieRef = useRef<LottieRefCurrentProps>(null);
-  useEffect(() => {
-    if (router.isReady) {
-      const totalFromQuery = router.query.total;
-      if (totalFromQuery && !Array.isArray(totalFromQuery)) {
-        setTotal(parseFloat(totalFromQuery));
-      }
-    }
-  }, [router.isReady, router.query]);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const total = paymentSession?.totalAmount || 0;
+  const paidAmount = paymentSession?.paidAmount || 0;
+  const paymentType = paymentSession?.paymentType;
 
   const stripePromise = loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY!);
 
   useEffect(() => {
-    if (total !== null) {
+    if (paidAmount > 0) {
+      setIsLoading(true);
       fetch("/api/create-payment-intent", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ amount: Math.round(total * 100) }), // Convert to cents and round
+        body: JSON.stringify({ 
+          amount: Math.round(paidAmount * 100),
+          sessionId, // Pass the session ID to your API
+        }),
       })
         .then((res) => res.json())
-        .then((data) => setClientSecret(data.clientSecret))
-        .catch((error) => console.error("Error fetching client secret:", error));
+        .then((data) => {
+          if (data.error) {
+            setError(data.error);
+          } else {
+            setClientSecret(data.clientSecret);
+          }
+        })
+        .catch((error) => {
+          console.error("Error fetching client secret:", error);
+          setError("Failed to initialize payment");
+        })
+        .finally(() => setIsLoading(false));
     }
-  }, [total]);
+  }, [paidAmount, sessionId]);
 
   const appearance: Appearance = {
     theme: 'stripe',
@@ -48,65 +69,78 @@ export function Payment_Page() {
 
   const options: StripeElementsOptions = {
     appearance,
-    ...(clientSecret && { clientSecret }),
+    clientSecret: clientSecret || undefined,
   };
+
+  if (error) {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-screen p-6">
+        <h1 className="text-2xl text-red-600 mb-4">Payment Error</h1>
+        <p className="text-gray-600">{error}</p>
+      </div>
+    );
+  }
 
   return (
     <>
       {clientSecret ? (
         <Elements stripe={stripePromise} options={options}>
-          <PaymentForm agreedToTerms={agreedToTerms} setAgreedToTerms={setAgreedToTerms} total={total} />
+          <PaymentForm 
+            agreedToTerms={agreedToTerms} 
+            setAgreedToTerms={setAgreedToTerms} 
+            total={paidAmount}
+            sessionId={sessionId}
+          />
         </Elements>
       ) : (
         <div className="flex items-center justify-center h-screen">
-        {/* <Lottie
-          lottieRef={lottieRef}
-          animationData={loadingAnimation}
-          loop={true}
-          className="w-48 h-48"
-        /> */}
-      </div>
+          {isLoading ? "Initializing payment..." : "Loading..."}
+        </div>
       )}
     </>
   );
 }
 
-function PaymentForm({ agreedToTerms, setAgreedToTerms, total }: { agreedToTerms: boolean, setAgreedToTerms: (agreed: boolean) => void, total: number | null }) {
+function PaymentForm({ 
+  agreedToTerms, 
+  setAgreedToTerms, 
+  total,
+  sessionId
+}: { 
+  agreedToTerms: boolean, 
+  setAgreedToTerms: (agreed: boolean) => void, 
+  total: number,
+  sessionId: Id<"paymentSessions">
+}) {
   const stripe = useStripe();
   const elements = useElements();
   const [isProcessing, setIsProcessing] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
-  const router = useRouter();
 
   const handleSubmit = async () => {
-    if (!stripe || !elements) return;
+    if (!stripe || !elements) {
+      return;
+    }
 
     setIsProcessing(true);
     setErrorMessage(null);
 
-    const { error, paymentIntent } = await stripe.confirmPayment({
-      elements,
-      confirmParams: {
-        return_url: `${window.location.origin}/bookings/currentbooking/success`, // Optional redirect after success
-      },
-      redirect: 'if_required',
-    });
-
-    if (error) {
-      setErrorMessage(error.message || "Something went wrong with your payment.");
-      setIsProcessing(false);
-    } else if (paymentIntent && paymentIntent.status === 'succeeded') {
-      setIsProcessing(false);
-      router.push({
-        pathname: '/bookings/currentbooking/success',
-        query: {
-          bookingId: router.query.bookingId as string,
-          paymentIntentId: paymentIntent.id,
-          amount: total,
-          paymentDate: new Date().toISOString(),
-          paymentType: 'credit_card',
-        }
+    try {
+      const { error, paymentIntent } = await stripe.confirmPayment({
+        elements,
+        confirmParams: {
+          return_url: `${window.location.origin}/bookings/currentbooking/success?session_id=${sessionId}`,
+        },
       });
+
+      if (error) {
+        setErrorMessage(error.message || "Something went wrong with your payment.");
+        setIsProcessing(false);
+      }
+    } catch (e) {
+      console.error('Payment error:', e);
+      setErrorMessage("An unexpected error occurred.");
+      setIsProcessing(false);
     }
   };
 

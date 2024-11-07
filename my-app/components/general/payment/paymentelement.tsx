@@ -9,7 +9,7 @@ import {
 import { Button } from "@/components/ui/button";
 
 // Stripe public key
-const stripePromise = loadStripe("your-publishable-key");
+const stripePromise = loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY!);
 
 const CheckoutForm = () => {
   const stripe = useStripe();

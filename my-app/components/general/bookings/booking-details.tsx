@@ -1,5 +1,4 @@
 'use client'
-import { useRouter } from 'next/router';
 import { useEffect, useState } from 'react';
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
@@ -8,15 +7,13 @@ import { Navi } from '../head/navi';
 import { Footer } from '../head/footer';
 import { useQuery, useMutation } from 'convex/react';
 import { api } from '../../../convex/_generated/api';
-import { Id } from '../../../convex/_generated/dataModel';
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Elements, PaymentElement, useStripe, useElements } from "@stripe/react-stripe-js";
 import { loadStripe } from "@stripe/stripe-js";
+import { useUser } from "@clerk/nextjs";
 
 export default function BookingDetails() {
-  const router = useRouter();
-  const { bookingId } = router.query;
-
+  const { user } = useUser();
   const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
   const [pickupDate, setPickupDate] = useState('');
   const [dropoffDate, setDropoffDate] = useState('');
@@ -34,12 +31,33 @@ export default function BookingDetails() {
   const [clientSecret, setClientSecret] = useState<string | null>(null);
   const stripePromise = loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY!);
 
-  const bookingDetails = useQuery(
-    api.bookings.getBookingDetails,
-    typeof bookingId === 'string' ? { bookingId: bookingId as Id<"bookings"> } : "skip"
-  );
+  // Get current booking using the new function
+  const bookingDetails = useQuery(api.analytics.getCurrentBooking, {
+    customerId: user?.id ?? "skip"
+  });
 
   const updateBooking = useMutation(api.bookings.updateBooking);
+
+  // If no active booking, show message
+  if (!bookingDetails) {
+    return (
+      <div>
+        <Navi/>
+        <Separator />
+        <div className="max-w-4xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
+          <div className="text-center">
+            <h1 className="text-2xl font-semibold">No Active Booking</h1>
+            <p className="mt-2">You don't have any active bookings at the moment.</p>
+          </div>
+        </div>
+        <Separator />
+        <Footer/>
+      </div>
+    );
+  }
+
+  // Calculate reward points earned
+  const rewardPointsEarned = Math.floor(bookingDetails.totalCost * 0.1);
 
   const handleModifyClick = () => {
     setIsModalOpen(true);
@@ -91,7 +109,6 @@ export default function BookingDetails() {
       setIsPaymentModalOpen(true);
     } catch (error) {
       console.error('Payment error:', error);
-      // Handle error (show toast/alert)
     }
   };
 
@@ -138,14 +155,6 @@ export default function BookingDetails() {
       </form>
     );
   };
-
-  if (!bookingId || typeof bookingId !== 'string') {
-    return <div>Invalid booking ID</div>;
-  }
-
-  if (!bookingDetails) {
-    return <div>Loading...</div>;
-  }
 
   return (
     <div>
@@ -207,13 +216,13 @@ export default function BookingDetails() {
                   <div className="text-sm font-medium text-muted-foreground">
                     Remaining Cost
                   </div>
-                  <div className="text-base font-semibold">${bookingDetails.totalCost - bookingDetails.paidAmount}</div>
+                  <div className="text-base font-semibold">${(bookingDetails.totalCost - bookingDetails.paidAmount).toFixed(2)}</div>
                 </div>
                 <div>
                   <div className="text-sm font-medium text-muted-foreground">
                     Rewards Points Earned
                   </div>
-                  <div className="text-base font-semibold">{bookingDetails.rewardsPointsEarned} points</div>
+                  <div className="text-base font-semibold">{rewardPointsEarned} points</div>
                 </div>
               </div>
               <div className="grid grid-cols-2 gap-4">
@@ -221,7 +230,7 @@ export default function BookingDetails() {
                   <div className="text-sm font-medium text-muted-foreground">
                     Car Details
                   </div>
-                  <div className="text-base font-semibold">{bookingDetails.carDetails } {bookingDetails.trim} </div>
+                  <div className="text-base font-semibold">{bookingDetails.carDetails?.maker} {bookingDetails.carDetails?.model} {bookingDetails.carDetails?.year} {bookingDetails.carDetails?.trim} </div>
                 </div>
                 <div>
                   <div className="text-sm font-medium text-muted-foreground">

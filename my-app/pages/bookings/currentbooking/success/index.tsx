@@ -1,118 +1,95 @@
 'use client'
-import Link from "next/link";
-import { Button } from "@/components/ui/button";
 import { Navi } from "@/components/general/head/navi";
 import { Footer } from "@/components/general/head/footer";
 import { CheckCircleIcon } from "@heroicons/react/outline";
 import { useEffect, useState } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useMutation, useQuery } from 'convex/react';
 import { api } from '../../../../convex/_generated/api';
-import { useRouter, useSearchParams } from "next/navigation";
-import { Id } from "../../../../convex/_generated/dataModel";
+import { Id } from '../../../../convex/_generated/dataModel';
 
 export default function PaymentSuccess() {
   const router = useRouter();
   const searchParams = useSearchParams();
+  const [error, setError] = useState<string | null>(null);
+  const [isProcessing, setIsProcessing] = useState(true);
+
+  // Get the session ID from URL params
+  const sessionId = searchParams?.get('session_id') as Id<"paymentSessions">;
+
+  // Mutations
   const createPayment = useMutation(api.payment.createPayment);
   const updateBooking = useMutation(api.bookings.updateBooking);
-  
-  const [isLoading, setIsLoading] = useState(true);
-  const [paymentProcessed, setPaymentProcessed] = useState(false);
-  const [countdown, setCountdown] = useState(5);
-  const [isClient, setIsClient] = useState(false);
+  const updatePaymentSession = useMutation(api.payment.updatePaymentSessionStatus);
 
-  // Wait for client-side rendering
-  useEffect(() => {
-    setIsClient(true);
-  }, []);
-
-  // Get all payment details from URL
-  const paymentIntent = searchParams?.get('payment_intent') || searchParams?.get('paymentIntentId');
-  const bookingId = searchParams?.get('bookingId');
-  const getBooking = useQuery(api.bookings.getBooking, 
-    bookingId ? { id: bookingId as Id<"bookings"> } : "skip"
+  // Get payment session details
+  const paymentSession = useQuery(api.payment.getPaymentSession, 
+    sessionId ? { sessionId } : "skip"
   );
 
   useEffect(() => {
     const processPayment = async () => {
-      // Check if we have all required parameters and haven't processed payment yet
-      if (!bookingId || !paymentIntent || !getBooking || paymentProcessed) {
-        console.log("Missing required parameters:", { bookingId, paymentIntent, getBooking });
+      if (!sessionId || !paymentSession) {
+        setError("Invalid payment session");
         return;
       }
 
       try {
-        setIsLoading(true);
-        
-        // Get amount from URL or use booking total
-        const amount = searchParams?.get('amount') 
-          ? parseFloat(searchParams.get('amount')!)
-          : getBooking.totalCost;
-
-        // Create payment record
-        const { paymentId, receiptNumber } = await createPayment({
-          bookingId: bookingId as Id<"bookings">,
-          amount: amount,
-          paymentDate: searchParams?.get('paymentDate') || new Date().toISOString(),
-          paymentType: searchParams?.get('paymentType') || 'credit_card',
-          paymentIntentId: paymentIntent,
+        // 1. Create payment record
+        const { paymentId } = await createPayment({
+          bookingId: paymentSession.bookingId,
+          amount: paymentSession.paidAmount,
+          paymentDate: new Date().toISOString(),
+          paymentType: paymentSession.paymentType,
+          paymentIntentId: searchParams?.get('payment_intent') || undefined,
         });
 
-        // Calculate new status
-        const newPaidAmount = (getBooking.paidAmount || 0) + getBooking.totalCost;
-        let newStatus = getBooking.status;
-
-        if (getBooking.status === 'pending') {
-          newStatus = 'inprogress';
-        } else if (newPaidAmount >= getBooking.totalCost) {
-          newStatus = 'completed';
-        }
-
-        // Update booking
+        // 2. Update booking with new paid amount
+        const newPaidAmount = paymentSession.paidAmount;
         await updateBooking({
-          id: bookingId as Id<"bookings">,
-          status: newStatus,
-          paidAmount: Math.ceil(newPaidAmount * 100) / 100
+          id: paymentSession.bookingId,
+          paidAmount: newPaidAmount,
+          status: newPaidAmount >= paymentSession.booking.totalCost ? 'completed' : 'inprogress'
         });
 
-        setPaymentProcessed(true);
-      } catch (error) {
-        console.error("Error processing payment:", error);
-      } finally {
-        setIsLoading(false);
+        // 3. Mark payment session as completed
+        await updatePaymentSession({
+          sessionId,
+          status: 'completed'
+        });
+
+        // 4. Set processing to false
+        setIsProcessing(false);
+
+        // 5. Redirect after successful processing
+        setTimeout(() => {
+          router.push('/bookings');
+        }, 3000);
+
+      } catch (err) {
+        console.error('Error processing payment:', err);
+        setError("Failed to process payment");
+        setIsProcessing(false);
       }
     };
 
-    if (isClient && getBooking) {
+    if (paymentSession && isProcessing) {
       processPayment();
     }
-  }, [bookingId, paymentIntent, getBooking, createPayment, updateBooking, paymentProcessed, isClient, searchParams]);
+  }, [sessionId, paymentSession, createPayment, updateBooking, updatePaymentSession, router, searchParams, isProcessing]);
 
-  // Countdown and redirect
-  useEffect(() => {
-    if (!isLoading && paymentProcessed) {
-      const timer = setInterval(() => {
-        setCountdown((prevCountdown) => prevCountdown - 1);
-      }, 1000);
-
-      const redirectTimer = setTimeout(() => {
-        if (bookingId) {
-          router.push(`/bookings/currentbooking?bookingId=${bookingId}`);
-        } else {
-          router.push('/bookings/currentbooking');
-        }
-      }, 5000);
-
-      return () => {
-        clearInterval(timer);
-        clearTimeout(redirectTimer);
-      };
-    }
-  }, [isLoading, paymentProcessed, bookingId, router]);
-
-  // Don't render until client-side
-  if (!isClient) {
-    return null;
+  if (error) {
+    return (
+      <>
+        <Navi />
+        <div className="flex flex-col items-center justify-center min-h-screen p-6 text-center">
+          <div className="text-red-600 text-xl">
+            {error}
+          </div>
+        </div>
+        <Footer />
+      </>
+    );
   }
 
   return (
@@ -120,12 +97,14 @@ export default function PaymentSuccess() {
       <Navi />
       <div className="flex flex-col items-center justify-center min-h-screen p-6 text-center">
         <CheckCircleIcon className="w-16 h-16 text-green-600" />
-        <h1 className="text-3xl font-bold mt-6">Payment Successful!</h1>
+        <h1 className="text-3xl font-bold mt-6">
+          {isProcessing ? "Processing Payment" : "Payment Successful"}
+        </h1>
         <p className="text-lg text-muted-foreground mt-4">
-          Thank you for your payment. Your booking has been confirmed.
-        </p>
-        <p className="text-md mt-4">
-          Redirecting to booking details in {countdown} seconds...
+          {isProcessing 
+            ? "Please wait while we process your payment..."
+            : "Your payment has been processed successfully. Redirecting..."
+          }
         </p>
       </div>
       <Footer />

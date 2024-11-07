@@ -11,11 +11,11 @@ import { Input } from "@/components/ui/input";
 import { Navi } from '../head/navi';
 import { Footer } from '../head/footer';
 import { useRouter } from 'next/router';
-import CheckoutButton from "../payment/payment_button";
 import { useMutation, useQuery } from 'convex/react';
 import { api } from '../../../convex/_generated/api';
 import { Id } from '../../../convex/_generated/dataModel';
 import { useUser } from "@clerk/nextjs";
+import { useConvexAuth } from "convex/react";
 
 // Add these types at the top of the file
 type Promotion = {
@@ -47,6 +47,7 @@ export function NewBooking3() {
   let sentprice=0;
   const [sentPrice, setSentPrice] = useState<number | null>(null); // Define sentPrice as a state variable
   const [selectedPromotion, setSelectedPromotion] = useState<string | null>(null);
+  const { isAuthenticated } = useConvexAuth();
   
   // Fetch all active promotions
   const promotions = useQuery(api.promotions.getAllPromotions) || [];
@@ -106,80 +107,75 @@ export function NewBooking3() {
   let totalprice=0;
   const calculateTotal = () => {
     const basePrice = Number(pricePerDay);
-    const insurancePrice = extras.insurance ? 10 : 0;
-    const gpsPrice = extras.gps ? 5 : 0;
-    const childSeatPrice = extras.childSeat ? 8 : 0;
-    let totalsum = basePrice + insurancePrice + gpsPrice + childSeatPrice;
     
-    // Apply selected promotion discount if any
-    if (selectedPromotion && applicablePromotions.length > 0) {
-      const promotion = applicablePromotions.find(p => p._id === selectedPromotion);
-      if (promotion) {
-        totalsum = totalsum * (1 - promotion.promotionValue / 100);
-      }
-    }
+    // Get installment details from analytics
+    const installmentDetails = useQuery(api.analytics.calculateInstallmentDetails, {
+      basePrice,
+      totalDays,
+      extras,
+      promotionValue: selectedPromotion && applicablePromotions.length > 0
+        ? applicablePromotions.find(p => p._id === selectedPromotion)?.promotionValue
+        : undefined
+    });
 
-    let total = totalsum;
-    // Round totalprice to 2 decimal places
-    totalprice = Math.ceil(total * totalDays * 100) / 100;
-    totalcalc = `${totalprice.toFixed(2)} One time payment`;
+    if (!installmentDetails) return '';
+
+    totalcalc = `${installmentDetails.totalPrice.toFixed(2)} One time payment`;
+    totalprice = installmentDetails.totalPrice;
     
     if (paymentMethod === "full") {
-      sentprice = Math.ceil(total * 100) / 100;
+      sentprice = installmentDetails.totalPrice;
       return totalcalc;
     } else if (paymentMethod === 'installment') {
-      total = totalDays < 7 ? totalsum : (totalsum * totalDays) / Math.floor(totalDays / 7);
-      // Round installment amount to 2 decimal places
-      total = Math.ceil(total * 100) / 100;
-      sentprice = total;
+      sentprice = installmentDetails.installmentAmount;
+      return totalDays < 7 
+        ? `${installmentDetails.installmentAmount.toFixed(2)}/day for ${totalDays} days` 
+        : `${installmentDetails.installmentAmount.toFixed(2)}/week for ${Math.floor(totalDays / 7)} weeks`;
     }
 
-    return totalDays < 7 
-      ? `${total.toFixed(2)}/day for ${totalDays} days` 
-      : `${total.toFixed(2)}/week for ${Math.floor(totalDays / 7)} weeks`;
+    return '';
   };
 
   const createBooking = useMutation(api.bookings.createBooking);
+  const createPaymentSession = useMutation(api.payment.createPaymentSession);
 
   const handleContinue = async () => {
-    const total = calculateTotal();
-    
-    // If a user promotion is selected, mark it as used
-    if (selectedPromotion && userPromotions?.some(up => up._id === selectedPromotion)) {
-      await markPromotionAsUsed({
-        userId: user?.id as string,
-        promotionId: selectedPromotion
-      });
+    if (!isAuthenticated) {
+      console.error('User not authenticated');
+      return;
     }
-    
-    const booking = {
-      customerId: user?.id as string, // Cast to Id<"customers">
-      carId: registrationNumber as string, // Cast to Id<"cars">
-      startDate: pickupDateTime,
-      endDate: dropoffDateTime,
-      totalCost: totalprice,
-      paidAmount: 0,
-      status: 'pending',
-      pickupLocation,
-      dropoffLocation,
-      customerInsurancetype: extras.insurance ? 'full' : 'basic',
-      customerInsuranceNumber: 'INS123',
-    };
 
     try {
-      const bookingId = await createBooking(booking);
-      console.log('Booking created with ID:', bookingId);
-
-      router.push({
-        pathname: '/Newbooking/payment',
-        query: { 
-          total: total,
-          bookingId: bookingId
-        },
+      // Create booking first
+      const bookingId = await createBooking({
+        customerId: user?.id as string,
+        carId: registrationNumber as string,
+        startDate: pickupDateTime,
+        endDate: dropoffDateTime,
+        totalCost: totalprice,
+        paidAmount: 0,
+        status: 'pending',
+        pickupLocation,
+        dropoffLocation,
+        customerInsurancetype: extras.insurance ? 'full' : 'basic',
+        customerInsuranceNumber: 'INS123',
       });
+
+      // Create payment session with different parameters based on payment method
+      const paymentSession = await createPaymentSession({
+        bookingId,
+        userId: user?.id as string,
+        paymentType: paymentMethod || 'full',
+        paidAmount: paymentMethod === 'installment' ? sentprice : totalprice,
+        ...(paymentMethod === 'installment' && {
+          totalAmount: totalprice,
+        }),
+      });
+
+      // Redirect to payment page with session ID
+      router.push(`/Newbooking/payment/${paymentSession._id}`);
     } catch (error) {
       console.error('Error creating booking:', error);
-      // Handle error (e.g., show error message to user)
     }
   };
 

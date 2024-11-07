@@ -31,6 +31,7 @@ export default defineSchema({
 		goldenMember: v.boolean(),
 		promotions: v.optional(v.array(v.id('promotions'))),
 		expirationDate: v.optional(v.string()),
+		usedPromotions: v.optional(v.array(v.id('promotions'))),
 	})
 		.index('by_userId', ['userId'])
 		.index('by_licenseNumber', ['licenseNumber']),
@@ -134,5 +135,20 @@ export default defineSchema({
     minimumMoneySpent: v.optional(v.number()),
   })
 		.index('by_promotionTitle', ['promotionTitle']),
+
+	paymentSessions: defineTable({
+		bookingId: v.id('bookings'),
+		totalAmount: v.optional(v.number()),
+		paidAmount: v.number(),
+		paymentType: v.string(),
+		userId: v.string(),
+		status: v.string(),
+		createdAt: v.string(),
+		expiresAt: v.string(),
+		updatedAt: v.optional(v.string()),
+	})
+		.index('by_userId', ['userId'])
+		.index('by_bookingId', ['bookingId'])
+		.index('by_status', ['status']),
 });
 	

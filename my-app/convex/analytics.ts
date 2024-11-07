@@ -161,3 +161,111 @@ function calculateIdleDays(
 
   return Math.round(totalDays - bookedDays);
 }
+
+// Add this new function for installment calculations
+export const calculateInstallmentDetails = query({
+  args: {
+    basePrice: v.number(),
+    totalDays: v.number(),
+    extras: v.object({
+      insurance: v.boolean(),
+      gps: v.boolean(),
+      childSeat: v.boolean()
+    }),
+    promotionValue: v.optional(v.number())
+  },
+  handler: async (ctx, args) => {
+    const { basePrice, totalDays, extras, promotionValue } = args;
+    
+    // Calculate extras costs
+    const insurancePrice = extras.insurance ? 10 : 0;
+    const gpsPrice = extras.gps ? 5 : 0;
+    const childSeatPrice = extras.childSeat ? 8 : 0;
+    let totalsum = basePrice + insurancePrice + gpsPrice + childSeatPrice;
+    
+    // Apply promotion if available
+    if (promotionValue) {
+      totalsum = totalsum * (1 - promotionValue / 100);
+    }
+
+    // Calculate total price
+    const totalprice = Math.ceil(totalsum * totalDays * 100) / 100;
+    
+    // Calculate installment amount
+    const installmentAmount = totalDays < 7 
+      ? totalsum 
+      : (totalsum * totalDays) / Math.floor(totalDays / 7);
+    
+    // Round installment to 2 decimal places
+    const roundedInstallmentAmount = Math.ceil(installmentAmount * 100) / 100;
+
+    return {
+      totalPrice: totalprice,
+      installmentAmount: roundedInstallmentAmount,
+      numberOfInstallments: totalDays < 7 ? totalDays : Math.floor(totalDays / 7),
+      pricePerDay: totalsum
+    };
+  }
+});
+
+// Get current active booking for a customer
+export const getCurrentBooking = query({
+  args: {
+    customerId: v.string(),
+  },
+  handler: async (ctx, args) => {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const todayISO = today.toISOString();
+
+    // Get bookings where today falls between start and end date
+    const currentBookings = await ctx.db
+      .query('bookings')
+      .withIndex('by_customerId', (q) => q.eq('customerId', args.customerId))
+      .filter((q) => 
+        q.and(
+          q.lte(q.field('startDate'), todayISO),
+          q.gte(q.field('endDate'), todayISO)
+        )
+      )
+      .collect();
+
+    // If no current bookings, return null
+    if (currentBookings.length === 0) {
+      return null;
+    }
+
+    // Get car details for the booking
+    const bookingsWithDetails = await Promise.all(
+      currentBookings.map(async (booking) => {
+        const car = await ctx.db
+          .query('cars')
+          .withIndex('by_registrationNumber', (q) => 
+            q.eq('registrationNumber', booking.carId)
+          )
+          .first();
+
+        return {
+          ...booking,
+          carDetails: car ? {
+            maker: car.maker,
+            model: car.model,
+            year: car.year,
+            color: car.color,
+            trim: car.trim,
+            registrationNumber: car.registrationNumber
+          } : null,
+          daysRemaining: Math.ceil(
+            (new Date(booking.endDate).getTime() - today.getTime()) / 
+            (1000 * 60 * 60 * 24)
+          )
+        };
+      })
+    );
+
+    // Return the first current booking (in case there are multiple)
+    return bookingsWithDetails[0];
+  }
+});
+
+

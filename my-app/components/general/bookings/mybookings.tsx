@@ -177,8 +177,7 @@ export function Mybookings() {
         {/* Current Booking Section */}
         {bookings?.filter(booking => isBookingCurrent(booking.startDate, booking.endDate))[0] && (
           <Link 
-            href={`/bookings/currentbooking?bookingId=${bookings.filter(booking => 
-              isBookingCurrent(booking.startDate, booking.endDate))[0]._id}`} 
+            href={`/bookings/currentbooking`} 
             className='hover:cursor-pointer mb-8 block'
           >
             <div className="w-full mx-auto mt-1 rounded-lg p-6 bg-white shadow-2xl" style={{ border: "none" }}>
