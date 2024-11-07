@@ -74,7 +74,7 @@ export default function UserPromotions() {
     <div className="flex flex-col min-h-screen">
       <Navi />
       <Separator />
-      <div className="flex flex-row h-[92vh]">
+      <div className="flex flex-row h-full">
         <aside className="flex flex-col items-left justify-between w-fit px-4 md:px-6 border-b bg-primary text-primary-foreground py-2 md:py-12">
           <nav className="flex flex-col items-left justify-between h-fit w-fit gap-4 sm:gap-6">
             <div className="flex flex-col md:flex items-left gap-4 w-fit">
@@ -105,14 +105,14 @@ export default function UserPromotions() {
 
         <main className="flex-1 bg-background py-8 px-4 sm:px-6 lg:px-8">
           <div className="max-w-screen mx-auto">
-            <Card className="bg-white shadow-lg">
+            <Card className="w-full mx-auto mt-1 rounded-lg p-1 bg-white shadow-lg" style={{ border: "none" }}>
               <CardHeader>
                 <CardTitle>Your Permanent Benefits Progress</CardTitle>
               </CardHeader>
               <CardContent>
                 {/* Permanent Promotions */}
                 {processedPermanentPromotions.map((promotion, index) => (
-                  <Card key={promotion._id} className="mb-4 p-4 border-green-500">
+                  <Card key={promotion._id} className="w-full mx-auto mt-4 rounded-lg p-1 bg-white shadow-lg" style={{ border: "none" }}>
                     <CardHeader>
                       <CardTitle>{promotion.promotionTitle}</CardTitle>
                     </CardHeader>
@@ -128,11 +128,15 @@ export default function UserPromotions() {
                                 ${totalMoneySpent.toFixed(2)} / ${(promotion.minimumMoneySpent || 0).toFixed(2)}
                               </span>
                             </div>
-                            <div className="w-full h-4 bg-gray-200 rounded-full">
+                            <div className="w-full h-4 bg-gray-200 rounded-full border border-blue-700" style={{ backgroundColor: '#E5E7EB', borderRadius: '0.375rem' }}>
                               <div 
-                                className="h-full bg-customyello rounded-full transition-all duration-500"
+                                className="h-full bg-blue-500 rounded-full transition-all duration-500"
                                 style={{ 
-                                  width: `${Math.min((totalMoneySpent / (promotion.minimumMoneySpent || 1)) * 100, 100)}%` 
+                                  width: `${Math.min((totalMoneySpent / (promotion.minimumMoneySpent || 1)) * 100, 100)}%`,
+                                  borderRadius: '0.375rem',
+                                  border: '1px solid #2563EB',
+                                  backgroundColor: '#3B82F6',
+                                  transition: 'width 0.5s ease-in-out'
                                 }}
                               />
                             </div>
@@ -149,11 +153,15 @@ export default function UserPromotions() {
                                 {Math.min(bookings?.length || 0, promotion.minimumRentals || 0)} / {promotion.minimumRentals || 0} Bookings
                               </span>
                             </div>
-                            <div className="w-full h-4 bg-gray-200 rounded-full">
+                            <div className="w-full h-4 bg-gray-200 rounded-full border border-blue-700" style={{ backgroundColor: '#E5E7EB', borderRadius: '0.375rem' }}>
                               <div 
-                                className="h-full bg-customyello rounded-full transition-all duration-500"
+                                className="h-full bg-blue-500 rounded-full transition-all duration-500"
                                 style={{ 
-                                  width: `${Math.min(((bookings?.length || 0) / (promotion.minimumRentals || 1)) * 100, 100)}%` 
+                                  width: `${Math.min(((bookings?.length || 0) / (promotion.minimumRentals || 1)) * 100, 100)}%`,
+                                  borderRadius: '0.375rem',
+                                  border: '1px solid #2563EB',
+                                  backgroundColor: '#3B82F6',
+                                  transition: 'width 0.5s ease-in-out'
                                 }}
                               />
                             </div>
@@ -171,19 +179,21 @@ export default function UserPromotions() {
                             Activated
                           </Button>
                         ) : (
-                          <Button
-                            className="w-full"
-                            disabled={
-                              (promotion.minimumMoneySpent && promotion.minimumMoneySpent > 0 && totalMoneySpent < promotion.minimumMoneySpent) || 
-                              (promotion.minimumRentals && promotion.minimumRentals > 0 && (bookings?.length || 0) < promotion.minimumRentals)
-                            }
-                            onClick={() => handleClaimReward(promotion._id)}
-                          >
-                            {((!promotion.minimumMoneySpent || totalMoneySpent >= promotion.minimumMoneySpent) && 
-                              (!promotion.minimumRentals || (bookings?.length || 0) >= promotion.minimumRentals))
-                              ? 'Activate Benefit' 
-                              : 'Complete Requirements'}
-                          </Button>
+                          <div className="flex justify-center">
+                            <Button
+                              className="px-6 py-3 text-sm font-semibold text-white bg-blue-600 hover:bg-blue-500 rounded-lg transition-colors hover:bg-muted shadow-2xl"
+                              disabled={
+                                (promotion.minimumMoneySpent && promotion.minimumMoneySpent > 0 && totalMoneySpent < promotion.minimumMoneySpent) || 
+                                (promotion.minimumRentals && promotion.minimumRentals > 0 && (bookings?.length || 0) < promotion.minimumRentals)
+                              }
+                              onClick={() => handleClaimReward(promotion._id)}
+                            >
+                              {((!promotion.minimumMoneySpent || totalMoneySpent >= promotion.minimumMoneySpent) && 
+                                (!promotion.minimumRentals || (bookings?.length || 0) >= promotion.minimumRentals))
+                                ? 'Activate Benefit' 
+                                : 'Complete Requirements'}
+                            </Button>
+                          </div>
                         )}
                       </div>
                     </CardContent>
