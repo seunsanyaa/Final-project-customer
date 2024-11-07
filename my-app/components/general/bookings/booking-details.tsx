@@ -249,12 +249,11 @@ export default function BookingDetails() {
                 </div>
                 <div>
                   <div className="text-sm font-medium text-muted-foreground">
-                    Cancellation Policy
+                    Days Remaining
                   </div>
-                  <div className="text-base font-semibold">{bookingDetails.cancellationPolicy}</div>
+                  <div className="text-base font-semibold">{bookingDetails.daysRemaining} days remaining</div>
                 </div>
               </div>
-
             </div>
           </div>
         </div>
