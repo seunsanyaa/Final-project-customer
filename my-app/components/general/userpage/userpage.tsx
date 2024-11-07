@@ -286,7 +286,7 @@ export function User_page() {
         </aside>
         <main className="flex-1 bg-background py-8 px-4 sm:px-6 lg:px-8">
           <div className="max-w-screen mx-auto grid grid-rows-1 gap-6">
-            <Card className="bg-muted text-black">
+            <Card className="w-full mx-auto mt-1 rounded-lg p-1 bg-muted shadow-lg" style={{ border: "none" }}>
               <CardHeader>
                 <CardTitle className="text-black">Personal & Contact Information</CardTitle>
               </CardHeader>
@@ -415,12 +415,12 @@ export function User_page() {
         </main>
         {/* Dialog for scanning */}
         <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-          <DialogContent className="sm:max-w-[425px] bg-background">
+          <DialogContent className="sm:max-w-[425px] bg-background" style={{ border: "none" }}>
             <DialogHeader>
               <DialogTitle>Scan Options</DialogTitle>
             </DialogHeader>
             <div className="grid gap-4 py-4">
-              <Card className="bg-muted text-black">
+              <Card className="w-full mx-auto mt-1 rounded-lg p-1 bg-white shadow-lg" style={{ border: "none" }}>
                 <CardHeader>
                   <CardTitle>Upload Picture</CardTitle>
                 </CardHeader>
@@ -428,7 +428,7 @@ export function User_page() {
                   <input 
                     type="file" 
                     accept="image/*" 
-                    className="border rounded p-2"
+                    className="w-full mx-auto mt-1 rounded-lg p-1 bg-white shadow-lg"
                     onChange={handleFileUpload} // Handle file upload
                   />
                   {extractedInfo.fullName && (
@@ -440,7 +440,7 @@ export function User_page() {
                   )}
                 </CardContent>
               </Card>
-              <Card className="bg-muted text-black">
+              <Card className="w-full mx-auto mt-1 rounded-lg p-1 bg-muted shadow-lg" style={{ border: "none" }}>
                 <CardHeader>
                   <CardTitle>Open Camera</CardTitle>
                 </CardHeader>
@@ -451,8 +451,8 @@ export function User_page() {
               </Card>
             </div>
             <DialogFooter>
-              <Button className="hover:bg-muted" variant="outline" onClick={() => setIsDialogOpen(false)}>Cancel</Button>
-              <Button className="hover:bg-muted" variant="outline" onClick={() => setIsDialogOpen(false)}>Confirm</Button>
+              <Button className="px-6 py-3 text-sm font-semibold text-white bg-blue-600 hover:bg-blue-500 rounded-lg transition-colors hover:bg-muted shadow-2xl" style={{ border: "none" }} variant="outline" onClick={() => setIsDialogOpen(false)}>Cancel</Button>
+              <Button className="px-6 py-3 text-sm font-semibold text-white bg-blue-600 hover:bg-blue-500 rounded-lg transition-colors hover:bg-muted shadow-2xl" style={{ border: "none" }} variant="outline" onClick={() => setIsDialogOpen(false)}>Confirm</Button>
             </DialogFooter>
           </DialogContent>
         </Dialog>
