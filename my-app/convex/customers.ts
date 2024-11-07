@@ -11,6 +11,7 @@ export const createCustomer = mutation({
 		licenseNumber: v.string(),
 		address: v.string(),
 		dateOfBirth: v.string(),
+		expirationDate: v.optional(v.string()),
 	},
 	handler: async (ctx, args) => {
 		const existingCustomer = await ctx.db
@@ -30,6 +31,7 @@ export const createCustomer = mutation({
 			licenseNumber: args.licenseNumber,
 			address: args.address,
 			dateOfBirth: args.dateOfBirth,
+			expirationDate: args.expirationDate ?? '',
 			goldenMember: false,
 			rewardPoints: 0,
 		});
@@ -84,6 +86,55 @@ export const updateCustomer = mutation({
 
 		await ctx.db.patch(existingCustomer._id, updatedData);
 		return `Customer with ID ${args.userId} has been updated.`;
+	},
+});
+
+export const upsertCustomer = mutation({
+	args: {
+		userId: v.string(),
+		nationality: v.optional(v.string()),
+		age: v.optional(v.number()),
+		phoneNumber: v.optional(v.string()),
+		licenseNumber: v.optional(v.string()),
+		address: v.optional(v.string()),
+		dateOfBirth: v.optional(v.string()),
+		expirationDate: v.optional(v.string()),
+		rewardPoints: v.optional(v.number()),
+	},
+	handler: async (ctx, args) => {
+		const existingCustomer = await ctx.db
+			.query('customers')
+			.withIndex('by_userId', (q) => q.eq('userId', args.userId))
+			.first();
+
+		if (existingCustomer) {
+			// Prepare the fields to update, excluding userId
+			const { userId, ...updateFields } = args;
+			await ctx.db.patch(existingCustomer._id, updateFields);
+			return `Customer with ID ${args.userId} has been updated.`;
+		} else {
+			// Ensure all required fields are provided for creation
+			const requiredFields = ['nationality', 'age', 'phoneNumber', 'licenseNumber', 'address', 'dateOfBirth'];
+			for (const field of requiredFields) {
+				if (!(field in args) || args[field as keyof typeof args] === undefined) {
+					return `Missing required field: ${field} for creating a new customer.`;
+				}
+			}
+
+			await ctx.db.insert('customers', {
+				userId: args.userId,
+				nationality: args.nationality ?? '',
+				age: args.age ?? 0,
+				phoneNumber: args.phoneNumber ?? '',
+				licenseNumber: args.licenseNumber ?? '',
+				address: args.address ?? '',
+				dateOfBirth: args.dateOfBirth ?? '',
+				expirationDate: args.expirationDate ?? '',
+				goldenMember: false,
+				rewardPoints: args.rewardPoints ?? 0,
+			});
+			return `Customer with ID ${args.userId} has been created.`;
+		}
 	},
 });
 

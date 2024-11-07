@@ -46,10 +46,21 @@ export default function PaymentSuccess() {
 
         // 2. Update booking with new paid amount
         const newPaidAmount = paymentSession.paidAmount;
+        const currentDate = new Date();
+        const returnDate = new Date(paymentSession.booking.endDate);
+
+        let status: 'completed' | 'inprogress' | 'Outstanding';
+
+        if (returnDate < currentDate) {
+          status = newPaidAmount >= paymentSession.booking.totalCost ? 'completed' : 'Outstanding';
+        } else {
+          status = 'inprogress';
+        }
+
         await updateBooking({
           id: paymentSession.bookingId,
           paidAmount: newPaidAmount,
-          status: newPaidAmount >= paymentSession.booking.totalCost ? 'completed' : 'inprogress'
+          status: status,
         });
 
         // 3. Mark payment session as completed

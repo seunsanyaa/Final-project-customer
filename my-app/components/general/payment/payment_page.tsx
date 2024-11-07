@@ -7,7 +7,6 @@ import { Separator } from "@/components/ui/separator";
 import { Navi } from "../head/navi";
 import { Footer } from "../head/footer";
 import { useRouter } from 'next/router';
-import { LottieRefCurrentProps } from "lottie-react";
 import { useQuery } from 'convex/react';
 import { api } from '../../../convex/_generated/api';
 import { useParams } from 'next/navigation';
@@ -126,15 +125,15 @@ function PaymentForm({
     setErrorMessage(null);
 
     try {
-      const { error, paymentIntent } = await stripe.confirmPayment({
+      const result = await stripe.confirmPayment({
         elements,
         confirmParams: {
           return_url: `${window.location.origin}/bookings/currentbooking/success?session_id=${sessionId}`,
         },
       });
 
-      if (error) {
-        setErrorMessage(error.message || "Something went wrong with your payment.");
+      if (result.error) {
+        setErrorMessage(result.error.message || "Something went wrong with your payment.");
         setIsProcessing(false);
       }
     } catch (e) {

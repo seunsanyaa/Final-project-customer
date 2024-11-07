@@ -202,10 +202,6 @@ export function Mybookings() {
             <p>{carDetails ? carDetails.trim : 'N/A'}</p>
           </div>
           <div>
-            <h3 className="text-lg font-semibold">License Plate</h3>
-            <p>{carDetails ? `${carDetails.registrationNumber}` : 'N/A'}</p>
-          </div>
-          <div>
             <h3 className="text-lg font-semibold">Pickup Location</h3>
             <p>{currentBooking ? currentBooking.pickupLocation : 'N/A'}</p>
           </div>
