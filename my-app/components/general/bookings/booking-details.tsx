@@ -243,48 +243,15 @@ export default function BookingDetails() {
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <div className="text-sm font-medium text-muted-foreground">
-                    Rewards Points Used
-                  </div>
-                  <div className="text-base font-semibold">{bookingDetails.rewardsPointsUsed} points</div>
-                </div>
-                <div>
-                  <div className="text-sm font-medium text-muted-foreground">
-                    Rewards Points Credited
-                  </div>
-                  <div className="text-base font-semibold">{bookingDetails.rewardsPointsCredited}</div>
-                </div>
-              </div>
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <div className="text-sm font-medium text-muted-foreground">
                     Booking Status
                   </div>
                   <div className="text-base font-semibold text-yellow-500">{bookingDetails.status}</div>
                 </div>
                 <div>
                   <div className="text-sm font-medium text-muted-foreground">
-                    Cancellation Policy
+                    Days Remaining
                   </div>
-                  <div className="text-base font-semibold">{bookingDetails.cancellationPolicy}</div>
-                </div>
-              </div>
-              <div className="grid gap-2">
-                <div className="text-sm font-medium text-muted-foreground">
-                  Modify Rewards Points
-                </div>
-                <div className="text-base">
-                  You can modify the number of rewards points used for this
-                  booking. Changing the points used may affect the final price
-                  and the number of points earned.
-                </div>
-                <div className="flex items-center gap-2">
-                  <Input
-                    type="number"
-                    min="0"
-                    max={bookingDetails.rewardsPointsEarned}
-                    defaultValue={bookingDetails.rewardsPointsUsed}
-                  />
-                  <Button variant="outline" className='hover:bg-muted'>Update</Button>
+                  <div className="text-base font-semibold">{bookingDetails.daysRemaining} days remaining</div>
                 </div>
               </div>
             </div>

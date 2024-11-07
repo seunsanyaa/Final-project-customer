@@ -64,8 +64,7 @@ export function User_page() {
 
   const [errorMessage, setErrorMessage] = useState<string>("");
 
-  const updateUser = useMutation(api.users.editUser);
-  const updateCustomer = useMutation(api.customers.updateCustomer);
+  const upsertCustomer = useMutation(api.customers.upsertCustomer); // Use upsertCustomer mutation
 
   const isLicenseExpired = (expirationDate: string | undefined) => {
     if (!expirationDate) return false;
@@ -93,26 +92,21 @@ export function User_page() {
           return;
         }
 
-        // Update user information with Clerk userId
-        await updateUser({
+        // Use upsertCustomer mutation to either update or create
+        await upsertCustomer({
           userId: user.id,
-          firstName: personalInfo.fullName.split(' ')[0],
-          lastName: personalInfo.fullName.split(' ')[1] || '',
-          email: contactInfo.email,
+          nationality: personalInfo.nationality || undefined,
+          age: undefined, // Add age if available
+          phoneNumber: contactInfo.phone || undefined,
+          licenseNumber: personalInfo.license || undefined,
+          address: personalInfo.address || undefined,
+          dateOfBirth: personalInfo.dob || undefined,
+          expirationDate: personalInfo.expirationDate || undefined,
         });
 
-        // Update customer information with same Clerk userId
-        await updateCustomer({
-          userId: user.id,
-          nationality: personalInfo.nationality,
-          phoneNumber: contactInfo.phone,
-          licenseNumber: personalInfo.license,
-          address: personalInfo.address,
-          dateOfBirth: personalInfo.dob,
-          expirationDate: personalInfo.expirationDate,
-        });
+        // Optionally, refetch customer data
       } catch (error) {
-        console.error('Error updating information:', error);
+        console.error('Error upserting customer:', error);
       }
     }
     setIsEditing((prev) => !prev);
