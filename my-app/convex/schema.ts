@@ -32,6 +32,7 @@ export default defineSchema({
 		promotions: v.optional(v.array(v.id('promotions'))),
 		expirationDate: v.optional(v.string()),
 		usedPromotions: v.optional(v.array(v.id('promotions'))),
+		rewardPoints: v.number(),
 	})
 		.index('by_userId', ['userId'])
 		.index('by_licenseNumber', ['licenseNumber']),

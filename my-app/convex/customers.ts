@@ -31,6 +31,7 @@ export const createCustomer = mutation({
 			address: args.address,
 			dateOfBirth: args.dateOfBirth,
 			goldenMember: false,
+			rewardPoints: 0,
 		});
 	},
 });
@@ -58,12 +59,13 @@ export const updateCustomer = mutation({
 	args: {
 		userId: v.string(),
 		nationality: v.optional(v.string()),
-		age: v.optional(v.number()), // Changed to optional string
-		phoneNumber: v.optional(v.string()), // Changed to optional string
-		licenseNumber: v.optional(v.string()), // Changed to optional string
-		address: v.optional(v.string()), // Changed to optional string
-		dateOfBirth: v.optional(v.string()), // Changed to optional string
-		expirationDate: v.optional(v.string()), // Changed to optional string
+		age: v.optional(v.number()),
+		phoneNumber: v.optional(v.string()),
+		licenseNumber: v.optional(v.string()),
+		address: v.optional(v.string()),
+		dateOfBirth: v.optional(v.string()),
+		expirationDate: v.optional(v.string()),
+		rewardPoints: v.optional(v.number()),
 	},
 	handler: async (ctx, args) => {
 		const existingCustomer = await ctx.db
@@ -129,5 +131,23 @@ export const upgradeCustomer = mutation({
 		});
 
 		return `Customer with ID ${args.userId} has been upgraded to Golden Member.`;
+	},
+});
+
+export const getRewardPointsByUserId = query({
+	args: {
+		userId: v.string(),
+	},
+	handler: async (ctx, args) => {
+		const customer = await ctx.db
+			.query('customers')
+			.withIndex('by_userId', (q) => q.eq('userId', args.userId))
+			.first();
+
+		if (!customer) {
+			return null; // Return null if no customer is found
+		}
+
+		return customer.rewardPoints; // Return the reward points
 	},
 });
