@@ -3,7 +3,7 @@ import Link from "next/link"
 import { useState, useEffect } from "react"
 import { Button } from "@/components/ui/button"
 import { Card, CardHeader, CardContent, CardFooter } from "@/components/ui/card"
-import { Dialog, DialogContent, DialogFooter } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Separator } from "@/components/ui/separator"
 import { Navi } from '../head/navi';
 import { Footer } from '../head/footer';
@@ -40,6 +40,7 @@ export function Mybookings() {
   const [selectedBooking, setSelectedBooking] = useState<Booking | null>(null);
   const [loading, setLoading] = useState(true);
   const lottieRef = useRef<LottieRefCurrentProps>(null);
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
 
   const customerId = user?.id || "";
   
@@ -108,7 +109,8 @@ export function Mybookings() {
   }
   
   const handleViewDetails = (booking: Booking) => {
-    setSelectedBooking(booking)
+    setSelectedBooking(booking);
+    setIsDialogOpen(true);
   }
 
   
@@ -221,7 +223,7 @@ export function Mybookings() {
 
         {/* Filter Section - Keep your existing filter code */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          <div className="bg-background rounded-lg shadow-xl p-6 max-w-md">
+          <div className="bg-background rounded-lg shadow-xl p-6 max-w-md h-[500px]">
             <h2 className="text-xl font-bold mb-4">Filter Bookings</h2>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
@@ -422,6 +424,51 @@ export function Mybookings() {
       </div>
       <Separator/>
       <Footer/>
+
+      <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+        <DialogContent className="sm:max-w-[425px]"  style={{ opacity: 1, backgroundColor: '#ffffff', zIndex: 50, border: "none" }}>
+          <DialogHeader>
+            <DialogTitle>Booking Details</DialogTitle>
+          </DialogHeader>
+          {selectedBooking && (
+            <div className="grid gap-4 py-4">
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <h3 className="font-semibold">Vehicle</h3>
+                  <p>{selectedBooking.make} {selectedBooking.model}</p>
+                  <p className="text-sm text-muted-foreground">{selectedBooking.trim}</p>
+                </div>
+                <div>
+                  <h3 className="font-semibold">Total Cost</h3>
+                  <p>${selectedBooking.totalCost.toFixed(2)}</p>
+                </div>
+              </div>
+              
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <h3 className="font-semibold">Start Date</h3>
+                  <p>{selectedBooking.startDate}</p>
+                </div>
+                <div>
+                  <h3 className="font-semibold">End Date</h3>
+                  <p>{selectedBooking.endDate}</p>
+                </div>
+              </div>
+              
+              <div className="space-y-2">
+                <div>
+                  <h3 className="font-semibold">Pickup Location</h3>
+                  <p>{selectedBooking.pickupLocation}</p>
+                </div>
+                <div>
+                  <h3 className="font-semibold">Return Location</h3>
+                  <p>{selectedBooking.dropoffLocation}</p>
+                </div>
+              </div>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
     </>
   );
 }
