@@ -3,7 +3,7 @@ export function Footer() {
   return (
     <>
 <footer
-        className="flex items-center justify-between h-fit px-4 md:px-6 border-b bg-primary text-primary-foreground py-6 md:py-12 ">
+        className="flex items-center justify-between h-fit px-4 md:px-6 border-b bg-primary text-primary-foreground py-6 md:py-12">
           <div className="container max-w-7xl grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-8 text-sm">
         <div className="grid gap-1">
           <h3 className="font-semibold">Company</h3>

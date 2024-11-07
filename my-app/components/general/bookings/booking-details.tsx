@@ -185,7 +185,7 @@ export default function BookingDetails() {
                 </div>
               </div>
             </div>
-            <div className="px-6 py-5 grid gap-6">
+            <div className="px-6 py-5 grid gap-6 bg-card">
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <div className="text-sm font-medium text-muted-foreground">
