@@ -20,6 +20,9 @@ export default function UserPromotions() {
   const userRedeemedPromotions = useQuery(api.promotions.getUserRedeemedPromotions, { 
     userId: user?.id || "" 
   });
+  const rewardPoints = useQuery(api.customers.getRewardPointsByUserId, { 
+    userId: user?.id || "" 
+  });
 
   // Calculate total money spent from bookings with proper rounding
   const totalMoneySpent = useMemo(() => {
@@ -105,6 +108,11 @@ export default function UserPromotions() {
 
         <main className="flex-1 bg-background py-8 px-4 sm:px-6 lg:px-8">
           <div className="max-w-screen mx-auto">
+            <div className="flex justify-end mb-4">
+              <span className="text-sm font-medium">
+                Reward Points: {rewardPoints ?? 0}
+              </span>
+            </div>
             <Card className="w-full mx-auto mt-1 rounded-lg p-1 bg-white shadow-lg" style={{ border: "none" }}>
               <CardHeader>
                 <CardTitle>Your Permanent Benefits Progress</CardTitle>
