@@ -1,27 +1,35 @@
 import { Button } from "@/components/ui/button";
 import { useSignIn } from "@clerk/nextjs";
-
+import { useRouter } from "next/router";
  
 // const publicPages: Array<string> = [];
  
 export const SignInOAuthButtons = () => {
-  const { signIn, isLoaded, } = useSignIn();
+  const { signIn, isLoaded } = useSignIn();
+  const router = useRouter();
+
   if (!isLoaded) {
     return null;
   }
+
+  const getRedirectUrl = () => {
+    const storedRedirect = sessionStorage.getItem('redirectAfterLogin');
+    return storedRedirect || '/vehicles'; // Default to /vehicles if no stored redirect
+  };
+
   const signInWithGoogle = () =>
     signIn.authenticateWithRedirect({
       strategy: "oauth_google",
       redirectUrl: "/sso-callback",
-      redirectUrlComplete: "/vehicles",
+      redirectUrlComplete: getRedirectUrl(),
     });
 
-    const signInWithFacebook = () =>
-      signIn.authenticateWithRedirect({
-        strategy: "oauth_facebook",
-        redirectUrl: "/sso-callback",
-        redirectUrlComplete: "/vehicles",
-      });
+  const signInWithFacebook = () =>
+    signIn.authenticateWithRedirect({
+      strategy: "oauth_facebook",
+      redirectUrl: "/sso-callback",
+      redirectUrlComplete: getRedirectUrl(),
+    });
   
   
   

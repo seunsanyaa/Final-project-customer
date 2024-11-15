@@ -1,17 +1,30 @@
 import Image from "next/image";
 import { useRouter } from "next/router";
+import { useEffect } from "react";
+import { useUser, useAuth } from "@clerk/nextjs";
 import ChangePasswordComponent from "./change-password";
 import LoginComponent from "./login";
-// import OnboardComponent from "./onboard";
 import ResetComponent from "./password_reset";
 import VerifyComponent from "./verify_code";
 
-// AuthLayout component for handling different authentication views
 export default function AuthLayout() {
   const router = useRouter();
+  const { isLoaded, userId } = useAuth();
+  
+  // Handle redirect after successful login
+  useEffect(() => {
+    if (!isLoaded) return; // Wait for auth to load
+
+    if (router.pathname === "/login" && userId) {
+      const redirectPath = sessionStorage.getItem('redirectAfterLogin');
+      if (redirectPath) {
+        sessionStorage.removeItem('redirectAfterLogin'); // Clear the stored path
+        router.push(redirectPath);
+      }
+    }
+  }, [router, isLoaded, userId]);
 
   return (
-    // Main container with full height and width, using flexbox
     <div className="flex h-screen w-full flex-row gap-10 p-4">
       {/* Left side - Image container */}
       <div className="w-full basis-1/2">
@@ -29,8 +42,6 @@ export default function AuthLayout() {
         {/* Render different components based on the current route */}
         {router.pathname === "/onboarding" ? (
           <></>
-          // TODO: Uncomment and implement OnboardComponent
-          // <OnboardComponent />
         ) : router.pathname === "/reset-password" ? (
           <ResetComponent />
         ) : router.pathname === "/change-password" ? (
@@ -38,7 +49,6 @@ export default function AuthLayout() {
         ) : router.pathname === "/verify-account" ? (
           <VerifyComponent />
         ) : (
-          // Default to LoginComponent if no other route matches
           <LoginComponent />
         )}
       </div>

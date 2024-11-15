@@ -88,7 +88,7 @@ export function Carinfo() {
 
           {/* Specifications card below */}
           <div className="mt-12 rounded-lg p-8 bg-white shadow-2xl">
-            <Specifications maker={car.maker} model={car.model} year={car.year} trim={car.trim} />
+            <Specifications registrationNumber={car.registrationNumber} />
           </div>
 
           <div className="mt-12 space-y-8">

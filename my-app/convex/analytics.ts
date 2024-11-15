@@ -216,16 +216,23 @@ export const getCurrentBooking = query({
   handler: async (ctx, args) => {
     const today = new Date();
     today.setHours(0, 0, 0, 0);
-    const todayISO = today.toISOString();
-
-    // Get bookings where today falls between start and end date
+    // Format to match DB timestamp format (YYYY-MM-DDT00:00)
+    const todayStart = today.toISOString().split('T')[0] + 'T00:00';
+    const todayEnd = today.toISOString().split('T')[0] + 'T23:59';
+    
+    // Get bookings where today falls between start and end date (inclusive)
     const currentBookings = await ctx.db
       .query('bookings')
       .withIndex('by_customerId', (q) => q.eq('customerId', args.customerId))
       .filter((q) => 
-        q.and(
-          q.lte(q.field('startDate'), todayISO),
-          q.gte(q.field('endDate'), todayISO)
+        q.or(
+          q.and(
+            q.lte(q.field('startDate'), todayEnd),
+            q.gte(q.field('endDate'), todayStart)
+          ),
+          q.gte(q.field('startDate'), todayStart),
+          q.lte(q.field('startDate'), todayEnd),
+          q.gte(q.field('endDate'), todayStart)
         )
       )
       .collect();

@@ -13,6 +13,7 @@ import {useUser} from "@clerk/nextjs"
 import { useRef } from "react"
 import Lottie, { LottieRefCurrentProps } from "lottie-react"
 import loadingAnimation from "@/public/animations/loadingAnimation.json"
+import { Redirection } from "@/components/ui/redirection";
 
 interface Booking {
   _id: string;
@@ -129,14 +130,7 @@ export function Mybookings() {
   // }
 
   if (customerId === "") {
-    return (
-      <>
-        <Navi />
-        <div className="flex items-center justify-center h-screen">
-          <div className="text-2xl font-bold">Please Login to View your Bookings</div>
-        </div>
-      </>
-    );
+    return <Redirection />;
   }
 
   const currentBooking = bookings && bookings.length > 0 ? bookings[0] : null;

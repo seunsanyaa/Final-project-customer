@@ -12,6 +12,7 @@ import { Elements, PaymentElement, useStripe, useElements } from "@stripe/react-
 import { loadStripe } from "@stripe/stripe-js";
 import { useUser } from "@clerk/nextjs";
 import { Card } from '@/components/ui/card';
+import { Redirection } from "@/components/ui/redirection";
 
 export default function BookingDetails() {
   const { user } = useUser();
@@ -38,7 +39,10 @@ export default function BookingDetails() {
   });
 
   const updateBooking = useMutation(api.bookings.updateBooking);
-  const addRewardPoints = useMutation(api.customers.addRewardPoints);
+
+  if (!user) {
+    return <Redirection />;
+  }
 
   // If no active booking, show message
   if (!bookingDetails) {
@@ -57,9 +61,6 @@ export default function BookingDetails() {
       </div>
     );
   }
-
-  // Calculate reward points earned
-  const rewardPointsEarned = Math.floor(bookingDetails.totalCost * 0.1);
 
   const handleModifyClick = () => {
     setIsModalOpen(true);
@@ -82,9 +83,6 @@ export default function BookingDetails() {
       startDate: pickupDate,
       endDate: dropoffDate,
     });
-
-    // Add reward points to the customer
-   
 
     setIsModalOpen(false);
   };
@@ -161,14 +159,13 @@ export default function BookingDetails() {
     );
   };
 
-  const addrewardPoints = async () => {
-    await addRewardPoints({
-      userId: user?.id ?? "",
-    points: rewardPointsEarned,
-    });
+  const calculateRewardPoints = () => {
+    if (!bookingDetails) return 0;
+    // Calculate 10% of total cost as reward points
+    return Math.floor(bookingDetails.totalCost * 0.1);
   };
+
   return (
-    addrewardPoints(),
     <div>
       <Navi/>
       <Separator />
@@ -232,9 +229,11 @@ export default function BookingDetails() {
                   </div>
                   <div>
                     <div className="text-sm font-medium text-muted-foreground">
-                      Rewards Points Earned
+                      Potential Rewards Points
                     </div>
-                    <div className="text-base font-semibold">{rewardPointsEarned} points</div>
+                    <div className="text-base font-semibold">
+                      {calculateRewardPoints()} points
+                    </div>
                   </div>
                 </div>
                 <div className="grid grid-cols-2 gap-4">

@@ -316,3 +316,52 @@ export const checkAndUpdateBookingStatus = mutation({
 		};
 	},
 });
+
+// Modify the awardBookingRewardPoints mutation to check payment session
+export const awardBookingRewardPoints = mutation({
+	args: {
+		bookingId: v.id('bookings'),
+		customerId: v.string(),
+	},
+	handler: async (ctx, args) => {
+		// Check if there's a completed payment session for this booking
+		const paymentSession = await ctx.db
+			.query("paymentSessions")
+			.withIndex("by_bookingId", q => q.eq("bookingId", args.bookingId))
+			.filter(q => q.eq(q.field("status"), "completed"))
+			.first();
+
+		if (!paymentSession) {
+			return {
+				success: false,
+				message: 'No completed payment session found for this booking'
+			};
+		}
+
+		const booking = await ctx.db.get(args.bookingId);
+		if (!booking) {
+			throw new Error('Booking not found');
+		}
+
+		// Calculate points (10% of total cost)
+		const pointsToAward = Math.floor(booking.totalCost * 0.1);
+
+		// Award points to customer
+		const customer = await ctx.db
+			.query('customers')
+			.withIndex('by_userId', (q) => q.eq('userId', args.customerId))
+			.first();
+
+		if (customer) {
+			await ctx.db.patch(customer._id, {
+				rewardPoints: (customer.rewardPoints || 0) + pointsToAward
+			});
+		}
+
+		return {
+			success: true,
+			message: `Awarded ${pointsToAward} points`,
+			pointsAwarded: pointsToAward
+		};
+	}
+});

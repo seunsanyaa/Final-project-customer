@@ -21,6 +21,7 @@ export default function PaymentSuccess() {
   const createPayment = useMutation(api.payment.createPayment);
   const updateBooking = useMutation(api.bookings.updateBooking);
   const updatePaymentSession = useMutation(api.payment.updatePaymentSessionStatus);
+  const awardBookingRewardPoints = useMutation(api.bookings.awardBookingRewardPoints);
 
   // Get payment session details
   const paymentSession = useQuery(api.payment.getPaymentSession, 
@@ -45,49 +46,43 @@ export default function PaymentSuccess() {
         });
 
         // 2. Update booking with new paid amount
-        const newPaidAmount = paymentSession.paidAmount;
-        const currentDate = new Date();
-        const returnDate = new Date(paymentSession.booking.endDate);
-
-        let status: 'completed' | 'inprogress' | 'Outstanding';
-
-        if (returnDate < currentDate) {
-          status = newPaidAmount >= paymentSession.booking.totalCost ? 'completed' : 'Outstanding';
-        } else {
-          status = 'inprogress';
-        }
-
         await updateBooking({
           id: paymentSession.bookingId,
-          paidAmount: newPaidAmount,
-          status: status,
+          paidAmount: paymentSession.paidAmount,
+          status: 'confirmed'
         });
 
-        // 3. Mark payment session as completed
+        // 3. Update payment session status
         await updatePaymentSession({
           sessionId,
-          status: 'completed'
+          status: 'completed',
         });
 
-        // 4. Set processing to false
-        setIsProcessing(false);
+        // 4. Award reward points only after payment session is marked as completed
+        if (paymentSession.status === 'completed') {
+          await awardBookingRewardPoints({
+            bookingId: paymentSession.bookingId,
+            customerId: paymentSession.userId
+          });
+        }
 
-        // 5. Redirect after successful processing
+        // 5. Redirect to booking details
         setTimeout(() => {
-          router.push('/bookings');
-        }, 3000);
+          router.push(`/bookings/${paymentSession.bookingId}`);
+        }, 2000);
 
-      } catch (err) {
-        console.error('Error processing payment:', err);
+      } catch (error) {
+        console.error('Error processing payment:', error);
         setError("Failed to process payment");
+      } finally {
         setIsProcessing(false);
       }
     };
 
-    if (paymentSession && isProcessing) {
+    if (sessionId && paymentSession && isProcessing) {
       processPayment();
     }
-  }, [sessionId, paymentSession, createPayment, updateBooking, updatePaymentSession, router, searchParams, isProcessing]);
+  }, [sessionId, paymentSession, createPayment, updateBooking, updatePaymentSession, awardBookingRewardPoints, router, searchParams, isProcessing]);
 
   if (error) {
     return (

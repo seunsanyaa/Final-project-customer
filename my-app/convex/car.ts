@@ -234,67 +234,23 @@ export const getAllAvailableCarsGrouped = query({
 	},
 });
 
-export const getCarSpecifications = action({
+export const getCarSpecifications = query({
 	args: {
-		maker: v.string(),
-		model: v.string(),
-		year: v.number(),
-		trim: v.string(),
+		registrationNumber: v.string(),
 	},
 	handler: async (ctx, args) => {
-		const { maker, model, year, trim } = args;
-		// Extract the first word of the trim if it contains multiple words
-		const trimFirstWord = trim.split(' ')[0];
+		const specifications = await ctx.db
+			.query("specifications")
+			.withIndex("by_registrationNumber", (q) => 
+				q.eq("registrationNumber", args.registrationNumber)
+			)
+			.first();
 
-		// Log the full URL with the first word of the trim
-		console.log(`https://www.carqueryapi.com/api/0.3/?callback=?&cmd=getTrims&make=${encodeURIComponent(maker)}&model=${encodeURIComponent(model)}&year=${year}&trim=${encodeURIComponent(trimFirstWord)}`);
-
-		// Construct the API URL with the first word of the trim
-		const apiUrl = `https://www.carqueryapi.com/api/0.3/?callback=?&cmd=getTrims&make=${encodeURIComponent(maker)}&model=${encodeURIComponent(model)}&year=${year}&trim=${encodeURIComponent(trimFirstWord)}`;
-
-		try {
-			const response = await fetch(apiUrl);
-			const text = await response.text();
-			console.log('API Response:', text);
-			// Extract JSON from JSONP response
-			const jsonMatch = text.match(/\{.+\}/);
-			if (!jsonMatch) {
-				throw new Error('Invalid API response');
-			}
-
-			const json = JSON.parse(jsonMatch[0]);
-
-			if (!json.Trims || json.Trims.length === 0) {
-				throw new Error('No specifications found for the given car details');
-			}
-
-			// Find the trim that exactly matches the provided trim
-			const matchingTrim = json.Trims.find((t: any) => t.model_trim === trim);
-
-			if (!matchingTrim) {
-				throw new Error(`No matching trim found for trim "${trim}"`);
-			}
-
-			const carData = matchingTrim;
-
-			const specifications = {
-				engineType: carData.model_engine_type || "N/A",
-				engineCylinders: carData.model_engine_cyl || "N/A",
-				engineHorsepower: carData.model_engine_power_ps
-					? `${carData.model_engine_power_ps} PS`
-					: "N/A",
-				fuelType: carData.model_engine_fuel || "N/A",
-				transmission: carData.model_transmission_type || "N/A",
-				drive: carData.model_drive || "N/A",
-				doors: carData.model_doors || "N/A",
-				bodyType: carData.model_body || "N/A",
-			};
-
-			return specifications;
-		} catch (error) {
-			console.error('Error fetching car specifications:', error);
-			throw new Error('Failed to fetch specifications');
+		if (!specifications) {
+			throw new Error(`No specifications found for car with registration number ${args.registrationNumber}`);
 		}
+
+		return specifications;
 	},
 });
 

@@ -1,68 +1,47 @@
 import React from 'react';
-import { useAction } from 'convex/react';
+import { useQuery } from 'convex/react';
 import { api } from '@/convex/_generated/api';
-import { Specifications as SpecificationsType } from '@/types/car';
 
 interface SpecificationsProps {
-  maker: string;
-  model: string;
-  year: number;
-  trim: string;
+  registrationNumber: string;
 }
 
-const Specifications: React.FC<SpecificationsProps> = ({ maker, model, year, trim }) => {
-  const getCarSpecifications = useAction(api.car.getCarSpecifications);
-  const [specifications, setSpecifications] = React.useState<SpecificationsType | null>(null);
-  const [loading, setLoading] = React.useState(true);
+const Specifications: React.FC<SpecificationsProps> = ({ registrationNumber }) => {
+  const getCarSpecifications = useQuery(api.car.getCarSpecifications, { registrationNumber });
+  const [loading, setLoading] = React.useState(false);
   const [error, setError] = React.useState<string | null>(null);
 
-  React.useEffect(() => {
-    const fetchSpecifications = async () => {
-      try {
-        const specs = await getCarSpecifications({ maker, model, year, trim });
-        setSpecifications(specs);
-      } catch (err) {
-        setError('Failed to fetch specifications');
-        console.error(err);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchSpecifications();
-  }, [maker, model, year, getCarSpecifications]);
-
-  if (loading) return <div>Loading specifications...</div>;
+  if (getCarSpecifications === undefined) return <div>Loading specifications...</div>;
   if (error) return <div>Error: {error}</div>;
-  if (!specifications) return <div>No specifications available</div>;
+  if (!getCarSpecifications) return <div>No specifications available</div>;
 
   return (
     <div>
       <h2 className="text-2xl font-bold">Specifications</h2>
       <ul className="mt-4 space-y-2 text-muted-foreground">
         <li>
-          <span className="font-medium">Engine Type:</span> {specifications.engineType}
+          <span className="font-medium">Engine Type:</span> {getCarSpecifications.engineType}
         </li>
         <li>
-          <span className="font-medium">Engine Cylinders:</span> {specifications.engineCylinders}
+          <span className="font-medium">Engine Cylinders:</span> {getCarSpecifications.engineCylinders}
         </li>
         <li>
-          <span className="font-medium">Engine Max Horsepower:</span> {specifications.engineHorsepower}
+          <span className="font-medium">Engine Max Horsepower:</span> {getCarSpecifications.engineHorsepower}
         </li>
         <li>
-          <span className="font-medium">Fuel Type:</span> {specifications.fuelType}
+          <span className="font-medium">Fuel Type:</span> {getCarSpecifications.fuelType}
         </li>
         <li>
-          <span className="font-medium">Transmission Type:</span> {specifications.transmission}
+          <span className="font-medium">Transmission Type:</span> {getCarSpecifications.transmission}
         </li>
         <li>
-          <span className="font-medium">Drive:</span> {specifications.drive}
+          <span className="font-medium">Drive:</span> {getCarSpecifications.drive}
         </li>
         <li>
-          <span className="font-medium">Doors:</span> {specifications.doors}
+          <span className="font-medium">Doors:</span> {getCarSpecifications.doors}
         </li>
         <li>
-          <span className="font-medium">Body Type:</span> {specifications.bodyType}
+          <span className="font-medium">Body Type:</span> {getCarSpecifications.bodyType}
         </li>
       </ul>
     </div>

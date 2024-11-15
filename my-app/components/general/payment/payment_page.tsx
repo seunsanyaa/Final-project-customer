@@ -117,6 +117,18 @@ function PaymentForm({
   const [isProcessing, setIsProcessing] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
+  const paymentSession = useQuery(api.payment.getPaymentSession, { sessionId });
+  const booking = useQuery(api.bookings.getBooking, { 
+    id: paymentSession?.bookingId 
+  });
+  const car = useQuery(api.car.getCar, { 
+    registrationNumber: booking?.carId 
+  });
+
+  const rentalDuration = booking ? 
+    Math.ceil((new Date(booking.endDate).getTime() - new Date(booking.startDate).getTime()) / (1000 * 60 * 60 * 24)) 
+    : 0;
+
   const handleSubmit = async () => {
     if (!stripe || !elements) {
       return;
@@ -207,9 +219,21 @@ function PaymentForm({
                 <CardContent className="flex items-center gap-4">
                   <CarIcon className="w-12 h-12 text-primary" />
                   <div>
-                    <h3 className="text-lg font-semibold">Toyota Camry 2023</h3>
-                    <p className="text-muted-foreground">4 Days Rental</p>
-                    <p className="text-muted-foreground">Pick-Up: 10:00 AM</p>
+                    <h3 className="text-lg font-semibold">
+                      {car ? `${car.maker} ${car.model} ${car.year}` : 'Loading...'}
+                    </h3>
+                    <p className="text-muted-foreground">
+                      {rentalDuration} {rentalDuration === 1 ? 'Day' : 'Days'} Rental
+                    </p>
+                    <p className="text-muted-foreground">
+                      Pick-Up: {booking ? new Date(booking.startDate).toLocaleString() : 'Loading...'}
+                    </p>
+                    <p className="text-muted-foreground">
+                      Drop-Off: {booking ? new Date(booking.endDate).toLocaleString() : 'Loading...'}
+                    </p>
+                    <p className="text-muted-foreground">
+                      Location: {booking?.pickupLocation}
+                    </p>
                   </div>
                 </CardContent>
               </Card>
