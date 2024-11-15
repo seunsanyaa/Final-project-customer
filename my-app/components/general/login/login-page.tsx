@@ -76,12 +76,12 @@ export function LoginPage() {
           </form>
         </CardContent>
         <CardFooter className="flex flex-col space-y-4 items-center">
-          <Link href="/Login/Forgotpass" className="text-sm text-blue-500 hover:underline">
+          <Link href="/login/forgotpass" className="text-sm text-blue-500 hover:underline">
             Forgot password?
           </Link>
           <div className="text-sm">
             Don't have an account?{" "}
-            <Link href="/Login/Signup" className="text-blue-500 hover:underline">
+            <Link href="/login/signup" className="text-blue-500 hover:underline">
               Sign up
             </Link>
           </div>
