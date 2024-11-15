@@ -11,6 +11,7 @@ import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "
 import { Elements, PaymentElement, useStripe, useElements } from "@stripe/react-stripe-js";
 import { loadStripe } from "@stripe/stripe-js";
 import { useUser } from "@clerk/nextjs";
+import { Card } from '@/components/ui/card';
 
 export default function BookingDetails() {
   const { user } = useUser();
@@ -168,107 +169,108 @@ export default function BookingDetails() {
   };
   return (
     addrewardPoints(),
-      <div>
+    <div>
       <Navi/>
       <Separator />
-      <div className="max-w-4xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
-        <div className="grid gap-8">
-          <div className="bg-background rounded-lg shadow-sm overflow-hidden">
-            <div className="px-6 py-5 bg-muted">
-              <div className="flex items-center justify-between">
-                <h1 className="text-2xl font-semibold">Booking Details</h1>
-                <div className="flex gap-2">
-                  {bookingDetails.totalCost > bookingDetails.paidAmount && (
-                    <Button variant="outline" size="sm" className='hover:bg-muted' onClick={() => handlePaymentClick(true)}>
-                      Pay Next Installment
+        <div className="max-w-4xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
+          <div className="grid gap-8">
+            <div className="bg-background rounded-lg shadow-2xl overflow-hidden">
+              <div className="px-6 py-5 bg-muted">
+                <div className="flex items-center justify-between">
+                  <h1 className="text-2xl font-semibold">Booking Details</h1>
+                  <div className="flex gap-2">
+                    {bookingDetails.totalCost > bookingDetails.paidAmount && (
+                      <Button variant="outline" size="sm" className='hover:bg-muted' onClick={() => handlePaymentClick(true)}>
+                        Pay Next Installment
+                      </Button>
+                    )}
+                    <Button  size="sm" className="px-6 py-3 text-lg font-semibold text-white bg-blue-600 hover:bg-blue-500 rounded-lg transition-colors hover:bg-black shadow-2xl" onClick={handleModifyClick}>
+                      Modify Booking
                     </Button>
-                  )}
-                  <Button variant="outline" size="sm" className='hover:bg-muted' onClick={handleModifyClick}>
-                    Modify Booking
-                  </Button>
-                </div>
-              </div>
-            </div>
-            <div className="px-6 py-5 grid gap-6 bg-card">
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <div className="text-sm font-medium text-muted-foreground">
-                    Booking ID
-                  </div>
-                  <div className="text-base font-semibold">{bookingDetails._id}</div>
-                </div>
-                <div>
-                  <div className="text-sm font-medium text-muted-foreground">
-                    Rental Dates
-                  </div>
-                  <div className="text-base font-semibold">
-                    {bookingDetails.startDate} - {bookingDetails.endDate}
                   </div>
                 </div>
               </div>
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <div className="text-sm font-medium text-muted-foreground">
-                    Original Booking Cost
+              <div className="px-6 py-5 grid gap-6 bg-card">
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <div className="text-sm font-medium text-muted-foreground">
+                      Booking ID
+                    </div>
+                    <div className="text-base font-semibold">{bookingDetails._id}</div>
                   </div>
-                  <div className="text-base font-semibold">${bookingDetails.totalCost}.00</div>
+                  <div>
+                    <div className="text-sm font-medium text-muted-foreground">
+                      Rental Dates
+                    </div>
+                    <div className="text-base font-semibold">
+                      {bookingDetails.startDate} - {bookingDetails.endDate}
+                    </div>
+                  </div>
                 </div>
-                <div>
-                  <div className="text-sm font-medium text-muted-foreground">
-                    Paid Amount
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <div className="text-sm font-medium text-muted-foreground">
+                      Original Booking Cost
+                    </div>
+                    <div className="text-base font-semibold">${bookingDetails.totalCost}.00</div>
                   </div>
-                  <div className="text-base font-semibold text-green-500">
-                    ${bookingDetails.paidAmount}
+                  <div>
+                    <div className="text-sm font-medium text-muted-foreground">
+                      Paid Amount
+                    </div>
+                    <div className="text-base font-semibold text-green-500">
+                      ${bookingDetails.paidAmount}
+                    </div>
                   </div>
                 </div>
-              </div>
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <div className="text-sm font-medium text-muted-foreground">
-                    Remaining Cost
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <div className="text-sm font-medium text-muted-foreground">
+                      Remaining Cost
+                    </div>
+                    <div className="text-base font-semibold">${(bookingDetails.totalCost - bookingDetails.paidAmount).toFixed(2)}</div>
                   </div>
-                  <div className="text-base font-semibold">${(bookingDetails.totalCost - bookingDetails.paidAmount).toFixed(2)}</div>
+                  <div>
+                    <div className="text-sm font-medium text-muted-foreground">
+                      Rewards Points Earned
+                    </div>
+                    <div className="text-base font-semibold">{rewardPointsEarned} points</div>
+                  </div>
                 </div>
-                <div>
-                  <div className="text-sm font-medium text-muted-foreground">
-                    Rewards Points Earned
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <div className="text-sm font-medium text-muted-foreground">
+                      Car Details
+                    </div>
+                    <div className="text-base font-semibold">{bookingDetails.carDetails?.maker} {bookingDetails.carDetails?.model} {bookingDetails.carDetails?.year} {bookingDetails.carDetails?.trim} </div>
                   </div>
-                  <div className="text-base font-semibold">{rewardPointsEarned} points</div>
+                  <div>
+                    <div className="text-sm font-medium text-muted-foreground">
+                      Pickup & Dropoff Location
+                    </div>
+                    <div className="text-base font-semibold">{bookingDetails.pickupLocation} - {bookingDetails.dropoffLocation}</div>
+                  </div>
                 </div>
-              </div>
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <div className="text-sm font-medium text-muted-foreground">
-                    Car Details
+                <Separator />
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <div className="text-sm font-medium text-muted-foreground">
+                      Booking Status
+                    </div>
+                    <div className="text-base font-semibold text-yellow-500">{bookingDetails.status}</div>
                   </div>
-                  <div className="text-base font-semibold">{bookingDetails.carDetails?.maker} {bookingDetails.carDetails?.model} {bookingDetails.carDetails?.year} {bookingDetails.carDetails?.trim} </div>
-                </div>
-                <div>
-                  <div className="text-sm font-medium text-muted-foreground">
-                    Pickup & Dropoff Location
+                  <div>
+                    <div className="text-sm font-medium text-muted-foreground">
+                      Days Remaining
+                    </div>
+                    <div className="text-base font-semibold">{bookingDetails.daysRemaining} days remaining</div>
                   </div>
-                  <div className="text-base font-semibold">{bookingDetails.pickupLocation} - {bookingDetails.dropoffLocation}</div>
-                </div>
-              </div>
-              <Separator />
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <div className="text-sm font-medium text-muted-foreground">
-                    Booking Status
-                  </div>
-                  <div className="text-base font-semibold text-yellow-500">{bookingDetails.status}</div>
-                </div>
-                <div>
-                  <div className="text-sm font-medium text-muted-foreground">
-                    Days Remaining
-                  </div>
-                  <div className="text-base font-semibold">{bookingDetails.daysRemaining} days remaining</div>
                 </div>
               </div>
             </div>
           </div>
         </div>
-      </div>
+      
       <Separator />
       <Footer/>
       {/* Dialog for modifying booking */}

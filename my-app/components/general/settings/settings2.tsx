@@ -32,7 +32,7 @@ export function Settings2() {
     <div className="w-full max-w-4xl mx-auto px-4 md:px-6 py-8 md:py-12">
       <h1 className="text-3xl font-bold mb-6">Settings</h1>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-        <Card>
+        <Card className="w-full mx-auto mt-1 rounded-lg p-1 bg-white shadow-xl" style={{ border: "none" }}>
           <CardHeader>
             <CardTitle>Personal Information</CardTitle>
             <CardDescription>Update your personal details.</CardDescription>
@@ -62,7 +62,7 @@ export function Settings2() {
             <Button>Save Changes</Button>
           </CardFooter>
         </Card>
-        <Card>
+        <Card className="w-full mx-auto mt-1 rounded-lg p-1 bg-white shadow-xl" style={{ border: "none" }}>
           <CardHeader>
             <CardTitle>Password</CardTitle>
             <CardDescription>Change your password.</CardDescription>
@@ -94,7 +94,7 @@ export function Settings2() {
             <Button>Change Password</Button>
           </CardFooter>
         </Card>
-        <Card>
+        <Card className="w-full mx-auto mt-1 rounded-lg p-1 bg-white shadow-xl" style={{ border: "none" }}>
           <CardHeader>
             <CardTitle>Notifications</CardTitle>
             <CardDescription>Manage your notification preferences.</CardDescription>
@@ -129,7 +129,7 @@ export function Settings2() {
             <Button>Save Changes</Button>
           </CardFooter>
         </Card>
-        <Card>
+        <Card className="w-full mx-auto mt-1 rounded-lg p-1 bg-white shadow-xl" style={{ border: "none" }}>
           <CardHeader>
             <CardTitle>Language</CardTitle>
             <CardDescription>Select your preferred language.</CardDescription>
@@ -155,7 +155,7 @@ export function Settings2() {
             <Button>Save Changes</Button>
           </CardFooter>
         </Card>
-        <Card>
+        <Card className="w-full mx-auto mt-1 rounded-lg p-1 bg-white shadow-xl" style={{ border: "none" }}>
           <CardHeader>
             <CardTitle>Accessibility</CardTitle>
             <CardDescription>Customize your accessibility settings.</CardDescription>
@@ -192,7 +192,7 @@ export function Settings2() {
             <Button>Save Changes</Button>
           </CardFooter>
         </Card>
-        <Card>
+        <Card className="w-full mx-auto mt-1 rounded-lg p-1 bg-white shadow-xl" style={{ border: "none" }}>
           <CardHeader>
             <CardTitle>Membership Rewards</CardTitle>
             <CardDescription>View and manage your membership rewards.</CardDescription>
@@ -220,7 +220,7 @@ export function Settings2() {
             <Button>Save Changes</Button>
           </CardFooter>
         </Card>
-    <Card>
+    <Card className="w-full mx-auto mt-1 rounded-lg p-1 bg-white shadow-xl" style={{ border: "none" }}>
       <CardHeader>
         <CardTitle>Privacy Settings</CardTitle>
         <CardDescription>Manage your privacy preferences.</CardDescription>
@@ -249,7 +249,7 @@ export function Settings2() {
       </CardFooter>
     </Card>
 
-    <Card>
+    <Card className="w-full mx-auto mt-1 rounded-lg p-1 bg-white shadow-xl" style={{ border: "none" }} >
       <CardHeader>
         <CardTitle>Account Management</CardTitle>
         <CardDescription>Manage your account settings.</CardDescription>
@@ -262,7 +262,7 @@ export function Settings2() {
       </CardContent>
     </Card>
 
-    <Card>
+    <Card className="w-full mx-auto mt-1 rounded-lg p-1 bg-white shadow-xl" style={{ border: "none" }} >
       <CardHeader>
         <CardTitle>Payment Methods</CardTitle>
         <CardDescription>Manage your saved payment methods.</CardDescription>
@@ -281,7 +281,7 @@ export function Settings2() {
       </CardContent>
     </Card>
 
-    <Card>
+    <Card className="w-full mx-auto mt-1 rounded-lg p-1 bg-white shadow-xl" style={{ border: "none" }} >
       <CardHeader>
         <CardTitle>Theme Settings</CardTitle>
         <CardDescription>Choose between light and dark mode.</CardDescription>
