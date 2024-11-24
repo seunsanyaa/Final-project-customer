@@ -163,6 +163,7 @@ export default function MainPage({ userId }: MainPageProps) {
 
       {selectedReview && (
         <Dialog open={!!selectedReview} onOpenChange={() => setSelectedReview(null)} >
+          <div className="fixed inset-0 bg-black/30 backdrop-blur-sm" aria-hidden="true" />
           <DialogContent className="w-full mx-auto mt-1 rounded-lg p-1 bg-white shadow-xl" style={{ opacity: 1, backgroundColor: '#ffffff', zIndex: 50, border: "none" }}>
             <div className="relative">
               {/* <button
