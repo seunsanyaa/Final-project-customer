@@ -375,9 +375,11 @@ export const getCarWithTopReviews = query({
 	},
 });
 export const getCarWithReviews = query({
-	args: { registrationNumber: v.string() },
+	args: { 
+		registrationNumber: v.string(),
+		userId: v.optional(v.string())
+	},
 	handler: async (ctx, args) => {
-		// Get the car
 		const car = await ctx.db
 			.query("cars")
 			.withIndex("by_registrationNumber", (q) => 
@@ -398,7 +400,7 @@ export const getCarWithReviews = query({
 		// Get reviews for these bookings
 		const reviews = await Promise.all(
 			bookings
-				.filter(booking => booking.reviewId) // Only get bookings with reviews
+				.filter(booking => booking.reviewId)
 				.map(async (booking) => {
 					const review = await ctx.db
 						.query("reviews")
@@ -406,25 +408,37 @@ export const getCarWithReviews = query({
 						.first();
 
 					if (review) {
-						// Get user details
-						const user = await ctx.db
-							.query("users")
-							.withIndex("by_userId", (q) => q.eq("userId", review.userId))
-							.first();
+						const isUserReview = args.userId ? review.userId === args.userId : false;
+						
+						// Include review if it's the user's review OR if it has 3+ stars
+						if (isUserReview || review.numberOfStars >= 3) {
+							// Get user details
+							const user = await ctx.db
+								.query("users")
+								.withIndex("by_userId", (q) => q.eq("userId", review.userId))
+								.first();
 
-						return {
-							...review,
-							userName: user ? `${user.firstName} ${user.lastName}` : "Anonymous",
-						};
+							return {
+								...review,
+								userName: user ? `${user.firstName} ${user.lastName}` : "Anonymous",
+								isUserReview
+							};
+						}
 					}
 					return null;
 				})
 		);
 
-		// Filter out null reviews and sort by date (most recent first)
+		// Filter out null reviews and sort them
 		const validReviews = reviews
 			.filter((review): review is NonNullable<typeof review> => review !== null)
-			.sort((a, b) => new Date(b.reviewDate).getTime() - new Date(a.reviewDate).getTime());
+			.sort((a, b) => {
+				// First sort by user's own reviews
+				if (a.isUserReview && !b.isUserReview) return -1;
+				if (!a.isUserReview && b.isUserReview) return 1;
+				// Then sort by date (most recent first)
+				return new Date(b.reviewDate).getTime() - new Date(a.reviewDate).getTime();
+			});
 
 		return {
 			...car,
@@ -474,5 +488,30 @@ export const getUniqueBodyTypes = query({
 		)).sort();
 		
 		return uniqueBodyTypes;
+	},
+});
+
+export const getSimilarCars = query({
+	args: { 
+		maker: v.optional(v.string()),
+		model: v.optional(v.string()),
+		excludeId: v.string(),
+		limit: v.optional(v.number())
+	},
+	handler: async (ctx, args) => {
+		const limit = args.limit ?? 3;
+		
+		return await ctx.db
+			.query("cars")
+			.filter(q => 
+				q.and(
+					q.neq(q.field("registrationNumber"), args.excludeId),
+					q.or(
+						q.eq(q.field("maker"), args.maker),
+						q.eq(q.field("model"), args.model)
+					)
+				)
+			)
+			.take(limit);
 	},
 });

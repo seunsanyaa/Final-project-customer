@@ -5,9 +5,10 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Separator } from "@/components/ui/separator";
 import { useQuery } from 'convex/react';
 import { api } from '@/convex/_generated/api';
+import { useUser } from "@clerk/nextjs";
 
 export default function AllRatings() {
-  
+  const { user } = useUser();
   const [selectedCarId, setSelectedCarId] = useState<string | null>(null);
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [expandedCar, setExpandedCar] = useState<string | null>(null);
@@ -18,7 +19,10 @@ export default function AllRatings() {
   // Get detailed car info with reviews when a car is selected
   const selectedCarWithReviews = useQuery(
     api.car.getCarWithReviews,
-    selectedCarId ? { registrationNumber: selectedCarId } : "skip"
+    selectedCarId ? { 
+      registrationNumber: selectedCarId,
+      userId: user?.id
+    } : "skip"
   );
 
   const handleCarClick = (car: any) => {
