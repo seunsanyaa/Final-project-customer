@@ -210,3 +210,19 @@ export const createUserFromClerk = internalMutation({
 		return userId;
 	},
 });
+
+export const getManyUsers = query({
+	args: { userIds: v.array(v.string()) },
+	handler: async (ctx, args) => {
+		const users = await Promise.all(
+			args.userIds.map(userId =>
+				ctx.db
+					.query("users")
+					.withIndex("by_userId", q => q.eq("userId", userId))
+					.first()
+			)
+		);
+		
+		return users.filter((user): user is NonNullable<typeof user> => user !== null);
+	},
+});

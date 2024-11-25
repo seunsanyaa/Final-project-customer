@@ -71,10 +71,14 @@ export function Homepage_v2() {
   // Fetch top reviews
   const reviews = useQuery(api.review.getTopReviews);
   
-  // For each review, fetch the user details
-  const userDetails = useQuery(api.users.getFullUser, {
-    userId: reviews?.[0]?.userId ?? "skip"
-  });
+  // Get unique user IDs from reviews
+  const userIds = [...new Set(reviews?.map(review => review.userId) ?? [])];
+  
+  // Fetch all user details at once
+  const usersData = useQuery(api.users.getManyUsers, { userIds }) ?? [];
+
+  // Create a map of userId to user details for quick lookup
+  const userMap = new Map(usersData.map(user => [user.userId, user]));
 
   // Filter 4+ star reviews and shuffle them
   const shuffledReviews = reviews?.filter(review => review.numberOfStars >= 4)
@@ -292,10 +296,8 @@ export function Homepage_v2() {
               </div>
               <div className="grid gap-6 sm:grid-cols-2 md:grid-cols-3">
                 {shuffledReviews?.map((review) => {
-                  // Fetch user details for this specific review
-                  const userDetails = useQuery(api.users.getFullUser, {
-                    userId: review.userId
-                  });
+                  // Get user details from the map
+                  const user = userMap.get(review.userId);
                   
                   return (
                     <Card key={review._id} className="bg-muted">
@@ -304,12 +306,12 @@ export function Homepage_v2() {
                           <Avatar className="border w-12 h-12">
                             <AvatarImage src="/placeholder-user.jpg" />
                             <AvatarFallback>
-                              {userDetails?.firstName?.[0]}{userDetails?.lastName?.[0]}
+                              {user?.firstName?.[0]}{user?.lastName?.[0]}
                             </AvatarFallback>
                           </Avatar>
                           <div className="space-y-1">
                             <div className="font-semibold">
-                              {userDetails?.firstName} {userDetails?.lastName}
+                              {user?.firstName} {user?.lastName}
                             </div>
                             <div className="flex items-center gap-1 text-xs font-medium">
                               {[...Array(review.numberOfStars)].map((_, i) => (

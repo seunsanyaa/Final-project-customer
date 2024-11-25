@@ -156,43 +156,59 @@ export const getReviewsByUserId = query({
  */
 export const getTopReviews = query({
   handler: async (ctx) => {
-    // Fetch the top 6 reviews sorted by numberOfStars in descending order
-    const topReviews = await ctx.db
+    // Get all reviews
+    const reviews = await ctx.db
       .query("reviews")
-      .order("numberOfStars", "descending")
-      .take(6);
+      .collect();
 
-    // Enrich each review with car details
+    // Sort reviews by numberOfStars in descending order and take top 6
+    const topReviews = reviews
+      .sort((a, b) => b.numberOfStars - a.numberOfStars)
+      .slice(0, 6);
+
+    // Enrich each review with car details and user information
     const enrichedTopReviews = await Promise.all(
       topReviews.map(async (review) => {
-        const booking = await ctx.db.get<Booking>(review.bookingId);
-        if (booking) {
-          const car = await ctx.db
-            .query("cars")
-            .withIndex("by_registrationNumber", (q) =>
-              q.eq("registrationNumber", booking.carId)
-            )
-            .first();
-          
-          return {
-            ...review,
-            carDetails: car
-              ? {
-                  maker: car.maker,
-                  model: car.model,
-                  year: car.year,
-                  color: car.color,
-                  trim: car.trim,
-                  pictures: car.pictures,
-                  registrationNumber: booking.carId,
-                }
-              : null,
-          };
-        }
-        return { ...review, carDetails: null };
+        const booking = await ctx.db.get(review.bookingId);
+        if (!booking) return null;
+
+        // Get car details
+        const car = await ctx.db
+          .query("cars")
+          .withIndex("by_registrationNumber", (q) =>
+            q.eq("registrationNumber", booking.carId)
+          )
+          .first();
+
+        // Get user details
+        const user = await ctx.db
+          .query("users")
+          .withIndex("by_userId", (q) => 
+            q.eq("userId", review.userId)
+          )
+          .first();
+
+        return {
+          ...review,
+          userName: user ? `${user.firstName} ${user.lastName}` : "Anonymous",
+          carDetails: car
+            ? {
+                maker: car.maker,
+                model: car.model,
+                year: car.year,
+                color: car.color,
+                trim: car.trim,
+                pictures: car.pictures,
+                registrationNumber: booking.carId,
+              }
+            : null,
+        };
       })
     );
 
-    return enrichedTopReviews;
+    // Filter out any null results
+    return enrichedTopReviews.filter((review): review is NonNullable<typeof review> => 
+      review !== null
+    );
   },
 });
