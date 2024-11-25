@@ -19,6 +19,8 @@ import { Footer } from "../head/footer";
 import { useEffect, useRef, useState } from 'react'; // Added for font loading
 import Lottie, { LottieRefCurrentProps } from "lottie-react"; // Import Lottie
 import loadingAnimation from "@/public/animations/intro.json"; // Import your animation
+import { useQuery } from 'convex/react';
+import { api } from '@/convex/_generated/api';
 
 export function Homepage_v2() {
   const [ref1, inView1] = useInView({ threshold: 0.6, triggerOnce: true });
@@ -65,6 +67,19 @@ export function Homepage_v2() {
   //     </div>
   //   );
   // }
+
+  // Fetch top reviews
+  const reviews = useQuery(api.review.getTopReviews);
+  
+  // For each review, fetch the user details
+  const userDetails = useQuery(api.users.getFullUser, {
+    userId: reviews?.[0]?.userId ?? "skip"
+  });
+
+  // Filter 4+ star reviews and shuffle them
+  const shuffledReviews = reviews?.filter(review => review.numberOfStars >= 4)
+    .sort(() => Math.random() - 0.5)
+    .slice(0, 6);
 
   return (
     <div className="flex flex-col min-h-dvh font-roboto">
@@ -276,150 +291,40 @@ export function Homepage_v2() {
                 <p className="text-gray-600 text-lg md:text-xl lg:text-2xl leading-relaxed">Hear from real people who have rented with us.</p>
               </div>
               <div className="grid gap-6 sm:grid-cols-2 md:grid-cols-3">
-                <Card className="bg-muted">
-                  <CardContent className="p-6">
-                    <div className="flex items-start gap-4">
-                      <Avatar className="border w-12 h-12">
-                        <AvatarImage src="/placeholder-user.jpg" />
-                        <AvatarFallback className="rounded-full">JD</AvatarFallback>
-                      </Avatar>
-                      <div className="space-y-1">
-                        <div className="font-semibold">John Doe</div>
-                        <div className="flex items-center gap-1 text-xs font-medium">
-                          <StarIcon className="w-4 h-4 fill-primary" />
-                          <StarIcon className="w-4 h-4 fill-primary" />
-                          <StarIcon className="w-4 h-4 fill-primary" />
-                          <StarIcon className="w-4 h-4 fill-primary" />
-                          <StarIcon className="w-4 h-4 fill-primary" />
+                {shuffledReviews?.map((review) => {
+                  // Fetch user details for this specific review
+                  const userDetails = useQuery(api.users.getFullUser, {
+                    userId: review.userId
+                  });
+                  
+                  return (
+                    <Card key={review._id} className="bg-muted">
+                      <CardContent className="p-6">
+                        <div className="flex items-start gap-4">
+                          <Avatar className="border w-12 h-12">
+                            <AvatarImage src="/placeholder-user.jpg" />
+                            <AvatarFallback>
+                              {userDetails?.firstName?.[0]}{userDetails?.lastName?.[0]}
+                            </AvatarFallback>
+                          </Avatar>
+                          <div className="space-y-1">
+                            <div className="font-semibold">
+                              {userDetails?.firstName} {userDetails?.lastName}
+                            </div>
+                            <div className="flex items-center gap-1 text-xs font-medium">
+                              {[...Array(review.numberOfStars)].map((_, i) => (
+                                <StarIcon key={i} className="w-4 h-4 fill-primary" />
+                              ))}
+                            </div>
+                          </div>
                         </div>
-                      </div>
-                    </div>
-                    <p className="mt-4 text-muted-black">
-                    &quot;I had a great experience renting with this company. The process was smooth and the car was in
-                      excellent condition.&quot;
-                    </p>
-                  </CardContent>
-                </Card>
-                <Card className="bg-muted">
-                  <CardContent className="p-6">
-                    <div className="flex items-start gap-4">
-                      <Avatar className="border w-12 h-12">
-                        <AvatarImage src="/placeholder-user.jpg" />
-                        <AvatarFallback>SM</AvatarFallback>
-                      </Avatar>
-                      <div className="space-y-1">
-                        <div className="font-semibold">Sarah Miller</div>
-                        <div className="flex items-center gap-1 text-xs font-medium">
-                          <StarIcon className="w-4 h-4 fill-primary" />
-                          <StarIcon className="w-4 h-4 fill-primary" />
-                          <StarIcon className="w-4 h-4 fill-primary" />
-                          <StarIcon className="w-4 h-4 fill-primary" />
-                          <StarIcon className="w-4 h-4 fill-primary" />
-                        </div>
-                      </div>
-                    </div>
-                    <p className="mt-4 text-muted-black">
-                    &quot;I was impressed by the wide selection of vehicles and the competitive prices. I&apos;ll definitely
-                      be renting from them again.&quot;
-                    </p>
-                  </CardContent>
-                </Card>
-                <Card className="bg-muted">
-                  <CardContent className="p-6">
-                    <div className="flex items-start gap-4">
-                      <Avatar className="border w-12 h-12">
-                        <AvatarImage src="/placeholder-user.jpg" />
-                        <AvatarFallback>MJ</AvatarFallback>
-                      </Avatar>
-                      <div className="space-y-1">
-                        <div className="font-semibold">Michael Johnson</div>
-                        <div className="flex items-center gap-1 text-xs font-medium">
-                          <StarIcon className="w-4 h-4 fill-primary" />
-                          <StarIcon className="w-4 h-4 fill-primary" />
-                          <StarIcon className="w-4 h-4 fill-primary" />
-                          <StarIcon className="w-4 h-4 fill-primary" />
-                          <StarIcon className="w-4 h-4 fill-primary" />
-                        </div>
-                      </div>
-                    </div>
-                    <p className="mt-4 text-muted-black">
-                    &quot;The rental process was quick and easy, and the staff was very helpful. I would definitely
-                      recommend this company to anyone looking to rent a car.&quot;
-                    </p>
-                  </CardContent>
-                </Card>
-                <Card className="bg-muted">
-                  <CardContent className="p-6">
-                    <div className="flex items-start gap-4">
-                      <Avatar className="border w-12 h-12">
-                        <AvatarImage src="/placeholder-user.jpg" />
-                        <AvatarFallback>MJ</AvatarFallback>
-                      </Avatar>
-                      <div className="space-y-1">
-                        <div className="font-semibold">Michael Johnson</div>
-                        <div className="flex items-center gap-1 text-xs font-medium">
-                          <StarIcon className="w-4 h-4 fill-primary" />
-                          <StarIcon className="w-4 h-4 fill-primary" />
-                          <StarIcon className="w-4 h-4 fill-primary" />
-                          <StarIcon className="w-4 h-4 fill-primary" />
-                          <StarIcon className="w-4 h-4 fill-primary" />
-                        </div>
-                      </div>
-                    </div>
-                    <p className="mt-4 text-muted-black">
-                    &quot;The rental process was quick and easy, and the staff was very helpful. I would definitely
-                      recommend this company to anyone looking to rent a car.&quot;
-                    </p>
-                  </CardContent>
-                </Card>
-                <Card className="bg-muted">
-                  <CardContent className="p-6">
-                    <div className="flex items-start gap-4">
-                      <Avatar className="border w-12 h-12">
-                        <AvatarImage src="/placeholder-user.jpg" />
-                        <AvatarFallback>MJ</AvatarFallback>
-                      </Avatar>
-                      <div className="space-y-1">
-                        <div className="font-semibold">Michael Johnson</div>
-                        <div className="flex items-center gap-1 text-xs font-medium">
-                          <StarIcon className="w-4 h-4 fill-primary" />
-                          <StarIcon className="w-4 h-4 fill-primary" />
-                          <StarIcon className="w-4 h-4 fill-primary" />
-                          <StarIcon className="w-4 h-4 fill-primary" />
-                          <StarIcon className="w-4 h-4 fill-primary" />
-                        </div>
-                      </div>
-                    </div>
-                    <p className="mt-4 text-muted-black">
-                    &quot;The rental process was quick and easy, and the staff was very helpful. I would definitely
-                      recommend this company to anyone looking to rent a car.&quot;
-                    </p>
-                  </CardContent>
-                </Card>
-                <Card className="bg-muted">
-                  <CardContent className="p-6">
-                    <div className="flex items-start gap-4">
-                      <Avatar className="border w-12 h-12">
-                        <AvatarImage src="/placeholder-user.jpg" />
-                        <AvatarFallback>MJ</AvatarFallback>
-                      </Avatar>
-                      <div className="space-y-1">
-                        <div className="font-semibold">Michael Johnson</div>
-                        <div className="flex items-center gap-1 text-xs font-medium">
-                          <StarIcon className="w-4 h-4 fill-primary" />
-                          <StarIcon className="w-4 h-4 fill-primary" />
-                          <StarIcon className="w-4 h-4 fill-primary" />
-                          <StarIcon className="w-4 h-4 fill-primary" />
-                          <StarIcon className="w-4 h-4 fill-primary" />
-                        </div>
-                      </div>
-                    </div>
-                    <p className="mt-4 text-muted-black">
-                    &quot;The rental process was quick and easy, and the staff was very helpful. I would definitely
-                      recommend this company to anyone looking to rent a car.&quot;
-                    </p>
-                  </CardContent>
-                </Card>
+                        <p className="mt-4 text-muted-black">
+                          &quot;{review.comment}&quot;
+                        </p>
+                      </CardContent>
+                    </Card>
+                  );
+                })}
               </div>
             </div>
           </div>
