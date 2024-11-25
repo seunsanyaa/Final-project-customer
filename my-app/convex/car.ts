@@ -98,6 +98,9 @@ export const createCar = mutation({
 		pictures: v.array(v.string()),
 		pricePerDay: v.number(),
 		averageRating: v.optional(v.number()),
+		categories: 	v.optional(v.array(v.string())),
+		disabled: v.boolean(),
+		golden: v.boolean(),
 	},
 	handler: async (ctx, args) => {
 		const existingCar = await ctx.db
@@ -447,50 +450,6 @@ export const getCarWithReviews = query({
 	},
 });
 
-export const getCarsByBodyType = query({
-	args: {
-		bodyType: v.optional(v.string()),
-	},
-	handler: async (ctx, args) => {
-		if (args.bodyType === "placeholder") {
-			args.bodyType = undefined;
-		}
-		const cars = await ctx.db
-			.query("cars")
-			.filter((q) => q.eq(q.field('disabled'), false))
-			.collect();
-		const specs = await ctx.db.query("specifications").collect();
-
-		// Create a map of specifications by registration number
-		const specsMap = specs.reduce((acc, spec) => {
-			acc[spec.registrationNumber] = spec;
-			return acc;
-		}, {} as Record<string, typeof specs[0]>);
-
-		// Filter cars based on body type
-		return cars.filter((car) => {
-			const carSpecs = specsMap[car.registrationNumber];
-			if (!args.bodyType) return true; // If no body type specified, return all cars
-			if (!carSpecs) return false; // If no specs exist for this car, exclude it
-			return carSpecs.bodyType.toLowerCase().includes(args.bodyType.toLowerCase());
-		});
-	},
-});
-
-export const getUniqueBodyTypes = query({
-	handler: async (ctx) => {
-		const specs = await ctx.db.query("specifications").collect();
-		
-		// Get unique body types and sort them
-		const uniqueBodyTypes = Array.from(new Set(
-			specs.map(spec => spec.bodyType)
-			.filter(type => type !== "N/A")
-		)).sort();
-		
-		return uniqueBodyTypes;
-	},
-});
-
 export const getSimilarCars = query({
 	args: { 
 		maker: v.optional(v.string()),
@@ -513,5 +472,30 @@ export const getSimilarCars = query({
 				)
 			)
 			.take(limit);
+	},
+});
+
+// Add new query for categories
+export const getCarsByCategory = query({
+	args: {
+		category: v.optional(v.string()),
+	},
+	handler: async (ctx, args) => {
+		if (!args.category || args.category === "all") {
+			return ctx.db
+				.query("cars")
+				.filter((q) => q.eq(q.field('disabled'), false))
+				.collect();
+		}
+
+		const cars = await ctx.db
+			.query("cars")
+			.filter((q) => q.eq(q.field('disabled'), false))
+			.collect();
+
+		// Filter cars that have the category in their categories array
+		return cars.filter(car => 
+			car.categories?.includes(args.category as string)
+		);
 	},
 });

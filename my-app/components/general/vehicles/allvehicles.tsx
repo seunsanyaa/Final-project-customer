@@ -95,19 +95,19 @@ export default function AllVehicles() {
   //   );
   // }
 
-  // Add new state for body type
-  const [selectedBodyType, setSelectedBodyType] = useState<string>("");
+  // Change bodyType state to category
+  const [selectedCategory, setSelectedCategory] = useState<string>("");
 
-  // Add new query for body type filtered cars
-  const carsByBodyType = useQuery(api.car.getCarsByBodyType, {
-    bodyType: selectedBodyType,
+  // Change query to use categories instead of body type
+  const carsByCategory = useQuery(api.car.getCarsByCategory, {
+    category: selectedCategory,
   });
 
-  // Use either filtered cars or body type filtered cars
-  const displayedCars = selectedBodyType ? carsByBodyType : cars;
+  // Update the displayed cars logic
+  const displayedCars = selectedCategory === "all" ? cars : carsByCategory;
 
-  // Add this near the top where other queries are defined
-  const bodyTypes = useQuery(api.car.getUniqueBodyTypes);
+  // Change the body types query to categories
+  const categories = ["SUV", "Sedan", "Luxury", "Van", "Truck", "Convertible"];
 
   return (
     <>
@@ -138,17 +138,17 @@ export default function AllVehicles() {
                   onChange={(e) => handleInputChange('year', e.target.value)}
                 />
                 <Select
-                  value={selectedBodyType}
-                  onValueChange={(value) => setSelectedBodyType(value)}
+                  value={selectedCategory}
+                  onValueChange={(value) => setSelectedCategory(value)}
                 >
                   <SelectTrigger className="w-[180px] bg-background">
-                    <SelectValue placeholder="Body Type" />
+                    <SelectValue placeholder="Category" />
                   </SelectTrigger>
                   <SelectContent className="w-[180px] bg-card rounded-lg shadow-2xl p-2 relative overflow-hidden">
-                    <SelectItem value="placeholder" className="bg-background">All Types</SelectItem>
-                    {(bodyTypes ?? []).map((type) => (
-                      <SelectItem key={type} value={type} className="bg-background">
-                        {type}
+                    <SelectItem value="all" className="bg-background">All Categories</SelectItem>
+                    {categories.map((category) => (
+                      <SelectItem key={category} value={category} className="bg-background">
+                        {category.charAt(0).toUpperCase() + category.slice(1).replace('_', ' ')}
                       </SelectItem>
                     ))}
                   </SelectContent>

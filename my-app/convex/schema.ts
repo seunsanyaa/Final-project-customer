@@ -52,6 +52,7 @@ export default defineSchema({
 		averageRating: v.optional(v.number()),
 		WAFdescription: v.optional(v.string()),
 		categories: v.optional(v.array(v.string())),
+		golden: v.optional(v.boolean()),
 	})
 		.index('by_model', ['model'])
 		.index('by_maker', ['maker'])
