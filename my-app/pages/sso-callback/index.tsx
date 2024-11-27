@@ -4,7 +4,7 @@ export default function SSOCallback() {
   return (
     <AuthenticateWithRedirectCallback 
       afterSignInUrl="/"
-      afterSignUpUrl="/"
+      afterSignUpUrl="/onboarding"
     />
   );
 }

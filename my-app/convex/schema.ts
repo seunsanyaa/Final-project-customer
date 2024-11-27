@@ -1,5 +1,6 @@
 import { defineSchema, defineTable } from 'convex/server';
 import { v } from 'convex/values';
+import { Languages } from 'lucide-react';
 import { optional } from 'zod';
 
 export default defineSchema({
@@ -36,6 +37,13 @@ export default defineSchema({
 	})
 		.index('by_userId', ['userId'])
 		.index('by_licenseNumber', ['licenseNumber']),
+		
+	settings:defineTable({
+		userId: v.string(),
+		darkMode: v.boolean(),
+		language: v.string(),
+	})
+	.index('by_userId', ['userId']),
 
 	cars: defineTable({
 		model: v.string(),

@@ -31,7 +31,24 @@ export const createUser = mutation({
 		staff: v.boolean(),
 	},
 	handler: async (ctx, args) => {
-		await ctx.db.insert('users', {
+		// Check if user already exists
+		const existingUser = await ctx.db
+			.query('users')
+			.withIndex('by_userId', (q) => q.eq('userId', args.userId))
+			.first();
+
+		if (existingUser) {
+			// User already exists, update if necessary
+			return ctx.db.patch(existingUser._id, {
+				email: args.email,
+				firstName: args.firstName,
+				lastName: args.lastName,
+				staff: args.staff,
+			});
+		}
+
+		// Create new user
+		return ctx.db.insert('users', {
 			email: args.email,
 			userId: args.userId,
 			firstName: args.firstName,

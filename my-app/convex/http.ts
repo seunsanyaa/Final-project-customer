@@ -40,14 +40,6 @@ http.route({
 					lastName: result.data.last_name ?? '',
 					staff: false,
 				});
-				const customerId = await ctx.runMutation(api.customers.createCustomer, {
-					userId: result.data.id,
-					nationality: '',
-					dateOfBirth: '',
-					phoneNumber: '',
-					licenseNumber: '',
-					address: '',
-				});
 				console.log('Created user:', userId);
 			}
 

@@ -6,6 +6,7 @@ import ChangePasswordComponent from "./change-password";
 import LoginComponent from "./login";
 import ResetComponent from "./password_reset";
 import VerifyComponent from "./verify_code";
+import OnboardComponent from "./onboard";
 
 export default function AuthLayout() {
   const router = useRouter();
@@ -41,7 +42,7 @@ export default function AuthLayout() {
       <div className="no-scrollbar w-2/4 overflow-y-auto overflow-x-hidden">
         {/* Render different components based on the current route */}
         {router.pathname === "/onboarding" ? (
-          <></>
+          <OnboardComponent />
         ) : router.pathname === "/reset-password" ? (
           <ResetComponent />
         ) : router.pathname === "/change-password" ? (

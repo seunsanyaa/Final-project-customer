@@ -5,17 +5,67 @@ import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar"
 import CarIcon from '@/svgs/Caricon'
 import ChevronDownIcon from '@/svgs/ChevronDownIcon'
 import FlagIcon from '@/svgs/FlagIcon'
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { Separator } from "@/components/ui/separator"
 import { SignedIn, SignedOut, SignInButton, SignOutButton, useUser } from "@clerk/nextjs"
+import { useQuery } from "convex/react";
+import { api } from "@/convex/_generated/api";
 
 interface NaviProps {
   className?: string
 }
 
+interface UserSettings {
+  darkMode: boolean;
+  language: string;
+}
+
 export const Navi: React.FC<NaviProps> = ({ className }) => {
   const [isMenuOpen, setIsMenuOpen] = useState(false)
   const { user } = useUser()
+  const [localSettings, setLocalSettings] = useState<UserSettings>(() => {
+    // Try to get settings from localStorage on initial load
+    if (typeof window !== 'undefined') {
+      const saved = localStorage.getItem('userSettings');
+      if (saved) {
+        return JSON.parse(saved);
+      }
+    }
+    return { darkMode: false, language: 'english' };
+  });
+
+  const userSettings = useQuery(api.settings.fetchSettings, { 
+    userId: user?.id ?? "" 
+  });
+
+  useEffect(() => {
+    if (user?.id && userSettings) {
+      const newSettings = {
+        darkMode: userSettings.darkMode,
+        language: userSettings.language
+      };
+      setLocalSettings(newSettings);
+      localStorage.setItem('userSettings', JSON.stringify(newSettings));
+    }
+  }, [userSettings, user?.id]);
+
+  useEffect(() => {
+    if (localSettings.darkMode) {
+      document.body.classList.add('dark');
+    } else {
+      document.body.classList.remove('dark');
+    }
+  }, [localSettings.darkMode]);
+
+  const updateSettings = (newSettings: Partial<UserSettings>) => {
+    const updatedSettings = { ...localSettings, ...newSettings };
+    setLocalSettings(updatedSettings);
+    localStorage.setItem('userSettings', JSON.stringify(updatedSettings));
+  };
+
+  const handleLanguageChange = (newLanguage: string) => {
+    updateSettings({ language: newLanguage });
+  };
 
   return (
     <>
@@ -81,27 +131,27 @@ export const Navi: React.FC<NaviProps> = ({ className }) => {
           <DropdownMenu>
             <DropdownMenuTrigger
               className="flex items-center gap-1 text-muted-foreground hover:text-primary-foreground transition-colors">
-              <span>Language</span>
+              <span>{localSettings.language}</span>
               <ChevronDownIcon className="h-4 w-4" />
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
-              <DropdownMenuItem>
-                <Link href="#" className="flex items-center gap-2">
+              <DropdownMenuItem onClick={() => handleLanguageChange('turkish')}>
+                <div className="flex items-center gap-2">
                   <FlagIcon className="h-4 w-4" />
                   <span>Türkçe</span>
-                </Link>
+                </div>
               </DropdownMenuItem>
-              <DropdownMenuItem>
-                <Link href="#" className="flex items-center gap-2">
+              <DropdownMenuItem onClick={() => handleLanguageChange('english')}>
+                <div className="flex items-center gap-2">
                   <FlagIcon className="h-4 w-4" />
                   <span>English</span>
-                </Link>
+                </div>
               </DropdownMenuItem>
-              <DropdownMenuItem>
-                <Link href="#" className="flex items-center gap-2">
+              <DropdownMenuItem onClick={() => handleLanguageChange('arabic')}>
+                <div className="flex items-center gap-2">
                   <FlagIcon className="h-4 w-4" />
                   <span>العربية</span>
-                </Link>
+                </div>
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>

@@ -111,14 +111,14 @@ export function InputForm({
         toast({
           title: "Uh oh! Something went wrong.",
           description: errorMessage,
-          variant: "destructive",
+          variant: "default",
         });
       } else {
         console.error("An unexpected error occurred:", err);
         toast({
           title: "Uh oh! Something went wrong.",
           description: "Contact us as soon as possible!",
-          variant: "destructive",
+          variant: "default",
         });
       }
     }
@@ -156,7 +156,7 @@ export function InputForm({
         toast({
           title: "Uh oh! Something went wrong.",
           description: errorMessage,
-          variant: "destructive",
+          variant: "default",
           dir: "top",
         });
       } else {
@@ -165,7 +165,7 @@ export function InputForm({
         toast({
           title: "Uh oh! Something went wrong.",
           description: "Contact us as soon as possible!",
-          variant: "destructive",
+          variant: "default",
         });
       }
     }

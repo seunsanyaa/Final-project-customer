@@ -1,3 +1,4 @@
+'use client'
 
 import Link from "next/link";
 import { Separator } from "@/components/ui/separator";
@@ -23,7 +24,56 @@ import {
 } from "@/components/ui/select";
 import { Navi } from "../head/navi"
 import { Footer } from "../head/footer";
+import { useUser } from "@clerk/nextjs";
+import { useMutation, useQuery } from "convex/react";
+import { api } from "@/convex/_generated/api";
+import { useEffect, useState } from "react";
+
 export function Settings2() {
+  const { user } = useUser();
+  const saveSettings = useMutation(api.settings.saveSettings);
+  const userSettings = useQuery(api.settings.fetchSettings, { 
+    userId: user?.id ?? "" 
+  });
+
+  const [darkMode, setDarkMode] = useState(false);
+  const [language, setLanguage] = useState("english");
+
+  // Load settings when component mounts
+  useEffect(() => {
+    if (userSettings) {
+      setDarkMode(userSettings.darkMode);
+      setLanguage(userSettings.language);
+    }
+  }, [userSettings]);
+
+  const handleDarkModeToggle = async (checked: boolean) => {
+    const newSettings = { darkMode: checked, language: language };
+    localStorage.setItem('userSettings', JSON.stringify(newSettings));
+    setDarkMode(checked);
+
+    if (user?.id) {
+      await saveSettings({
+        userId: user.id,
+        darkMode: checked,
+        language: language
+      });
+    }
+  };
+
+  const handleLanguageChange = async (newLanguage: string) => {
+    const newSettings = { darkMode: darkMode, language: newLanguage };
+    localStorage.setItem('userSettings', JSON.stringify(newSettings));
+    setLanguage(newLanguage);
+
+    if (user?.id) {
+      await saveSettings({
+        userId: user.id,
+        darkMode: darkMode,
+        language: newLanguage
+      });
+    }
+  };
 
   return (
     <>
@@ -135,18 +185,14 @@ export function Settings2() {
             <CardDescription>Select your preferred language.</CardDescription>
           </CardHeader>
           <CardContent>
-            <Select defaultValue="en">
+            <Select value={language} onValueChange={handleLanguageChange}>
               <SelectTrigger>
                 <SelectValue placeholder="Select language" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="en">English</SelectItem>
-                <SelectItem value="es">Arabic</SelectItem>
-                <SelectItem value="es">Turkish</SelectItem>
-                <SelectItem value="es">Español</SelectItem>
-                <SelectItem value="fr">Français</SelectItem>
-                <SelectItem value="de">Deutsch</SelectItem>
-                <SelectItem value="zh">中文</SelectItem>
+                <SelectItem value="english">English</SelectItem>
+                <SelectItem value="arabic">Arabic</SelectItem>
+                <SelectItem value="turkish">Turkish</SelectItem>
               </SelectContent>
             </Select>
           </CardContent>
@@ -290,7 +336,11 @@ export function Settings2() {
         <div className="grid gap-4">
           <div className="flex items-center justify-between">
             <div className="font-medium">Dark Mode</div>
-            <Switch id="dark-mode" />
+            <Switch 
+              id="dark-mode" 
+              checked={darkMode}
+              onCheckedChange={handleDarkModeToggle}
+            />
           </div>
         </div>
       </CardContent>
