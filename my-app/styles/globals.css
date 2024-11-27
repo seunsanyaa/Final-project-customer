@@ -67,3 +67,67 @@
       @apply bg-background text-foreground;
     }
   }
+  
+  /* Hide Google Translate elements */
+  .goog-te-banner-frame,
+  .skiptranslate,
+  .goog-te-spinner-pos,
+  .goog-tooltip,
+  #goog-gt-tt,
+  .goog-te-balloon-frame,
+  div#goog-gt-,
+  #goog-gt-,
+  .goog-te-spinner-pos,
+  .goog-te-spinner {
+    display: none !important;
+    visibility: hidden !important;
+    opacity: 0 !important;
+    pointer-events: none !important;
+  }
+  
+  /* Remove the white space at top of page */
+  body {
+    top: 0 !important;
+    position: static !important;
+  }
+  
+  /* Remove translation highlights */
+  .goog-text-highlight {
+    background: none !important;
+    box-shadow: none !important;
+  }
+  
+  /* Force hide the Google Translate widget */
+  iframe.goog-te-banner-frame {
+    display: none !important;
+    visibility: hidden !important;
+  }
+  
+  .goog-te-gadget {
+    display: none !important;
+    visibility: hidden !important;
+  }
+  
+  /* Add RTL support */
+  .translated-rtl {
+    direction: rtl;
+    text-align: right;
+  }
+  
+  /* Disable hover effects for Google Translate elements */
+  .goog-te-banner-frame:hover,
+  .skiptranslate:hover,
+  .goog-te-spinner-pos:hover,
+  .goog-tooltip:hover,
+  #goog-gt-tt:hover,
+  .goog-te-balloon-frame:hover,
+  div#goog-gt-:hover,
+  iframe.goog-te-banner-frame:hover,
+  .goog-te-gadget:hover {
+    background: none !important;
+    color: inherit !important;
+    box-shadow: none !important;
+    border: none !important;
+    outline: none !important;
+  }
+  

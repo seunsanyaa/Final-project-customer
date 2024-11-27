@@ -3,13 +3,12 @@ import Link from "next/link"
 import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator } from "@/components/ui/dropdown-menu"
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar"
 import CarIcon from '@/svgs/Caricon'
-import ChevronDownIcon from '@/svgs/ChevronDownIcon'
-import FlagIcon from '@/svgs/FlagIcon'
 import { useState, useEffect } from "react"
 import { Separator } from "@/components/ui/separator"
 import { SignedIn, SignedOut, SignInButton, SignOutButton, useUser } from "@clerk/nextjs"
 import { useQuery } from "convex/react";
 import { api } from "@/convex/_generated/api";
+import { Translate } from './translate'
 
 interface NaviProps {
   className?: string
@@ -18,6 +17,14 @@ interface NaviProps {
 interface UserSettings {
   darkMode: boolean;
   language: string;
+}
+
+// Add type declaration for google translate
+declare global {
+  interface Window {
+    google: any;
+    googleTranslateElementInit: () => void;
+  }
 }
 
 export const Navi: React.FC<NaviProps> = ({ className }) => {
@@ -57,6 +64,14 @@ export const Navi: React.FC<NaviProps> = ({ className }) => {
     }
   }, [localSettings.darkMode]);
 
+  useEffect(() => {
+    if (localSettings.language === 'turkish') {
+      initializeGoogleTranslate();
+    } else {
+      removeGoogleTranslate();
+    }
+  }, [localSettings.language]);
+
   const updateSettings = (newSettings: Partial<UserSettings>) => {
     const updatedSettings = { ...localSettings, ...newSettings };
     setLocalSettings(updatedSettings);
@@ -65,6 +80,61 @@ export const Navi: React.FC<NaviProps> = ({ className }) => {
 
   const handleLanguageChange = (newLanguage: string) => {
     updateSettings({ language: newLanguage });
+  };
+
+  const initializeGoogleTranslate = () => {
+    // Only initialize if not already initialized
+    if (!window.googleTranslateElementInit) {
+      window.googleTranslateElementInit = () => {
+        new window.google.translate.TranslateElement(
+          {
+            pageLanguage: 'en',
+            includedLanguages: 'tr', // Only include Turkish
+            autoDisplay: false,
+            layout: window.google.translate.TranslateElement.InlineLayout.SIMPLE
+          },
+          'google_translate_element'
+        );
+      };
+
+      // Add the Google Translate script
+      const script = document.createElement('script');
+      script.src = '//translate.google.com/translate_a/element.js?cb=googleTranslateElementInit';
+      script.async = true;
+      document.body.appendChild(script);
+    } else {
+      // If already initialized, trigger translation
+      const selectElement = document.querySelector('.goog-te-combo') as HTMLSelectElement;
+      if (selectElement) {
+        selectElement.value = 'tr';
+        selectElement.dispatchEvent(new Event('change'));
+      }
+    }
+  };
+
+  const removeGoogleTranslate = () => {
+    // Remove the Google Translate widget
+    const elements = document.querySelectorAll('.goog-te-banner-frame, .skiptranslate');
+    elements.forEach(el => el.remove());
+
+    // Reset the page content to original language
+    const body = document.body;
+    body.style.top = 'auto';
+    body.classList.remove('translated-ltr');
+    body.classList.remove('translated-rtl');
+
+    // Remove the translate element
+    const translateElement = document.getElementById('google_translate_element');
+    if (translateElement) {
+      translateElement.innerHTML = '';
+    }
+
+    // Reset the page to original language if needed
+    if (document.cookie.includes('googtrans')) {
+      document.cookie = 'googtrans=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';
+      document.cookie = 'googtrans=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/; domain=.' + window.location.hostname;
+      document.cookie = 'googtrans=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/; domain=' + window.location.hostname;
+    }
   };
 
   return (
@@ -128,27 +198,7 @@ export const Navi: React.FC<NaviProps> = ({ className }) => {
           </div>
         </nav>
         <div className="flex items-center gap-4">
-          <DropdownMenu>
-            <DropdownMenuTrigger
-              className="flex items-center gap-1 text-muted-foreground hover:text-primary-foreground transition-colors">
-              <span>{localSettings.language}</span>
-              <ChevronDownIcon className="h-4 w-4" />
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
-              <DropdownMenuItem onClick={() => handleLanguageChange('turkish')}>
-                <div className="flex items-center gap-2">
-                  <FlagIcon className="h-4 w-4" />
-                  <span>Türkçe</span>
-                </div>
-              </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => handleLanguageChange('english')}>
-                <div className="flex items-center gap-2">
-                  <FlagIcon className="h-4 w-4" />
-                  <span>English</span>
-                </div>
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
+          <Translate />
           <SignedOut>
             <Link href="/login" className="text-muted-foreground hover:text-primary-foreground transition-colors">
               Sign In
@@ -191,6 +241,8 @@ export const Navi: React.FC<NaviProps> = ({ className }) => {
           </SignedIn>
         </div>
       </header>
+
+      <div id="google_translate_element" style={{ display: 'none' }}></div>
 
       <div
         className={`fixed top-0 left-0 h-full w-64 bg-white z-50 shadow-lg transform ${
