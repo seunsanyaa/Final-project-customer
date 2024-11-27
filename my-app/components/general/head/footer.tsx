@@ -3,9 +3,9 @@ import Link from "next/link"
 export function Footer() {
   return (
     <footer className="border-t bg-primary text-primary-foreground">
-      <div className="container mx-auto px-4 py-8">
+      <div className="container mx-auto px-4 py-8 mr-5">
         {/* Main Grid Layout */}
-        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-8 mb-16">
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-3 gap-8 mb-8 mr-0 ml-14">
           {/* Company Section */}
           <div className="space-y-4">
             <h3 className="text-lg font-bold tracking-wide">Company</h3>
@@ -22,7 +22,6 @@ export function Footer() {
             </div>
           </div>
 
-          {/* Products Section */}
           <div className="space-y-4">
             <h3 className="text-lg font-bold tracking-wide">Products</h3>
             <div className="flex flex-col space-y-2">
@@ -38,7 +37,6 @@ export function Footer() {
             </div>
           </div>
 
-          {/* Resources Section */}
           <div className="space-y-4">
             <h3 className="text-lg font-bold tracking-wide">Resources</h3>
             <div className="flex flex-col space-y-2">
@@ -54,8 +52,7 @@ export function Footer() {
             </div>
           </div>
 
-          {/* Legal Section */}
-          <div className="space-y-4">
+          {/* <div className="space-y-4">
             <h3 className="text-lg font-bold tracking-wide">Legal</h3>
             <div className="flex flex-col space-y-2">
               <Link href="#" className="text-sm hover:text-muted-foreground transition-colors duration-200">
@@ -68,17 +65,15 @@ export function Footer() {
                 Cookie Policy
               </Link>
             </div>
-          </div>
+          </div> */}
         </div>
 
-        {/* Updated Bottom Section */}
-        <div className="flex flex-col items-center space-y-6 border-t border-primary/10 pt-8">
+        <div className="flex flex-col items-center space-y-6 border-t border-primary/10 pt-8 mr-20 pr-20">
           {/* Copyright Text */}
           <p className="text-sm text-center">
             ©2024 Renta, Rent A Car Services. All rights reserved.
           </p>
 
-          {/* Social Media Links */}
           <div className="flex items-center space-x-8">
             <Link 
               href="#" 
@@ -118,7 +113,6 @@ export function Footer() {
             </Link>
           </div>
 
-          {/* Quick Links */}
           <div className="flex items-center space-x-4 text-sm">
             <Link href="#" className="hover:text-muted-foreground transition-colors duration-200">
               Privacy Policy

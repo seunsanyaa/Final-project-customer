@@ -147,12 +147,12 @@ export const Navi: React.FC<NaviProps> = ({ className }) => {
                   <span>English</span>
                 </div>
               </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => handleLanguageChange('arabic')}>
+              {/* <DropdownMenuItem onClick={() => handleLanguageChange('arabic')}>
                 <div className="flex items-center gap-2">
                   <FlagIcon className="h-4 w-4" />
                   <span>العربية</span>
                 </div>
-              </DropdownMenuItem>
+              </DropdownMenuItem> */}
             </DropdownMenuContent>
           </DropdownMenu>
           <SignedOut>
