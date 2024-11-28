@@ -68,66 +68,197 @@
     }
   }
   
-  /* Hide Google Translate elements */
-  .goog-te-banner-frame,
-  .skiptranslate,
-  .goog-te-spinner-pos,
-  .goog-tooltip,
-  #goog-gt-tt,
-  .goog-te-balloon-frame,
-  div#goog-gt-,
-  #goog-gt-,
-  .goog-te-spinner-pos,
-  .goog-te-spinner {
+ /* Hide Google Translate elements */
+.goog-te-banner-frame,
+.skiptranslate,
+.goog-te-spinner-pos,
+.goog-tooltip,
+#goog-gt-tt,
+.goog-te-balloon-frame,
+div#goog-gt-,
+#goog-gt-,
+.goog-te-spinner-pos,
+.goog-te-spinner,
+.VIpgJd-ZVi9od-l4eHX-hSRGPd,
+#google_translate_element {
+  display: none !important;
+  visibility: hidden !important;
+  opacity: 0 !important;
+  pointer-events: none !important;
+}
+
+/* Additional specific rules for the icon */
+.google_translate_element,
+.goog-te-gadget,
+.goog-logo-link,
+.goog-te-gadget span,
+.goog-te-gadget div,
+.VIpgJd-ZVi9od-l4eHX {
+  display: none !important;
+  visibility: hidden !important;
+}
+
+/* Force hide any remaining Google elements */
+[class*='google-translate-'],
+[class*='VIpgJd-ZVi9od'],
+[id*='google_translate_'] {
+  display: none !important;
+  visibility: hidden !important;
+}
+
+/* Remove the white space at top of page */
+body {
+  top: 0 !important;
+  position: static !important;
+}
+
+/* Remove translation highlights */
+.goog-text-highlight {
+  background: none !important;
+  box-shadow: none !important;
+}
+
+/* Force hide the Google Translate widget */
+iframe.goog-te-banner-frame {
+  display: none !important;
+  visibility: hidden !important;
+}
+
+.goog-te-gadget {
+  display: none !important;
+  visibility: hidden !important;
+}
+
+/* Hide Google Translate icon specifically */
+.goog-te-gadget-icon {
+  display: none !important;
+  width: 0 !important;
+  height: 0 !important;
+  overflow: hidden !important;
+}
+
+/* Hide dropdown selector */
+.goog-te-combo {
+  display: none !important;
+}
+
+/* Add RTL support */
+.translated-rtl {
+  direction: rtl;
+  text-align: right;
+}
+
+/* Disable hover effects for Google Translate elements */
+.goog-te-banner-frame:hover,
+.skiptranslate:hover,
+.goog-te-spinner-pos:hover,
+.goog-tooltip:hover,
+#goog-gt-tt:hover,
+.goog-te-balloon-frame:hover,
+div#goog-gt-:hover,
+iframe.goog-te-banner-frame:hover,
+.goog-te-gadget:hover {
+  background: none !important;
+  color: inherit !important;
+  box-shadow: none !important;
+  border: none !important;
+  outline: none !important;
+}
+
+/* Disable hover tooltips and highlights */
+.goog-text-highlight,
+.goog-tooltip,
+.VIpgJd-ZVi9od-ORHb-OEVmcd,
+.VIpgJd-ZVi9od-ORHb,
+.VIpgJd-ZVi9od-aZ2wEe-OiiCO,
+.VIpgJd-ZVi9od-aZ2wEe-wOHMyf,
+.VIpgJd-ZVi9od-aZ2wEe,
+.VIpgJd-ZVi9od-ORHb-OEVmcd:hover,
+.VIpgJd-ZVi9od-ORHb:hover,
+.VIpgJd-ZVi9od-aZ2wEe-OiiCO:hover,
+.VIpgJd-ZVi9od-aZ2wEe-wOHMyf:hover,
+.VIpgJd-ZVi9od-aZ2wEe:hover {
     display: none !important;
     visibility: hidden !important;
-    opacity: 0 !important;
-    pointer-events: none !important;
-  }
-  
-  /* Remove the white space at top of page */
-  body {
-    top: 0 !important;
-    position: static !important;
-  }
-  
-  /* Remove translation highlights */
-  .goog-text-highlight {
     background: none !important;
-    box-shadow: none !important;
-  }
-  
-  /* Force hide the Google Translate widget */
-  iframe.goog-te-banner-frame {
-    display: none !important;
-    visibility: hidden !important;
-  }
-  
-  .goog-te-gadget {
-    display: none !important;
-    visibility: hidden !important;
-  }
-  
-  /* Add RTL support */
-  .translated-rtl {
-    direction: rtl;
-    text-align: right;
-  }
-  
-  /* Disable hover effects for Google Translate elements */
-  .goog-te-banner-frame:hover,
-  .skiptranslate:hover,
-  .goog-te-spinner-pos:hover,
-  .goog-tooltip:hover,
-  #goog-gt-tt:hover,
-  .goog-te-balloon-frame:hover,
-  div#goog-gt-:hover,
-  iframe.goog-te-banner-frame:hover,
-  .goog-te-gadget:hover {
-    background: none !important;
-    color: inherit !important;
     box-shadow: none !important;
     border: none !important;
-    outline: none !important;
-  }
-  
+    pointer-events: none !important;
+}
+
+/* Additional hover prevention */
+*:hover > .VIpgJd-ZVi9od-ORHb-OEVmcd,
+*:hover > .VIpgJd-ZVi9od-ORHb,
+*:hover > .VIpgJd-ZVi9od-aZ2wEe-OiiCO,
+*:hover > .VIpgJd-ZVi9od-aZ2wEe-wOHMyf,
+*:hover > .VIpgJd-ZVi9od-aZ2wEe {
+    display: none !important;
+    visibility: hidden !important;
+}
+
+/* Disable ALL Google Translate hover effects and tooltips */
+.goog-text-highlight,
+.goog-tooltip,
+.VIpgJd-ZVi9od-ORHb-OEVmcd,
+.VIpgJd-ZVi9od-ORHb,
+.VIpgJd-ZVi9od-aZ2wEe-OiiCO,
+.VIpgJd-ZVi9od-aZ2wEe-wOHMyf,
+.VIpgJd-ZVi9od-aZ2wEe,
+.VIpgJd-ZVi9od-ORHb-OEVmcd:hover,
+.VIpgJd-ZVi9od-ORHb:hover,
+.VIpgJd-ZVi9od-aZ2wEe-OiiCO:hover,
+.VIpgJd-ZVi9od-aZ2wEe-wOHMyf:hover,
+.VIpgJd-ZVi9od-aZ2wEe:hover,
+.VIpgJd-ZVi9od-TRZTNe,
+.VIpgJd-ZVi9od-SmfZ,
+.VIpgJd-ZVi9od-xl07Ob-lTBxed {
+    pointer-events: none !important;
+}
+
+/* Style for translated text */
+.VIpgJd-ZVi9od-vH1Gmf,
+.VIpgJd-ZVi9od-vH1Gmf:hover {
+    text-decoration: none !important;
+    background: none !important;
+    box-shadow: none !important;
+    pointer-events: auto !important; /* Allow text selection */
+    display: inline !important;
+    visibility: visible !important;
+}
+
+/* Hide tooltips and popups */
+#goog-gt-tt, 
+.goog-tooltip, 
+.goog-tooltip:hover, 
+.goog-text-highlight, 
+.goog-text-highlight:hover, 
+.VIpgJd-ZVi9od-ORHb-OEVmcd {
+    display: none !important;
+    visibility: hidden !important;
+    pointer-events: none !important;
+    opacity: 0 !important;
+    background-color: transparent !important;
+    border: none !important;
+}
+
+/* Remove hover highlighting */
+.goog-text-highlight {
+    background: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
+    position: inherit !important;
+    pointer-events: auto !important;
+}
+
+/* Ensure text remains visible and selectable */
+[class*="VIpgJd-"] {
+    pointer-events: auto !important;
+    visibility: visible !important;
+    display: inline !important;
+}
+
+/* Only hide specific Google elements */
+[class*="VIpgJd-ZVi9od-"]:not(.VIpgJd-ZVi9od-vH1Gmf) {
+    display: none !important;
+    visibility: hidden !important;
+}
