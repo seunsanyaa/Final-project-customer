@@ -1,174 +1,141 @@
-'use client'
-import Link from "next/link"
-import { Button } from "@/components/ui/button"
+'use client';
+
+import React from "react";
+import Link from "next/link";
 import { useInView } from 'react-intersection-observer';
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Separator } from "@/components/ui/separator";
 import { Navi } from "../head/navi";
 import { Footer } from '../head/footer';
+
 export function Goldhome() {
   const [ref1, inView1] = useInView({ threshold: 0.6, triggerOnce: true });
-const [ref2, inView2] = useInView({ threshold: 0.6,triggerOnce: true  });
-const [ref3, inView3] = useInView({ threshold: 0.3,triggerOnce: true });
+  const [ref2, inView2] = useInView({ threshold: 0.6, triggerOnce: true });
+  const [ref3, inView3] = useInView({ threshold: 0.6, triggerOnce: true });
+
   return (
-    (<div className="flex flex-col min-h-[100dvh]">
-      <Navi/>
+    <div className="flex flex-col min-h-dvh font-roboto">
+      <Navi />
+      <Separator />
       <main className="flex-1">
-        <section ref={ref1} className={`"bg-muted py-12 md:py-24 ${
-        inView1 ? 'animate-fadeInUp' : 'opacity-0'
-       }`}>
-          <div className="container px-4 md:px-6">
-            <div className="grid gap-6 lg:grid-cols-2 lg:gap-12">
-              <div className="space-y-4">
-                <div
-                  className="inline-block rounded-lg bg-primary px-3 py-1 text-sm text-primary-foreground">
-                  Discover
-                </div>
-                <h2 className="text-3xl font-bold tracking-tighter sm:text-4xl md:text-5xl">Golden Locations</h2>
-                <p className="text-muted-foreground md:text-xl">
-                  Explore our exclusive rental hubs available only to our golden members.
+        {/* Hero Section */}
+        <section ref={ref1} className={`relative top-0 md:py-16 w-full h-[610px] px-4 md:px-6 lg:px-10 bg-cover bg-center bg-no-repeat ${
+          inView1 ? 'animate-fadeInUp' : 'opacity-0'
+        }`}
+        style={{ 
+          backgroundImage: `url(https://res.cloudinary.com/dbsxjsktb/image/upload/v1729108115/luxury-car-background.jpg)`,
+          backgroundColor: 'rgba(0, 0, 0, 0.5)'
+        }}>
+          <div className="absolute inset-0 flex items-center justify-center">
+            <Card className="bg-white p-8 rounded-5 shadow-2xl backdrop-blur-md bg-opacity-90" style={{ zIndex: 50 }}>
+              <div className="text-center w-full max-w-[600px]">
+                <h1 className="text-5xl font-bold tracking-tight bg-gradient-to-r from-blue-500 to-teal-500 bg-clip-text text-transparent drop-shadow-xl font-poppins">
+                  Experience Luxury with Golden Membership
+                </h1>
+                <p className="mt-4 text-lg text-gray-600">
+                  Unlock exclusive benefits and premium services with our elite membership program
                 </p>
-                <div className="flex flex-col gap-2 min-[400px]:flex-row">
-                  <Link href="/Golden/GoldenHome/Goldmap"><Button>Explore Map</Button></Link>
-                  <Button variant="outline">Learn More</Button>
-                </div>
-              </div>
-              <div className="relative h-[400px] sm:h-[500px] lg:h-auto">
-                <img
-                  src="https://res.cloudinary.com/di8yfpruz/image/upload/v1730237440/View_of_Empire_State_Building_from_Rockefeller_Center_New_York_City_dllu__cropped_cmv9na.jpg"
-                  width={800}
-                  height={600}
-                  alt="Map"
-                  className="object-cover w-full h-full rounded-xl"
-                  style={{ aspectRatio: "800/600", objectFit: "cover" }} />
-                <div
-                  className="absolute top-4 left-4 bg-background/80 p-4 rounded-lg shadow-lg">
-                  <h3 className="text-lg font-semibold">New York City</h3>
-                  <p className="text-muted-foreground">Exclusive golden member rental hub</p>
-                  <Button size="sm" className="mt-2">
-                    View Details
+                <Link href="/Golden/GoldenHome">
+                  <Button className="mt-6 bg-customyello text-primary-foreground border-2 border-black p-4 shadow-md hover:bg-orange-500 transition">
+                    Join Now
                   </Button>
-                </div>
+                </Link>
               </div>
+            </Card>
+          </div>
+        </section>
+
+        {/* Premium Cars Section */}
+        <section ref={ref2} className={`w-full py-12 bg-gradient-to-b from-gray-200 to-white ${
+          inView2 ? 'animate-fadeInUp' : 'opacity-0'
+        }`}>
+          <div className="container mx-auto px-4">
+            <div className="text-center mb-12">
+              <h2 className="text-4xl font-bold mb-4">Premium Fleet</h2>
+              <p className="text-xl text-gray-600">Experience luxury with our exclusive collection</p>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {/* Repeat this card 6 times with different premium cars */}
+              {[1, 2, 3, 4, 5, 6].map((index) => (
+                <Card key={index} className="hover:shadow-xl transition-transform transform hover:scale-105">
+                  <img
+                    src={`https://res.cloudinary.com/dbsxjsktb/image/upload/v1729522582/luxury-car-${index}.jpg`}
+                    alt={`Luxury Car ${index}`}
+                    className="w-full h-48 object-cover rounded-t-lg"
+                  />
+                  <CardContent className="p-6">
+                    <h3 className="text-2xl font-semibold mb-2">Premium Vehicle {index}</h3>
+                    <p className="text-gray-600">Experience unmatched luxury and performance</p>
+                    <Button className="mt-4 w-full bg-customyello hover:bg-orange-500">Learn More</Button>
+                  </CardContent>
+                </Card>
+              ))}
             </div>
           </div>
         </section>
-        <section ref={ref2} className={`bg-background py-12 md:py-24 ${
-        inView2 ? 'animate-fadeInUp' : 'opacity-0'
-       }`}>
-          <div className="container px-4 md:px-6">
-            <div className="grid gap-6 lg:grid-cols-2 lg:gap-12">
-              <div className="relative h-[400px] sm:h-[500px] lg:h-auto">
-                <img
-                  src="/placeholder.svg"
-                  width={800}
-                  height={600}
-                  alt="Deals"
-                  className="object-cover w-full h-full rounded-xl"
-                  style={{ aspectRatio: "800/600", objectFit: "cover" }} />
-                <div
-                  className="absolute top-4 right-4 bg-background/80 p-4 rounded-lg shadow-lg">
-                  <h3 className="text-lg font-semibold">Gilded Deals</h3>
-                  <p className="text-muted-foreground">Exclusive discounts and offers for golden members</p>
-                  <Link href='../Golden/GoldenHome/Golddeals'><Button size="sm" className="mt-2">
-                    View Deals
-                  </Button></Link>
-                </div>
-              </div>
-              <div className="space-y-4">
-                <div
-                  className="inline-block rounded-lg bg-primary px-3 py-1 text-sm text-primary-foreground">
-                  Exclusive
-                </div>
-                <h2 className="text-3xl font-bold tracking-tighter sm:text-4xl md:text-5xl">Gilded Deals</h2>
-                <p className="text-muted-foreground md:text-xl">
-                  Discover the best rental deals and offers available only to our golden members.
-                </p>
-                <div className="flex flex-col gap-2 min-[400px]:flex-row">
-                <Link href='../Golden/GoldenHome/Golddeals'><Button>View Deals</Button></Link>
-                  <Button variant="outline">Learn More</Button>
-                </div>
-              </div>
-            </div>
-          </div>
-        </section>
-        <section ref={ref3}className={`bg-muted py-12 md:py-24 ${
-        inView3 ? 'animate-fadeInUp' : 'opacity-0'
-       }`}>
-          <div className="container px-4 md:px-6">
-            <div className="grid gap-6 lg:grid-cols-2 lg:gap-12">
-              <div className="space-y-4">
-                <div
-                  className="inline-block rounded-lg bg-primary px-3 py-1 text-sm text-primary-foreground">
-                  Premium
-                </div>
-                <h2 className="text-3xl font-bold tracking-tighter sm:text-4xl md:text-5xl">Star Cars</h2>
-                <p className="text-muted-foreground md:text-xl">
-                  Explore our exclusive collection of luxury and premium vehicles available only to golden members.
-                </p>
-                <div className="flex flex-col gap-2 min-[400px]:flex-row">
-                <Link href='../Golden/GoldenHome/StarCars'><Button>View Cars</Button></Link>
-                  <Button variant="outline">Learn More</Button>
-                </div>
-              </div>
-              <div className="grid grid-cols-2 gap-4">
-                <div className="relative h-[200px] sm:h-[250px] lg:h-auto">
+
+        {/* Services Section */}
+        <section ref={ref3} className={`w-full py-12 bg-white ${
+          inView3 ? 'animate-fadeInUp' : 'opacity-0'
+        }`}>
+          <div className="container mx-auto px-4">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+              {/* Chauffeur Services */}
+              <Card className="hover:shadow-xl transition-transform transform hover:scale-105">
+                <CardHeader>
+                  <CardTitle className="text-2xl font-bold text-center">Chauffeur Services</CardTitle>
+                </CardHeader>
+                <CardContent>
                   <img
-                    src="/placeholder.svg"
-                    width={400}
-                    height={300}
-                    alt="Car 1"
-                    className="object-cover w-full h-full rounded-xl"
-                    style={{ aspectRatio: "400/300", objectFit: "cover" }} />
-                  <div
-                    className="absolute top-4 left-4 bg-background/80 p-2 rounded-lg shadow-lg">
-                    <h4 className="text-sm font-semibold">Mercedes-Benz S-Class</h4>
-                  </div>
-                </div>
-                <div className="relative h-[200px] sm:h-[250px] lg:h-auto">
+                    src="https://res.cloudinary.com/dbsxjsktb/image/upload/v1729522582/chauffeur-service.jpg"
+                    alt="Chauffeur Service"
+                    className="w-full h-48 object-cover rounded-lg mb-4"
+                  />
+                  <p className="text-gray-600">
+                    Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.
+                  </p>
+                </CardContent>
+              </Card>
+
+              {/* Anniversary Rewards */}
+              <Card className="hover:shadow-xl transition-transform transform hover:scale-105">
+                <CardHeader>
+                  <CardTitle className="text-2xl font-bold text-center">Anniversary Rewards</CardTitle>
+                </CardHeader>
+                <CardContent>
                   <img
-                    src="/placeholder.svg"
-                    width={400}
-                    height={300}
-                    alt="Car 2"
-                    className="object-cover w-full h-full rounded-xl"
-                    style={{ aspectRatio: "400/300", objectFit: "cover" }} />
-                  <div
-                    className="absolute top-4 left-4 bg-background/80 p-2 rounded-lg shadow-lg">
-                    <h4 className="text-sm font-semibold">Lexus LX</h4>
-                  </div>
-                </div>
-                <div className="relative h-[200px] sm:h-[250px] lg:h-auto">
+                    src="https://res.cloudinary.com/dbsxjsktb/image/upload/v1729522582/anniversary-rewards.jpg"
+                    alt="Anniversary Rewards"
+                    className="w-full h-48 object-cover rounded-lg mb-4"
+                  />
+                  <p className="text-gray-600">
+                    Lorem ipsum dolor sit amet, consectetur adipiscing elit. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris.
+                  </p>
+                </CardContent>
+              </Card>
+
+              {/* Subscription Plans */}
+              <Card className="hover:shadow-xl transition-transform transform hover:scale-105">
+                <CardHeader>
+                  <CardTitle className="text-2xl font-bold text-center">Subscription Plans</CardTitle>
+                </CardHeader>
+                <CardContent>
                   <img
-                    src="/placeholder.svg"
-                    width={400}
-                    height={300}
-                    alt="Car 3"
-                    className="object-cover w-full h-full rounded-xl"
-                    style={{ aspectRatio: "400/300", objectFit: "cover" }} />
-                  <div
-                    className="absolute top-4 left-4 bg-background/80 p-2 rounded-lg shadow-lg">
-                    <h4 className="text-sm font-semibold">BMW 7 Series</h4>
-                  </div>
-                </div>
-                <div className="relative h-[200px] sm:h-[250px] lg:h-auto">
-                  <img
-                    src="/placeholder.svg"
-                    width={400}
-                    height={300}
-                    alt="Car 4"
-                    className="object-cover w-full h-full rounded-xl"
-                    style={{ aspectRatio: "400/300", objectFit: "cover" }} />
-                  <div
-                    className="absolute top-4 left-4 bg-background/80 p-2 rounded-lg shadow-lg">
-                    <h4 className="text-sm font-semibold">Audi A8</h4>
-                  </div>
-                </div>
-              </div>
+                    src="https://res.cloudinary.com/dbsxjsktb/image/upload/v1729522582/subscription-plans.jpg"
+                    alt="Subscription Plans"
+                    className="w-full h-48 object-cover rounded-lg mb-4"
+                  />
+                  <p className="text-gray-600">
+                    Lorem ipsum dolor sit amet, consectetur adipiscing elit. Duis aute irure dolor in reprehenderit in voluptate velit esse.
+                  </p>
+                </CardContent>
+              </Card>
             </div>
           </div>
         </section>
       </main>
-      <Footer/>
-    </div>)
+      <Footer />
+    </div>
   );
 }
-
