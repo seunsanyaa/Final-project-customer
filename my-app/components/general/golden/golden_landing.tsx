@@ -4,182 +4,139 @@ import React from "react";
 import Link from "next/link";
 import { useInView } from 'react-intersection-observer';
 import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
-import Goldimage from '@/components/ui/GOLD_desk.png';
 import { Navi } from "../head/navi";
-import CheckIcon from '@/svgs/CheckIcon';
 import { Footer } from '../head/footer';
+
 export function Golden_Landing() {
   const [ref1, inView1] = useInView({ threshold: 0.6, triggerOnce: true });
-const [ref2, inView2] = useInView({ threshold: 0.6,triggerOnce: true  });
-const [ref3, inView3] = useInView({ threshold: 0.6,triggerOnce: true });
-const [ref4, inView4] = useInView({ threshold: 0.6,triggerOnce: true });
+  const [ref2, inView2] = useInView({ threshold: 0.6, triggerOnce: true });
+  const [ref3, inView3] = useInView({ threshold: 0.6, triggerOnce: true });
+
   return (
-    (<div className="flex flex-col min-h-[100dvh]">
-      <Navi/>
-      <Separator/>
-      <main className="flex-1 " >
-        <section
-           ref={ref1}
-           className={`w-full py-12 md:py-24 lg:py-32 bg-background/10 ${
-            inView1 ? 'animate-fadeInUp' : 'opacity-0'
-           }`}>
-          <div className="container px-4 md:px-6">
-            <div
-              className="grid gap-6 lg:grid-cols-[1fr_400px] lg:gap-12 xl:grid-cols-[1fr_600px]">
-              <div className="flex flex-col justify-center space-y-4">
-                <div className="space-y-2">
-                  <h1
-                    className="text-3xl font-bold tracking-tighter text-primary sm:text-5xl xl:text-6xl/none">
-                    Sign up today and experience luxury
-                  </h1>
-                  <p className="max-w-[600px] text-primary md:text-xl">
-                    Unlock exclusive perks, premium vehicles, and personalized service with our Golden Membership.
+    <div className="flex flex-col min-h-dvh font-roboto">
+      <Navi />
+      <Separator />
+      <main className="flex-1">
+        {/* Hero Section */}
+        <section ref={ref1} className={`relative top-0 md:py-16 w-full h-[610px] px-4 md:px-6 lg:px-10 bg-cover bg-center bg-no-repeat ${
+          inView1 ? 'animate-fadeInUp' : 'opacity-0'
+        }`}
+        style={{ 
+          backgroundImage: `url(https://res.cloudinary.com/dbsxjsktb/image/upload/v1729108115/luxury-car-background.jpg)`,
+          backgroundColor: 'rgba(0, 0, 0, 0.5)'
+        }}>
+          <div className="absolute inset-0 flex items-center justify-center">
+            <Card className="bg-white p-8 rounded-5 shadow-2xl backdrop-blur-md bg-opacity-90" style={{ zIndex: 50 }}>
+              <div className="text-center w-full max-w-[600px]">
+                <h1 className="text-5xl font-bold tracking-tight bg-gradient-to-r from-blue-500 to-teal-500 bg-clip-text text-transparent drop-shadow-xl font-poppins">
+                  Experience Luxury with Golden Membership
+                </h1>
+                <p className="mt-4 text-lg text-gray-600">
+                  Unlock exclusive benefits and premium services with our elite membership program
+                </p>
+                <Link href="/Golden/GoldenHome">
+                  <Button className="mt-6 bg-customyello text-primary-foreground border-2 border-black p-4 shadow-md hover:bg-orange-500 transition">
+                    Join Now
+                  </Button>
+                </Link>
+              </div>
+            </Card>
+          </div>
+        </section>
+
+        {/* Premium Cars Section */}
+        <section ref={ref2} className={`w-full py-12 bg-gradient-to-b from-gray-200 to-white ${
+          inView2 ? 'animate-fadeInUp' : 'opacity-0'
+        }`}>
+          <div className="container mx-auto px-4">
+            <div className="text-center mb-12">
+              <h2 className="text-4xl font-bold mb-4">Premium Fleet</h2>
+              <p className="text-xl text-gray-600">Experience luxury with our exclusive collection</p>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {/* Repeat this card 6 times with different premium cars */}
+              {[1, 2, 3, 4, 5, 6].map((index) => (
+                <Card key={index} className="hover:shadow-xl transition-transform transform hover:scale-105">
+                  <img
+                    src={`https://res.cloudinary.com/dbsxjsktb/image/upload/v1729522582/luxury-car-${index}.jpg`}
+                    alt={`Luxury Car ${index}`}
+                    className="w-full h-48 object-cover rounded-t-lg"
+                  />
+                  <CardContent className="p-6">
+                    <h3 className="text-2xl font-semibold mb-2">Premium Vehicle {index}</h3>
+                    <p className="text-gray-600">Experience unmatched luxury and performance</p>
+                    <Button className="mt-4 w-full bg-customyello hover:bg-orange-500">Learn More</Button>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          </div>
+        </section>
+
+        {/* Services Section */}
+        <section ref={ref3} className={`w-full py-12 bg-white ${
+          inView3 ? 'animate-fadeInUp' : 'opacity-0'
+        }`}>
+          <div className="container mx-auto px-4">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+              {/* Chauffeur Services */}
+              <Card className="hover:shadow-xl transition-transform transform hover:scale-105">
+                <CardHeader>
+                  <CardTitle className="text-2xl font-bold text-center">Chauffeur Services</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <img
+                    src="https://res.cloudinary.com/dbsxjsktb/image/upload/v1729522582/chauffeur-service.jpg"
+                    alt="Chauffeur Service"
+                    className="w-full h-48 object-cover rounded-lg mb-4"
+                  />
+                  <p className="text-gray-600">
+                    Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.
                   </p>
-                </div>
-                <div className="flex flex-col gap-2 min-[400px]:flex-row">
-                  <Link href='/Golden/GoldenHome'><Button
-                    className="inline-flex h-10 items-center justify-center rounded-md px-8 text-sm font-medium shadow transition-colors hover:bg-primary/90 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50">
-                    Sign Up Now
-                  </Button></Link>
-                </div>
-              </div>
-            </div>
-          </div>
-        </section>
-        <section  ref={ref2}
-          className={`w-full py-12 md:py-24 lg:py-32 bg-background/10 ${
-            inView2 ? 'animate-fadeInUp' : 'opacity-0'
-          }`}>
-          <div className="container px-4 md:px-6">
-            <div className="grid gap-10 sm:px-10 md:gap-16 md:grid-cols-2">
-              <div className="space-y-4">
-                <div className="inline-block rounded-lg bg-muted px-3 py-1 text-sm">Exclusive Perks</div>
-                <h2
-                  className="lg:leading-tighter text-3xl font-bold text-primary tracking-tighter sm:text-4xl md:text-5xl xl:text-[3.4rem] 2xl:text-[3.75rem]">
-                  Elevate Your Rental Experience
-                </h2>
-                <ul className="space-y-2 text-primary">
-                  <li className="flex items-center gap-2">
-                    <CheckIcon className="h-5 w-5 text-primary" />
-                    Priority vehicle selection
-                  </li>
-                  <li className="flex items-center gap-2">
-                    <CheckIcon className="h-5 w-5 text-primary" />
-                    Complimentary upgrades
-                  </li>
-                  <li className="flex items-center gap-2">
-                    <CheckIcon className="h-5 w-5 text-primary" />
-                    Dedicated concierge service
-                  </li>
-                  <li className="flex items-center gap-2">
-                    <CheckIcon className="h-5 w-5 text-primary" />
-                    Exclusive member events
-                  </li>
-                </ul>
-              </div>
-              <div className="flex flex-col items-start space-y-4">
-                <div className="inline-block rounded-lg bg-muted px-3 py-1 text-sm">Premium Vehicles</div>
-                <p
-                  className="mx-auto max-w-[700px] text-primary md:text-xl/relaxed">
-                  Experience the ultimate in luxury and performance with our exclusive fleet of premium vehicles,
-                  including the latest models from top brands.
-                </p>
-                <Link
-                  href="#"
-                  className="inline-flex h-9 items-center justify-center rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground shadow transition-colors hover:bg-primary/90 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50"
-                  prefetch={false}>
-                  View Our Fleet
-                </Link>
-              </div>
-            </div>
-          </div>
-        </section>
-        <section  ref={ref3}
-          className={`w-full py-12 md:py-24 lg:py-32 bg-background/10 ${
-            inView3 ? 'animate-fadeInUp' : 'opacity-0'
-          }`}>
-          <div className="container px-4 md:px-6">
-            <div className="grid gap-10 sm:px-10 md:gap-16 md:grid-cols-2">
-              <div className="space-y-4">
-                <div className="inline-block rounded-lg bg-muted px-3 py-1 text-sm">Personalized Service</div>
-                <h2
-                  className="lg:leading-tighter text-3xl font-bold tracking-tighter text-primary sm:text-4xl md:text-5xl xl:text-[3.4rem] 2xl:text-[3.75rem]">
-                  Your Rental, Your Way
-                </h2>
-                <ul className="space-y-2 text-primary">
-                  <li className="flex items-center gap-2">
-                    <CheckIcon className="h-5 w-5 text-primary" />
-                    Dedicated account manager
-                  </li>
-                  <li className="flex items-center gap-2">
-                    <CheckIcon className="h-5 w-5 text-primary" />
-                    Customized rental packages
-                  </li>
-                  <li className="flex items-center gap-2">
-                    <CheckIcon className="h-5 w-5 text-primary" />
-                    Flexible booking and return
-                  </li>
-                  <li className="flex items-center gap-2">
-                    <CheckIcon className="h-5 w-5 text-primary" />
-                    Seamless 24/7 support
-                  </li>
-                </ul>
-              </div>
-              <div className="flex flex-col items-start space-y-4">
-                <div className="inline-block rounded-lg bg-muted px-3 py-1 text-sm">Luxury Lifestyle</div>
-                <p
-                  className="mx-auto max-w-[700px] text-primary md:text-xl/relaxed">
-                  Indulge in the finer things in life with our Golden Membership. From exclusive events to personalized
-                  concierge services, we cater to your every need.
-                </p>
-                <Link
-                  href="#"
-                  className="inline-flex h-9 items-center justify-center rounded-md border border-input bg-background px-4 py-2 text-sm font-medium shadow-sm transition-colors hover:bg-accent hover:text-accent-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50"
-                  prefetch={false}>
-                  Learn More
-                </Link>
-              </div>
-            </div>
-          </div>
-        </section>
-        <section
-           ref={ref4}
-           className={`w-full py-12 md:py-24 lg:py-32 bg-background/10 ${
-             inView4 ? 'animate-fadeInUp' : 'opacity-0'
-           }`}>
-          <div className="container px-4 md:px-6">
-            <div
-              className="grid items-center justify-center gap-4 px-4 text-center md:px-6">
-              <div className="space-y-3">
-                <h2
-                  className="text-3xl font-bold tracking-tighter text-primary md:text-4xl/tight">
-                  Elevate Your Rental Experience
-                </h2>
-                <p
-                  className="mx-auto max-w-[600px] text-primary md:text-xl/relaxed lg:text-base/relaxed xl:text-xl/relaxed">
-                  Join our Golden Membership and unlock a world of exclusive perks, premium vehicles, and personalized
-                  service.
-                </p>
-              </div>
-              <div className="mx-auto w-full max-w-sm space-y-2">
-                <Button
-                  className="inline-flex h-10 items-center justify-center rounded-md px-8 text-sm font-medium shadow transition-colors hover:bg-primary/90 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50">
-                  Sign Up Now
-                </Button>
-                <p className="text-xs text-primary">
-                  Membership is subject to approval.{" "}
-                  <Link href="#" className="underline underline-offset-2" prefetch={false}>
-                    Terms &amp; Conditions
-                  </Link>
-                </p>
-              </div>
+                </CardContent>
+              </Card>
+
+              {/* Anniversary Rewards */}
+              <Card className="hover:shadow-xl transition-transform transform hover:scale-105">
+                <CardHeader>
+                  <CardTitle className="text-2xl font-bold text-center">Anniversary Rewards</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <img
+                    src="https://res.cloudinary.com/dbsxjsktb/image/upload/v1729522582/anniversary-rewards.jpg"
+                    alt="Anniversary Rewards"
+                    className="w-full h-48 object-cover rounded-lg mb-4"
+                  />
+                  <p className="text-gray-600">
+                    Lorem ipsum dolor sit amet, consectetur adipiscing elit. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris.
+                  </p>
+                </CardContent>
+              </Card>
+
+              {/* Subscription Plans */}
+              <Card className="hover:shadow-xl transition-transform transform hover:scale-105">
+                <CardHeader>
+                  <CardTitle className="text-2xl font-bold text-center">Subscription Plans</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <img
+                    src="https://res.cloudinary.com/dbsxjsktb/image/upload/v1729522582/subscription-plans.jpg"
+                    alt="Subscription Plans"
+                    className="w-full h-48 object-cover rounded-lg mb-4"
+                  />
+                  <p className="text-gray-600">
+                    Lorem ipsum dolor sit amet, consectetur adipiscing elit. Duis aute irure dolor in reprehenderit in voluptate velit esse.
+                  </p>
+                </CardContent>
+              </Card>
             </div>
           </div>
         </section>
       </main>
-      <Footer/>
-    </div>)
+      <Footer />
+    </div>
   );
 }
 
