@@ -72,7 +72,7 @@ export function Goldhome() {
                       </Link>
                     </div>
                     <img
-                      src="https://res.cloudinary.com/dbsxjsktb/image/upload/v1729522582/luxury-car-1.jpg"
+                      src="https://res.cloudinary.com/dbsxjsktb/image/upload/v1732829197/1654786523359_qobm40.avif"
                       alt="Luxury Sedan"
                       className="w-[600px] h-[500px] object-cover"
                     />
@@ -92,9 +92,9 @@ export function Goldhome() {
                       </Link>
                     </div>
                     <img
-                      src="https://res.cloudinary.com/dbsxjsktb/image/upload/v1729522582/luxury-car-2.jpg"
+                      src="https://res.cloudinary.com/dbsxjsktb/image/upload/w_1000,ar_16:9,c_fill,g_auto,e_sharpen/v1732830903/2020-range-rover-sport-1920x565__1_-removebg_f6qehx.png"
                       alt="Luxury SUV"
-                      className="w-[600px] h-[500px] object-cover"
+                      className="w-[800px] h-[400px] object-cover"
                     />
                   </div>
                 </CarouselItem>
