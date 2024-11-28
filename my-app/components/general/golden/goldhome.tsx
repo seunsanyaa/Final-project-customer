@@ -139,7 +139,7 @@ export function Goldhome() {
                   <div className="flex flex-col md:flex-row items-center justify-between h-full px-4 md:px-6 lg:px-10">
                     <div className="space-y-4 md:space-y-6 lg:space-y-8">
                       <CardHeader>
-                        <CardTitle className="text-2xl font-bold text-center">Chauffeur Services</CardTitle>
+                        <CardTitle className="text-2xl font-bold text-center">Chauffeur Services and Travel kits</CardTitle>
                       </CardHeader>
                       <CardContent>
                         <img
@@ -150,7 +150,7 @@ export function Goldhome() {
                         <p className="text-gray-600">
                           Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.
                         </p>
-                        <Link href="/ChauffeurServices">
+                        <Link href="/PremiumServices">
                           <Button className="bg-customyello text-primary-foreground border-2 border-black p-4 shadow-md hover:bg-orange-500 transition">
                             Discover Now
                           </Button>
@@ -165,7 +165,7 @@ export function Goldhome() {
                   <div className="flex flex-col md:flex-row items-center justify-between h-full px-4 md:px-6 lg:px-10">
                     <div className="space-y-4 md:space-y-6 lg:space-y-8">
                       <CardHeader>
-                        <CardTitle className="text-2xl font-bold text-center">Anniversary Rewards</CardTitle>
+                        <CardTitle className="text-2xl font-bold text-center">Premium Rewards</CardTitle>
                       </CardHeader>
                       <CardContent>
                         <img
@@ -176,7 +176,7 @@ export function Goldhome() {
                         <p className="text-gray-600">
                           Lorem ipsum dolor sit amet, consectetur adipiscing elit. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris.
                         </p>
-                        <Link href="/AnniversaryRewards">
+                        <Link href="/PremiumServices">
                           <Button className="bg-customyello text-primary-foreground border-2 border-black p-4 shadow-md hover:bg-orange-500 transition">
                             Discover Now
                           </Button>
@@ -202,7 +202,7 @@ export function Goldhome() {
                         <p className="text-gray-600">
                           Lorem ipsum dolor sit amet, consectetur adipiscing elit. Duis aute irure dolor in reprehenderit in voluptate velit esse.
                         </p>
-                        <Link href="/SubscriptionPlans">
+                        <Link href="/PremiumServices">
                           <Button className="bg-customyello text-primary-foreground border-2 border-black p-4 shadow-md hover:bg-orange-500 transition">
                             Discover Now
                           </Button>
