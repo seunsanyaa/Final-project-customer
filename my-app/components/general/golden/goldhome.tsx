@@ -65,9 +65,11 @@ export function Goldhome() {
                       <p className="text-lg md:text-xl lg:text-2xl text-gray-600">
                         Experience unmatched comfort with our premium sedan fleet. Exclusive access for Gold members.
                       </p>
-                      <Button className="bg-customyello text-primary-foreground border-2 border-black p-4 shadow-md hover:bg-orange-500 transition">
-                        Learn More
-                      </Button>
+                      <Link href="">
+                        <Button className="bg-customyello text-primary-foreground border-2 border-black p-4 shadow-md hover:bg-orange-500 transition">
+                          Learn More
+                        </Button>
+                      </Link>
                     </div>
                     <img
                       src="https://res.cloudinary.com/dbsxjsktb/image/upload/v1729522582/luxury-car-1.jpg"
@@ -83,9 +85,11 @@ export function Goldhome() {
                       <p className="text-lg md:text-xl lg:text-2xl text-gray-600">
                         Discover our collection of high-end SUVs perfect for any occasion.
                       </p>
-                      <Button className="bg-customyello text-primary-foreground border-2 border-black p-4 shadow-md hover:bg-orange-500 transition">
-                        Learn More
-                      </Button>
+                      <Link href="/PremiumCars">
+                        <Button className="bg-customyello text-primary-foreground border-2 border-black p-4 shadow-md hover:bg-orange-500 transition">
+                          Learn More
+                        </Button>
+                      </Link>
                     </div>
                     <img
                       src="https://res.cloudinary.com/dbsxjsktb/image/upload/v1729522582/luxury-car-2.jpg"
@@ -101,9 +105,11 @@ export function Goldhome() {
                       <p className="text-lg md:text-xl lg:text-2xl text-gray-600">
                         Feel the thrill with our exclusive sports car collection.
                       </p>
-                      <Button className="bg-customyello text-primary-foreground border-2 border-black p-4 shadow-md hover:bg-orange-500 transition">
-                        Learn More
-                      </Button>
+                      <Link href="/golden/premium_cars">
+                        <Button className="bg-customyello text-primary-foreground border-2 border-black p-4 shadow-md hover:bg-orange-500 transition">
+                          Learn More
+                        </Button>
+                      </Link>
                     </div>
                     <img
                       src="https://res.cloudinary.com/dbsxjsktb/image/upload/v1729522582/luxury-car-3.jpg"
