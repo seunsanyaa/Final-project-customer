@@ -180,7 +180,7 @@ export function NewBooking3() {
   };
 
   const handleContinue = async () => {
-    if (!carDetails || !pickupDateTime || !dropoffDateTime || !paymentMethod) {
+    if (!carDetails || !pickupDateTime || !dropoffDateTime || !paymentMethod || !user) {
       console.error('Missing required booking details');
       return;
     }
@@ -194,7 +194,7 @@ export function NewBooking3() {
 
       // Create the booking first
       const bookingId = await createBooking({
-        customerId: user?.id,
+        customerId: user.id,
         carId: registrationNumber as string,
         startDate: pickupDateTime,
         endDate: dropoffDateTime,
@@ -210,7 +210,7 @@ export function NewBooking3() {
       // Create payment session
       const paymentSession = await createPaymentSession({
         bookingId,
-        userId: user?.id as string,
+        userId: user.id,
         paymentType: paymentMethod,
         paidAmount: paidAmount,
         totalAmount: parseFloat(totalAmount),
@@ -220,15 +220,14 @@ export function NewBooking3() {
       if (selectedPromotion) {
         await markPromotionAsUsed({
           promotionId: selectedPromotion,
-          userId: user?.id as string,
+          userId: user.id,
         });
       }
 
-      // Redirect to payment page with session ID
-      router.push(`/Newbooking/payment/${paymentSession._id}`);
+      // Redirect to payment page with all necessary information
+      router.push(`/Newbooking/payment/${paymentSession._id}?email=${encodeURIComponent(user.emailAddresses[0].emailAddress)}`);
     } catch (error) {
       console.error('Error creating booking:', error);
-      // Add error handling UI here
     }
   };
 
