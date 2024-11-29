@@ -10,7 +10,7 @@ export function Footer() {
           <div className="space-y-4">
             <h3 className="text-lg font-bold tracking-wide">Company</h3>
             <div className="flex flex-col space-y-2">
-              <Link href="#" className="text-sm hover:text-muted-foreground transition-colors duration-200">
+              <Link href="/aboutus" className="text-sm hover:text-muted-foreground transition-colors duration-200">
                 About Us
               </Link>
               <Link href="#" className="text-sm hover:text-muted-foreground transition-colors duration-200">
