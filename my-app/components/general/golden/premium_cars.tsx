@@ -93,7 +93,7 @@ export function PremiumCars() {
 
             {/* Premium Car 6 */}
             <div className="flex flex-col items-center justify-center gap-4 p-6 transition-transform transform hover:scale-105 hover:shadow-lg bg-card hover:bg-gradient-to-r from-blue-500 to-green-500">
-              <img src="https://res.cloudinary.com/dbsxjsktb/image/upload/v1732882737/mansory-rolls-royce-3840x2160-16576_aexumc.jpg" alt="Mansory Rolls Royce" className="w-[600px] h-[250px] rounded-lg" />
+              <img src="https://res.cloudinary.com/dbsxjsktb/image/upload/v1732902424/44f58625f1b602210bb9915901a4374f_ct4lju-removebg-preview_eevibl.png" alt="Mansory Rolls Royce" className="w-[600px] h-[250px] rounded-lg" />
               <div className="text-center mb-0 mt-0">
                 <h3 className="text-4xl font-semibold text-black">Mansory Rolls Royce</h3>
                 <p className="text-black font-semibold">Group travel in style.</p>
