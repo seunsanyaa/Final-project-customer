@@ -177,5 +177,13 @@ export default defineSchema({
 	})
 		.index('by_userId', ['userId'])
 		.index('by_status', ['status']),
+
+	messages: defineTable({
+		customerId: v.string(),
+		message: v.string(),
+		isAdmin: v.boolean(),
+		timestamp: v.string(),
+	})
+		.index('by_customerId', ['customerId']),
 });
 	
