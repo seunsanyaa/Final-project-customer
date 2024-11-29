@@ -170,7 +170,9 @@ export const calculateInstallmentDetails = query({
     extras: v.object({
       insurance: v.boolean(),
       gps: v.boolean(),
-      childSeat: v.boolean()
+      childSeat: v.boolean(),
+      chauffer: v.boolean(),
+      travelKit: v.boolean()
     }),
     promotionValue: v.optional(v.number())
   },
@@ -181,7 +183,9 @@ export const calculateInstallmentDetails = query({
     const insurancePrice = extras.insurance ? 10 : 0;
     const gpsPrice = extras.gps ? 5 : 0;
     const childSeatPrice = extras.childSeat ? 8 : 0;
-    let totalsum = basePrice + insurancePrice + gpsPrice + childSeatPrice;
+    const chaufferPrice = extras.chauffer ? 100 : 0;
+    const travelKitPrice = extras.travelKit ? 0 : 0;
+    let totalsum = basePrice + insurancePrice + gpsPrice + childSeatPrice + chaufferPrice + travelKitPrice;
     
     // Apply promotion if available
     if (promotionValue) {

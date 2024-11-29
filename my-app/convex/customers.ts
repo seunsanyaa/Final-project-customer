@@ -214,6 +214,7 @@ export const getCustomerByUserId = query({
 export const upgradeCustomer = mutation({
 	args: {
 		userId: v.string(),
+		subscriptionPlan: v.string(),
 	},
 	handler: async (ctx, args) => {
 		const existingCustomer = await ctx.db
@@ -225,11 +226,17 @@ export const upgradeCustomer = mutation({
 			return `Customer with ID ${args.userId} does not exist.`;
 		}
 
+		// Set expiration date to one month from now
+		const expirationDate = new Date();
+		expirationDate.setMonth(expirationDate.getMonth() + 1);
+
 		await ctx.db.patch(existingCustomer._id, {
 			goldenMember: true,
+			subscriptionPlan: args.subscriptionPlan,
+			expirationDate: expirationDate.toISOString(),
 		});
 
-		return `Customer with ID ${args.userId} has been upgraded to Golden Member.`;
+		return `Customer with ID ${args.userId} has been upgraded to Golden Member with ${args.subscriptionPlan} plan.`;
 	},
 });
 
@@ -273,5 +280,21 @@ export const addRewardPoints = mutation({
 		});
 
 		return `Customer with ID ${args.userId} now has ${newRewardPoints} reward points.`;
+	},
+});
+
+export const isGoldenMember = query({
+	args: { userId: v.string() },
+	handler: async (ctx, args) => {
+		const customer = await ctx.db
+			.query('customers')
+			.withIndex('by_userId', (q) => q.eq('userId', args.userId))
+			.first();
+
+		if (!customer) {
+			return false; // Return false if customer doesn't exist
+		}
+
+		return customer.goldenMember; // Return the goldenMember status
 	},
 });

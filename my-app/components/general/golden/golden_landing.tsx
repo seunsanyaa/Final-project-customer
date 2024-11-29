@@ -38,10 +38,11 @@ const [ref4, inView4] = useInView({ threshold: 0.6,triggerOnce: true });
                   </p>
                 </div>
                 <div className="flex flex-col gap-2 min-[400px]:flex-row">
-                  <Link href='/Golden/GoldenHome'><Button
-                    className="inline-flex h-10 items-center justify-center rounded-md px-8 text-sm font-medium shadow transition-colors hover:bg-primary/90 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50">
-                    Sign Up Now
-                  </Button></Link>
+                  <Link href='/Golden/subscribe'>
+                    <Button className="inline-flex h-10 items-center justify-center rounded-md px-8 text-sm font-medium shadow transition-colors hover:bg-primary/90 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50">
+                      Sign Up Now
+                    </Button>
+                  </Link>
                 </div>
               </div>
             </div>
@@ -163,10 +164,11 @@ const [ref4, inView4] = useInView({ threshold: 0.6,triggerOnce: true });
                 </p>
               </div>
               <div className="mx-auto w-full max-w-sm space-y-2">
-                <Button
-                  className="inline-flex h-10 items-center justify-center rounded-md px-8 text-sm font-medium shadow transition-colors hover:bg-primary/90 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50">
-                  Sign Up Now
-                </Button>
+                <Link href='/Golden/subscribe'>
+                  <Button className="inline-flex h-10 items-center justify-center rounded-md px-8 text-sm font-medium shadow transition-colors hover:bg-primary/90 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50">
+                    Sign Up Now
+                  </Button>
+                </Link>
                 <p className="text-xs text-primary">
                   Membership is subject to approval.{" "}
                   <Link href="#" className="underline underline-offset-2" prefetch={false}>
