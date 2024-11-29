@@ -28,9 +28,9 @@ export function PremiumCars() {
           <div className="grid gap-6 grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-3 mt-10 pl-14 pr-14 ml-14 mr-14 mb-20">
             {/* Premium Car 1 */}
             <div className="flex flex-col items-center justify-center gap-4 p-6 transition-transform transform hover:scale-105 hover:shadow-lg bg-card hover:bg-gradient-to-r from-blue-500 to-green-500">
-              <img src="https://res.cloudinary.com/dbsxjsktb/image/upload/v1729527582/2022-genesis-g80-4wd-sedan-white_featured_e84fej.avif" alt="Genesis G80" className="w-[300px] h-[220px] rounded-lg" />
+              <img src="https://res.cloudinary.com/dbsxjsktb/image/upload/w_1000,ar_16:9,c_fill,g_auto,e_sharpen/v1732830903/2020-range-rover-sport-1920x565__1_-removebg_f6qehx.png" alt="Range Rover Sport" className="w-[500px] h-[220px] rounded-lg" />
               <div className="text-center mb-0 mt-0">
-                <h3 className="text-4xl font-semibold text-black">Genesis G80</h3>
+                <h3 className="text-4xl font-semibold text-black">Range Rover Sport</h3>
                 <p className="text-black font-semibold">Luxury redefined.</p>
                 <p className="text-black">$200/day</p>
               </div>
@@ -41,9 +41,9 @@ export function PremiumCars() {
 
             {/* Premium Car 2 */}
             <div className="flex flex-col items-center justify-center gap-4 p-6 transition-transform transform hover:scale-105 hover:shadow-lg bg-card hover:bg-gradient-to-r from-blue-500 to-green-500">
-              <img src="https://res.cloudinary.com/dbsxjsktb/image/upload/v1729522582/2020-ford-mustang-ecoboost-premium-convertible-white_featured_c4qsq5.avif" alt="Mustang" className="w-[300px] h-[220px] rounded-lg" />
+              <img src="https://res.cloudinary.com/dbsxjsktb/image/upload/w_1000,ar_16:9,c_fill,g_auto,e_sharpen/v1732832958/hero-2018-maserati-granturismo-1920x565-removebg-preview_z2nmmg.png" alt="Maserati GranTurismo" className="w-[500px] h-[220px] rounded-lg" />
               <div className="text-center mb-0 mt-0">
-                <h3 className="text-4xl font-semibold text-black">Mustang</h3>
+                <h3 className="text-4xl font-semibold text-black">Maserati</h3>
                 <p className="text-black font-semibold">Pure performance.</p>
                 <p className="text-black">$300/day</p>
               </div>
@@ -53,10 +53,10 @@ export function PremiumCars() {
             </div>
 
             {/* Premium Car 3 */}
-            <div className="flex flex-col items-center justify-center gap-4 p-6 transition-transform transform hover:scale-105 hover:shadow-lg bg-card hover:bg-gradient-to-r from-blue-500 to-green-500">
-              <img src="https://res.cloudinary.com/dbsxjsktb/image/upload/v1729527063/2022-ram-1500-limited-swb-crew-pick-up-silver_featured_x2xwqj.avif" alt="RAM 1500" className="w-[300px] h-[220px] rounded-lg" />
+            <div className="flex flex-col items-center justify-center gap-4 p-6 transition-transform transform hover:scale-105 hover:shadow-lg bg-card hover:bg-gradient-to-r from-blue-500 to-green-500" >
+              <img src="https://res.cloudinary.com/dbsxjsktb/image/upload/w_1000,ar_16:9,c_fill,g_auto,e_sharpen/v1732832958/hero-2019-porsche-boxster-1920x565-removebg_hlhjvr.png" className="w-[500px] h-[220px] rounded-lg" />
               <div className="text-center mb-0 mt-0">
-                <h3 className="text-4xl font-semibold text-black">RAM 1500</h3>
+                <h3 className="text-4xl font-semibold text-black">Porsche Boxster</h3>
                 <p className="text-black font-semibold">Power meets luxury.</p>
                 <p className="text-black">$250/day</p>
               </div>
@@ -67,9 +67,9 @@ export function PremiumCars() {
 
             {/* Premium Car 4 */}
             <div className="flex flex-col items-center justify-center gap-4 p-6 transition-transform transform hover:scale-105 hover:shadow-lg bg-card hover:bg-gradient-to-r from-blue-500 to-green-500">
-              <img src="https://res.cloudinary.com/dbsxjsktb/image/upload/v1729522583/2022-chevrolet-tahoe-lt-4wd-suv-beige_featured_bsxp0g.avif" alt="Chevrolet Tahoe" className="w-[300px] h-[220px] rounded-lg" />
+              <img src="https://res.cloudinary.com/dbsxjsktb/image/upload/w_1000,ar_16:9,c_fill,g_auto,e_sharpen/v1732831937/MERCEDES-BENZ_S-CLASS_LE_upscale_balanced_x4-removebg-preview_sxsbaa.png" alt="MERCEDES BENZ S_CLASS_LE" className="w-[500px] h-[220px] rounded-lg" />
               <div className="text-center mb-0 mt-0">
-                <h3 className="text-4xl font-semibold text-black">Tahoe</h3>
+                <h3 className="text-4xl font-semibold text-black">MERCEDES BENZ S_CLASS_LE</h3>
                 <p className="text-black font-semibold">Ultimate SUV experience.</p>
                 <p className="text-black">$280/day</p>
               </div>
@@ -80,9 +80,9 @@ export function PremiumCars() {
 
             {/* Premium Car 5 */}
             <div className="flex flex-col items-center justify-center gap-4 p-6 transition-transform transform hover:scale-105 hover:shadow-lg bg-card hover:bg-gradient-to-r from-blue-500 to-green-500">
-              <img src="https://res.cloudinary.com/dbsxjsktb/image/upload/v1729522582/2021-toyota-camry-se-sedan-white_featured_yakvxp.avif" alt="Toyota Camry" className="w-[300px] h-[220px] rounded-lg" />
+              <img src="https://res.cloudinary.com/dbsxjsktb/image/upload/w_1000,ar_16:9,c_fill,g_auto,e_sharpen/v1732833992/BMW_4_Series_LE_upscale_balanced_x4-removebg-preview_pl3neq.png" alt="BMW 4 Series" className="w-[500px] h-[220px] rounded-lg" />
               <div className="text-center mb-0 mt-0">
-                <h3 className="text-4xl font-semibold text-black">Camry</h3>
+                <h3 className="text-4xl font-semibold text-black">BMW 4 Series</h3>
                 <p className="text-black font-semibold">Elegant reliability.</p>
                 <p className="text-black">$180/day</p>
               </div>
@@ -93,9 +93,9 @@ export function PremiumCars() {
 
             {/* Premium Car 6 */}
             <div className="flex flex-col items-center justify-center gap-4 p-6 transition-transform transform hover:scale-105 hover:shadow-lg bg-card hover:bg-gradient-to-r from-blue-500 to-green-500">
-              <img src="https://res.cloudinary.com/dihvudxbt/image/upload/v1729200173/JKAR_22_Compact_Cargo_Van_AngularFront_US_ENG_280x210_wsqbrx.avif" alt="Luxury Van" className="w-[300px] h-[220px] rounded-lg" />
+              <img src="https://res.cloudinary.com/dbsxjsktb/image/upload/v1732882737/mansory-rolls-royce-3840x2160-16576_aexumc.jpg" alt="Mansory Rolls Royce" className="w-[600px] h-[250px] rounded-lg" />
               <div className="text-center mb-0 mt-0">
-                <h3 className="text-4xl font-semibold text-black">Luxury Van</h3>
+                <h3 className="text-4xl font-semibold text-black">Mansory Rolls Royce</h3>
                 <p className="text-black font-semibold">Group travel in style.</p>
                 <p className="text-black">$220/day</p>
               </div>
