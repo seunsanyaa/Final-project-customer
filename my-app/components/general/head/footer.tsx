@@ -46,7 +46,7 @@ export function Footer() {
               <Link href="#" className="text-sm hover:text-muted-foreground transition-colors duration-200">
                 Ratings and Reviews
               </Link>
-              <Link href="#" className="text-sm hover:text-muted-foreground transition-colors duration-200">
+              <Link href="/support" className="text-sm hover:text-muted-foreground transition-colors duration-200">
                 Support
               </Link>
             </div>
