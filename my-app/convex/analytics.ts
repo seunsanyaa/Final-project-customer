@@ -218,17 +218,24 @@ export const getCurrentBooking = query({
     customerId: v.string(),
   },
   handler: async (ctx, args) => {
+    // Get today's date and set time to start of day
     const today = new Date();
     today.setHours(0, 0, 0, 0);
+    const todayISO = today.toISOString();
+
+    // Get tomorrow's date (end of today)
+    const tomorrow = new Date(today);
+    tomorrow.setDate(tomorrow.getDate() + 1);
+    const tomorrowISO = tomorrow.toISOString();
     
-    // Get bookings where today falls between start and end date
+    // Get bookings where today falls between start and end date (inclusive)
     const currentBookings = await ctx.db
       .query('bookings')
       .withIndex('by_customerId', (q) => q.eq('customerId', args.customerId))
       .filter((q) => 
         q.and(
-          q.lte(q.field('startDate'), today.toISOString()),
-          q.gte(q.field('endDate'), today.toISOString())
+          q.lt(q.field('startDate'), tomorrowISO), // booking starts before tomorrow
+          q.gt(q.field('endDate'), todayISO)       // booking ends after today
         )
       )
       .collect();
@@ -248,6 +255,15 @@ export const getCurrentBooking = query({
           )
           .first();
 
+        // Calculate days remaining using Date objects
+        const endDate = new Date(booking.endDate);
+        endDate.setHours(23, 59, 59, 999); // Set to end of day
+        
+        const daysRemaining = Math.ceil(
+          (endDate.getTime() - today.getTime()) / 
+          (1000 * 60 * 60 * 24)
+        );
+
         return {
           ...booking,
           carDetails: car ? {
@@ -258,10 +274,7 @@ export const getCurrentBooking = query({
             trim: car.trim,
             registrationNumber: car.registrationNumber
           } : null,
-          daysRemaining: Math.ceil(
-            (new Date(booking.endDate).getTime() - today.getTime()) / 
-            (1000 * 60 * 60 * 24)
-          )
+          daysRemaining
         };
       })
     );
