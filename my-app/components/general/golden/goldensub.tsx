@@ -78,7 +78,6 @@ export function GoldenSubscribe() {
       }
 
       const paymentSession = await createPaymentSession({
-        totalAmount: selectedPlanDetails.price,
         paidAmount: selectedPlanDetails.price,
         paymentType: 'subscription',
         userId: user.id,
@@ -95,7 +94,7 @@ export function GoldenSubscribe() {
           type: 'subscription',
           planId,
           amount: selectedPlanDetails.price,
-          sessionId: user.emailAddresses[0].emailAddress,
+          email: user.emailAddresses[0].emailAddress,
         }),
       });
 
@@ -104,10 +103,9 @@ export function GoldenSubscribe() {
         throw new Error(data.error);
       }
 
-      router.push(`/Golden/subscribe/payment?sessionId=${paymentSession._id}&plan=${planId}&clientSecret=${data.clientSecret}`);
+      router.push(`/Golden/subscribe/success?session_id=${paymentSession._id}&plan=${planId}&client_secret=${data.clientSecret}`);
     } catch (error) {
       console.error('Subscription error:', error);
-      // Add error notification here
     } finally {
       setIsLoading(false);
     }

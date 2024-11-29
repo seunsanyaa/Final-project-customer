@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { Navi } from "../head/navi";
 import { Footer } from "../head/footer";
-import { useRouter } from 'next/router';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { useQuery } from 'convex/react';
 import { api } from '../../../convex/_generated/api';
 import { useParams } from 'next/navigation';
@@ -15,7 +15,9 @@ import { Id } from '../../../convex/_generated/dataModel';
 
 export function Payment_Page() {
   const params = useParams();
+  const searchParams = useSearchParams();
   const sessionId = params.sessionId as Id<"paymentSessions">;
+  const email = searchParams.get('email');
   const router = useRouter();
 
   // Fetch payment session details
@@ -35,7 +37,7 @@ export function Payment_Page() {
   const stripePromise = loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY!);
 
   useEffect(() => {
-    if (paidAmount > 0) {
+    if (paidAmount > 0 && email) {
       setIsLoading(true);
       fetch("/api/create-payment-intent", {
         method: "POST",
@@ -43,8 +45,9 @@ export function Payment_Page() {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({ 
-          amount: Math.round(paidAmount * 100),
-          sessionId, // Pass the session ID to your API
+          amount: paidAmount,
+          sessionId,
+          email,
         }),
       })
         .then((res) => res.json())
@@ -61,7 +64,7 @@ export function Payment_Page() {
         })
         .finally(() => setIsLoading(false));
     }
-  }, [paidAmount, sessionId]);
+  }, [paidAmount, sessionId, email]);
 
   const appearance: Appearance = {
     theme: 'stripe',
