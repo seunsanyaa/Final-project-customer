@@ -41,7 +41,9 @@ export function NewBooking3() {
   const [extras, setExtras] = useState({
     insurance: false,
     gps: false,
-    childSeat: false
+    childSeat: false,
+    chauffer: false,
+    travelKit: false
   });
   const [pickupDateTime, setPickupDateTime] = useState('');
   const [dropoffDateTime, setDropoffDateTime] = useState('');
@@ -72,6 +74,9 @@ export function NewBooking3() {
     promotionValue: selectedPromotion ? 
       promotions?.find(p => p._id === selectedPromotion)?.promotionValue : 
       undefined
+  });
+  const isGoldenMember = useQuery(api.customers.isGoldenMember, { 
+    userId: user?.id ?? '' 
   });
 
   // 5. All useMemo hooks
@@ -139,7 +144,8 @@ export function NewBooking3() {
     const extrasCost = (
       (extras.insurance ? 10 : 0) +
       (extras.gps ? 5 : 0) +
-      (extras.childSeat ? 8 : 0)
+      (extras.childSeat ? 8 : 0) +
+      (extras.chauffer ? 100 : 0)
     ) * totalDays;
 
     let totalPrice = basePrice + extrasCost;
@@ -186,7 +192,7 @@ export function NewBooking3() {
         ? calculateTotal().amount // Get the installment amount
         : parseFloat(totalAmount); // Get the full amount
 
-      // Create the booking
+      // Create the booking first
       const bookingId = await createBooking({
         customerId: user?.id,
         carId: registrationNumber as string,
@@ -198,7 +204,7 @@ export function NewBooking3() {
         pickupLocation,
         dropoffLocation,
         customerInsurancetype: extras.insurance ? 'full' : 'basic',
-        customerInsuranceNumber: 'INS123', // You might want to make this dynamic
+        customerInsuranceNumber: 'INS123',
       });
 
       // Create payment session
@@ -218,11 +224,11 @@ export function NewBooking3() {
         });
       }
 
-      // Redirect to payment page
+      // Redirect to payment page with session ID
       router.push(`/Newbooking/payment/${paymentSession._id}`);
     } catch (error) {
       console.error('Error creating booking:', error);
-      // You might want to add some user feedback here
+      // Add error handling UI here
     }
   };
 
@@ -321,6 +327,18 @@ export function NewBooking3() {
             <p className="font-semibold">${(8 * totalDays).toFixed(2)}</p>
           </div>
         )}
+        {extras.chauffer && (
+          <div className="flex items-center justify-between bg-customyello">
+            <p>Chauffer Service ($100/day × {totalDays} days)</p>
+            <p className="font-semibold">${(100 * totalDays).toFixed(2)}</p>
+          </div>
+        )}
+        {extras.travelKit && (
+          <div className="flex items-center justify-between text-green-600 bg-customyello">
+            <p>Travel Kit (Complimentary)</p>
+            <p className="font-semibold">Free</p>
+          </div>
+        )}
         {selectedPromotion && (
           <div className="flex items-center justify-between text-green-600">
             <p>Promotion Applied</p>
@@ -358,7 +376,8 @@ export function NewBooking3() {
     const extrasCost = (
       (extras.insurance ? 10 : 0) +
       (extras.gps ? 5 : 0) +
-      (extras.childSeat ? 8 : 0)
+      (extras.childSeat ? 8 : 0) +
+      (extras.chauffer ? 100 : 0)
     ) * totalDays;
 
     let totalPrice = basePrice + extrasCost;
@@ -536,6 +555,45 @@ export function NewBooking3() {
                     </div>
                   </CardContent>
                 </Card>
+                {isGoldenMember && (
+                  <>
+                    <Card className={`w-full mx-auto mt-1 rounded-lg p-1 bg-white shadow-lg ${extras.chauffer ? 'bg-muted' : 'bg-customyello'}`} style={{ border: "none" }}>
+                      <CardContent>
+                        <div className="flex items-center justify-between">
+                          <div>
+                            <h3 className="text-lg font-semibold">Chauffer Service</h3>
+                            <p className="text-muted-foreground">Professional driver at your service.</p>
+                          </div>
+                          <div className="text-right">
+                            <p className="font-semibold">$100/day</p>
+                            <Checkbox 
+                              checked={extras.chauffer}
+                              onCheckedChange={() => handleExtraChange('chauffer')}
+                            />
+                          </div>
+                        </div>
+                      </CardContent>
+                    </Card>
+
+                    <Card className={`w-full mx-auto mt-1 rounded-lg p-1 bg-white shadow-lg ${extras.travelKit ? 'bg-muted' : 'bg-customyello'}`} style={{ border: "none" }}>
+                      <CardContent>
+                        <div className="flex items-center justify-between">
+                          <div>
+                            <h3 className="text-lg font-semibold">Travel Kit</h3>
+                            <p className="text-muted-foreground">Complimentary premium travel essentials.</p>
+                          </div>
+                          <div className="text-right">
+                            <p className="font-semibold text-green-600">Free</p>
+                            <Checkbox 
+                              checked={extras.travelKit}
+                              onCheckedChange={() => handleExtraChange('travelKit')}
+                            />
+                          </div>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  </>
+                )}
               </div>
             </div>
             <div className="mt-2" ref={bookingSummaryRef}>

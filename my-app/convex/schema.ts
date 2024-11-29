@@ -34,6 +34,7 @@ export default defineSchema({
 		expirationDate: v.optional(v.string()),
 		usedPromotions: v.optional(v.array(v.id('promotions'))),
 		rewardPoints: v.number(),
+		subscriptionPlan: v.optional(v.string()),
 	})
 		.index('by_userId', ['userId'])
 		.index('by_licenseNumber', ['licenseNumber']),
@@ -147,7 +148,8 @@ export default defineSchema({
 		.index('by_promotionTitle', ['promotionTitle']),
 
 	paymentSessions: defineTable({
-		bookingId: v.id('bookings'),
+		bookingId: v.optional(v.id('bookings')),
+		subscriptionPlan: v.optional(v.string()),
 		totalAmount: v.optional(v.number()),
 		paidAmount: v.number(),
 		paymentType: v.string(),
@@ -156,9 +158,24 @@ export default defineSchema({
 		createdAt: v.string(),
 		expiresAt: v.string(),
 		updatedAt: v.optional(v.string()),
+		isSubscription: v.optional(v.boolean()),
 	})
 		.index('by_userId', ['userId'])
 		.index('by_bookingId', ['bookingId'])
+		.index('by_status', ['status']),
+
+	subscriptions: defineTable({
+		userId: v.string(),
+		plan: v.string(),
+		status: v.string(),
+		startDate: v.string(),
+		endDate: v.string(),
+		lastPaymentDate: v.string(),
+		nextPaymentDate: v.string(),
+		paymentSessionId: v.id('paymentSessions'),
+		amount: v.number(),
+	})
+		.index('by_userId', ['userId'])
 		.index('by_status', ['status']),
 });
 	

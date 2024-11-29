@@ -159,11 +159,13 @@ export const editPayment = mutation({
 // Create a payment session
 export const createPaymentSession = mutation({
 	args: {
-		bookingId: v.id('bookings'),
+		bookingId: v.optional(v.id('bookings')),
 		totalAmount: v.optional(v.number()),
 		paidAmount: v.number(),
 		paymentType: v.string(),
 		userId: v.string(),
+		subscriptionPlan: v.optional(v.string()),
+		isSubscription: v.optional(v.boolean()),
 	},
 	handler: async (ctx, args) => {
 		// Create a new payment session
@@ -176,6 +178,8 @@ export const createPaymentSession = mutation({
 			status: 'pending',
 			createdAt: new Date().toISOString(),
 			expiresAt: new Date(Date.now() + 30 * 60 * 1000).toISOString(), // 30 minutes expiry
+			subscriptionPlan: args.subscriptionPlan,
+			isSubscription: args.isSubscription || false,
 		});
 
 		return { _id: sessionId };
@@ -197,16 +201,19 @@ export const getPaymentSession = query({
 			throw new Error("Payment session has expired");
 		}
 
-		// Get booking details
-		const booking = await ctx.db.get(session.bookingId);
-		if (!booking) {
-			throw new Error("Associated booking not found");
+		// Only fetch booking details if it's not a subscription
+		if (!session.isSubscription && session.bookingId) {
+			const booking = await ctx.db.get(session.bookingId);
+			if (!booking) {
+				throw new Error("Associated booking not found");
+			}
+			return {
+				...session,
+				booking
+			};
 		}
 
-		return {
-			...session,
-			booking
-		};
+		return session;
 	},
 });
 
@@ -228,5 +235,34 @@ export const updatePaymentSessionStatus = mutation({
 		});
 
 		return await ctx.db.get(args.sessionId);
+	},
+});
+
+// Add new mutation for creating subscriptions
+export const createSubscription = mutation({
+	args: {
+		userId: v.string(),
+		plan: v.string(),
+		amount: v.number(),
+		paymentSessionId: v.id('paymentSessions'),
+	},
+	handler: async (ctx, args) => {
+		const now = new Date();
+		const endDate = new Date();
+		endDate.setMonth(endDate.getMonth() + 1); // 1 month subscription
+
+		const subscriptionId = await ctx.db.insert('subscriptions', {
+			userId: args.userId,
+			plan: args.plan,
+			status: 'active',
+			startDate: now.toISOString(),
+			endDate: endDate.toISOString(),
+			lastPaymentDate: now.toISOString(),
+			nextPaymentDate: endDate.toISOString(),
+			paymentSessionId: args.paymentSessionId,
+			amount: args.amount,
+		});
+
+		return { subscriptionId };
 	},
 });
