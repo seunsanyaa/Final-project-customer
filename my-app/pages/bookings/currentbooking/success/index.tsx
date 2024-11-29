@@ -68,7 +68,7 @@ export default function PaymentSuccess() {
 
         // 5. Redirect to booking details
         setTimeout(() => {
-          router.push(`/bookings/${paymentSession.bookingId}`);
+          router.push(`/bookings`);
         }, 2000);
 
       } catch (error) {
