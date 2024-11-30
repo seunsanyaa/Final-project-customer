@@ -135,9 +135,13 @@ export const GoldenSubscribe = () => {
 
         <div className="grid md:grid-cols-3 gap-8 mb-8">
           {plans.map((plan) => (
-            <Card key={plan.id} className={`relative overflow-hidden transition-all duration-300 ${
-              selectedPlan === plan.id ? 'ring-2 ring-primary' : ''
-            }`}>
+            <Card 
+              key={plan.id} 
+              className={`relative flex flex-col items-center justify-center p-0 transition-all duration-300 transform hover:scale-105 hover:shadow-2xl bg-card hover:bg-gradient-to-r from-blue-500 to-green-500 border-none hover:z-50 ${
+                selectedPlan === plan.id ? 'ring-2 ring-primary' : ''
+              }`}
+              style={{ border: "none" }}
+            >
               <CardHeader>
                 <CardTitle className="text-2xl font-bold">{plan.name}</CardTitle>
                 <p className="text-3xl font-bold">${plan.price}<span className="text-sm">/month</span></p>
@@ -151,16 +155,18 @@ export const GoldenSubscribe = () => {
                     </li>
                   ))}
                 </ul>
-                <Button
-                  className="w-full"
-                  onClick={() => handleSubscribe(plan.id)}
-                  disabled={isLoading}
-                >
-                  {isLoading && selectedPlan === plan.id ? (
-                    <Loader2 className="h-4 w-4 animate-spin mr-2" />
-                  ) : null}
-                  Subscribe Now
-                </Button>
+                <div className="flex justify-center">
+                  <Button
+                    className="hover:bg-blue-500 hover:shadow-lg transition-all duration-300 rounded-lg mt-0 mb-5 hover:bg-muted"
+                    onClick={() => handleSubscribe(plan.id)}
+                    disabled={isLoading}
+                  >
+                    {isLoading && selectedPlan === plan.id ? (
+                      <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                    ) : null}
+                    Subscribe Now
+                  </Button>
+                </div>
               </CardContent>
             </Card>
           ))}
