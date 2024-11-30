@@ -16,7 +16,7 @@ import { api } from '../../../convex/_generated/api';
 import { Id } from '../../../convex/_generated/dataModel';
 import { useUser } from "@clerk/nextjs";
 import { useConvexAuth } from "convex/react";
-// import { Redirection } from "@/components/ui/redirection";
+import { Redirection } from "@/components/ui/redirection";
 
 // Add these types at the top of the file
 type Promotion = {
@@ -107,9 +107,9 @@ export function NewBooking3() {
   const markPromotionAsUsed = useMutation(api.promotions.markPromotionAsUsed);
 
   // 7. Early return checks
-  // if (!isAuthenticated || !user) {
-  //   return <Redirection />;
-  // }
+  if (!isAuthenticated || !user) {
+    return <Redirection />;
+  }
 
   if (!registrationNumber || !pricePerDay) {
     return (
