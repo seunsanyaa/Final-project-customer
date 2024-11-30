@@ -16,7 +16,7 @@ export function Support() {
   const [message, setMessage] = useState("");
   const [ref1, inView1] = useInView({ threshold: 0.3, triggerOnce: true });
   const [ref2, inView2] = useInView({ threshold: 0.3, triggerOnce: true });
-  const messagesEndRef = useRef<HTMLDivElement>(null);
+  const chatContainerRef = useRef<HTMLDivElement>(null);
   
   // Queries and mutations
   const customer = useQuery(api.customers.getCustomerByUserId, 
@@ -40,7 +40,9 @@ export function Support() {
 
   // Auto scroll to bottom when new messages arrive
   const scrollToBottom = () => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+    if (chatContainerRef.current) {
+      chatContainerRef.current.scrollTop = chatContainerRef.current.scrollHeight;
+    }
   };
 
   useEffect(() => {
@@ -97,7 +99,10 @@ export function Support() {
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="h-[400px] border rounded-lg p-4 mb-4 overflow-y-auto bg-white">
+                <div 
+                  ref={chatContainerRef}
+                  className="h-[400px] border rounded-lg p-4 mb-4 overflow-y-auto bg-white"
+                >
                   {messages?.slice().reverse().map((msg, index) => (
                     <div key={index} className={`flex flex-col gap-4 ${msg.isAdmin ? 'items-start' : 'items-end'}`}>
                       <div className={`max-w-[80%] p-3 rounded-lg ${
@@ -110,7 +115,6 @@ export function Support() {
                       </div>
                     </div>
                   ))}
-                  <div ref={messagesEndRef} />
                 </div>
                 <div className="flex gap-2">
                   <Input 
