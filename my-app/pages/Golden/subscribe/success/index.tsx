@@ -38,14 +38,19 @@ export default function SubscriptionSuccess() {
         const { subscriptionId } = await createSubscription({
           userId: user.id,
           plan: planId,
-          amount: 0, // You'll need to pass the actual amount
+          amount: getPlanAmount(planId),
           paymentSessionId: sessionId,
         });
+
+        // Calculate expiration date (1 month from now)
+        const expirationDate = new Date();
+        expirationDate.setMonth(expirationDate.getMonth() + 1);
 
         // 3. Upgrade customer status
         await upgradeCustomer({
           userId: user.id,
           subscriptionPlan: planId,
+          expirationDate: expirationDate.toISOString(),
         });
 
         // 4. Redirect to dashboard
@@ -65,6 +70,16 @@ export default function SubscriptionSuccess() {
       processSubscription();
     }
   }, [sessionId, planId, user, isProcessing]);
+
+  // Helper function to get plan amount
+  const getPlanAmount = (planId: string) => {
+    const planPrices = {
+      'silver_elite': 199,
+      'gold_elite': 399,
+      'platinum_elite': 799
+    };
+    return planPrices[planId as keyof typeof planPrices] || 0;
+  };
 
   if (error) {
     return (
