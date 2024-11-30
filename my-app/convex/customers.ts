@@ -215,26 +215,29 @@ export const upgradeCustomer = mutation({
 	args: {
 		userId: v.string(),
 		subscriptionPlan: v.string(),
-		expirationDate: v.string(),
 	},
 	handler: async (ctx, args) => {
-		const customer = await ctx.db
+		const existingCustomer = await ctx.db
 			.query('customers')
-			.withIndex('by_userId', q => q.eq('userId', args.userId))
+			.withIndex('by_userId', (q) => q.eq('userId', args.userId))
 			.first();
 
-		if (!customer) {
-			throw new Error('Customer not found');
+		if (!existingCustomer) {
+			return `Customer with ID ${args.userId} does not exist.`;
 		}
 
-		await ctx.db.patch(customer._id, {
+		// Set expiration date to one month from now
+		const expirationDate = new Date();
+		expirationDate.setMonth(expirationDate.getMonth() + 1);
+
+		await ctx.db.patch(existingCustomer._id, {
+			goldenMember: true,
 			subscriptionPlan: args.subscriptionPlan,
-			expirationDate: args.expirationDate,
-			goldenMember: true // Since this is for golden subscriptions
+			expirationDate: expirationDate.toISOString(),
 		});
 
-		return customer._id;
-	}
+		return `Customer with ID ${args.userId} has been upgraded to Golden Member with ${args.subscriptionPlan} plan.`;
+	},
 });
 
 export const getRewardPointsByUserId = query({
