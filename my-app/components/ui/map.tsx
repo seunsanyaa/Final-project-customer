@@ -81,31 +81,30 @@ const icons = {
 // RecenterControl Component
 const RecenterControl: React.FC<{ position: [number, number] | null }> = ({ position }) => {
   const map = useMap();
+  const nicosiaLocation: [number, number] = [35.190103, 33.362347]; // Nicosia office coordinates
 
   useEffect(() => {
-    if (!position) return;
-
     const recenterControl = L.Control.extend({
       options: {
-        position: 'topright', // Position the control at the top right
+        position: 'topright',
       },
 
       onAdd: function () {
         const container = L.DomUtil.create('div', 'leaflet-bar leaflet-control leaflet-control-custom');
 
         const button = L.DomUtil.create('button', '', container);
-        button.innerHTML = '📍'; // You can replace this with an icon image if preferred
+        button.innerHTML = '📍';
         button.style.backgroundColor = 'white';
         button.style.border = 'none';
         button.style.cursor = 'pointer';
         button.style.padding = '5px';
         button.style.fontSize = '18px';
 
-        button.title = 'Re-center map';
+        button.title = 'Center on Nicosia Office';
 
         L.DomEvent.on(button, 'click', function (e) {
           e.preventDefault();
-          map.setView(position, map.getZoom());
+          map.setView(nicosiaLocation, 13); // Zoom level set to 13
         });
 
         return container;
@@ -118,7 +117,7 @@ const RecenterControl: React.FC<{ position: [number, number] | null }> = ({ posi
     return () => {
       map.removeControl(control);
     };
-  }, [map, position]);
+  }, [map]);
 
   return null;
 };
@@ -131,7 +130,17 @@ interface PointOfInterest {
   tourism?: string;
 }
 
-const MapComponent: React.FC = () => {
+// Add to existing interface definitions
+interface MapComponentProps {
+  initialLocations?: Array<{
+    name: string;
+    lat: number;
+    lng: number;
+  }>;
+}
+
+// Update the MapComponent definition
+const MapComponent: React.FC<MapComponentProps> = ({ initialLocations }) => {
   const [position, setPosition] = useState<[number, number] | null>(null);
   const [pointsOfInterest, setPointsOfInterest] = useState<PointOfInterest[]>([]);
   const [searchQuery, setSearchQuery] = useState<string>('');
@@ -161,26 +170,36 @@ const MapComponent: React.FC = () => {
   ];
 
   useEffect(() => {
-    const watchId = navigator.geolocation.watchPosition(
-      (pos) => {
-        const { latitude, longitude } = pos.coords;
-        setPosition([latitude, longitude]);
-      },
-      (error) => {
-        console.error('Error fetching location:', error);
-        setErrorMessage('Failed to get your location. Please enable location services and try again.');
-      }
-    );
+    if (initialLocations) {
+      // If initialLocations provided, center the map on Cyprus
+      const cyprusCenter: [number, number] = [35.1856, 33.3823];
+      setPosition(cyprusCenter);
+      setPointsOfInterest(initialLocations.map(loc => ({
+        lat: loc.lat,
+        lng: loc.lng,
+        name: loc.name
+      })));
+      setFilteredPOIs(initialLocations.map(loc => ({
+        lat: loc.lat,
+        lng: loc.lng,
+        name: loc.name
+      })));
+    } else {
+      // Existing geolocation logic
+      const watchId = navigator.geolocation.watchPosition(
+        (pos) => {
+          const { latitude, longitude } = pos.coords;
+          setPosition([latitude, longitude]);
+        },
+        (error) => {
+          console.error('Error fetching location:', error);
+          setErrorMessage('Failed to get your location. Please enable location services and try again.');
+        }
+      );
 
-    return () => navigator.geolocation.clearWatch(watchId);
-  }, []);
-
-  useEffect(() => {
-    if (position) {
-      fetchPointsOfInterest(position[0], position[1]);
+      return () => navigator.geolocation.clearWatch(watchId);
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [position]);
+  }, [initialLocations]);
 
   useEffect(() => {
     if (searchQuery.trim() === '') {
@@ -251,22 +270,25 @@ const MapComponent: React.FC = () => {
 
   return (
     <div>
-      <input
-        type="text"
-        value={searchQuery}
-        onChange={handleSearch}
-        placeholder="Search within selected categories"
-        style={{ marginBottom: '10px', padding: '5px', width: '100%' }}
-      />
+      {!initialLocations && (
+        <input
+          type="text"
+          value={searchQuery}
+          onChange={handleSearch}
+          placeholder="Search within selected categories"
+          style={{ marginBottom: '10px', padding: '5px', width: '100%' }}
+        />
+      )}
       {errorMessage && <div style={{ color: 'red' }}>{errorMessage}</div>}
-      <MapContainer center={position} zoom={13} style={{ height: '80vh', width: '100%' }}>
+      <MapContainer 
+        center={position || [35.1856, 33.3823]} 
+        zoom={initialLocations ? 9 : 13} 
+        style={{ height: initialLocations ? '500px' : '80vh', width: '100%' }}
+      >
         <TileLayer
           url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
           attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
         />
-        <Marker position={position}>
-          <Popup>You are here</Popup>
-        </Marker>
         {filteredPOIs.map((poi, index) => (
           <Marker
             key={index}
@@ -278,7 +300,6 @@ const MapComponent: React.FC = () => {
             </Popup>
           </Marker>
         ))}
-        {/* Re-center Button */}
         <RecenterControl position={position} />
       </MapContainer>
     </div>

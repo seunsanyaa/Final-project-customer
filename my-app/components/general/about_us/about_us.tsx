@@ -6,6 +6,26 @@ import { Card } from "@/components/ui/card";
 import { CheckIcon } from "@radix-ui/react-icons";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
+import dynamic from 'next/dynamic';
+
+const MapComponent = dynamic(
+  () => import('@/components/ui/map'),
+  { ssr: false }
+);
+
+const OfficeLocations: React.FC = () => {
+  const officeLocations = [
+    { name: "Nicosia Office", lat: 35.190103, lng:33.362347 },
+    { name: "Famagusta Office", lat: 35.130542, lng:33.928980 },
+    { name: "Girne Office", lat: 35.3364, lng: 33.3199 }
+  ];
+
+  return (
+    <div className="w-full h-[500px] bg-gray-100 rounded-lg shadow-lg mb-12">
+      <MapComponent initialLocations={officeLocations} />
+    </div>
+  );
+};
 
 export function AboutUs() {
   const [ref1, inView1] = useInView({ threshold: 0.6, triggerOnce: true });
@@ -88,8 +108,8 @@ export function AboutUs() {
               <div className="flex flex-col md:flex-row gap-8 items-center">
                 <div className="flex-1">
                   <img
-                    src="https://res.cloudinary.com/dbsxjsktb/image/upload/v1729108115/luxury-car-background.jpg"
-                    alt="Luxury Vehicle"
+              src="https://res.cloudinary.com/dbsxjsktb/image/upload/v1732833992/BMW_4_Series_LE_upscale_balanced_x4-removebg-preview_pl3neq.png"
+              alt="Luxury Vehicle"
                     className="rounded-lg shadow-xl w-full"
                   />
                 </div>
@@ -139,23 +159,22 @@ export function AboutUs() {
               Find us at any of our convenient locations across the country
             </p>
             
-            {/* Map Container - Replace this div with your map implementation */}
             <div className="w-full h-[500px] bg-gray-100 rounded-lg shadow-lg mb-12">
-              {/* Map will be inserted here */}
+              <OfficeLocations />
             </div>
 
             <div className="grid md:grid-cols-3 gap-8 mt-12">
               <div className="bg-gray-50 p-6 rounded-lg shadow-md hover:shadow-xl transition-shadow">
-                <h3 className="text-xl font-bold mb-2">New York Office</h3>
-                <p className="text-gray-600">123 Broadway<br/>New York, NY 10001</p>
+                <h3 className="text-xl font-bold mb-2">Nicosia Office</h3>
+                <p className="text-gray-600">Ataturk Cd<br/>Nicosia, CY</p>
               </div>
               <div className="bg-gray-50 p-6 rounded-lg shadow-md hover:shadow-xl transition-shadow">
-                <h3 className="text-xl font-bold mb-2">Los Angeles Office</h3>
-                <p className="text-gray-600">456 Hollywood Blvd<br/>Los Angeles, CA 90028</p>
+                <h3 className="text-xl font-bold mb-2">Famagusta Office</h3>
+                <p className="text-gray-600">Esrif bitlis Cd<br/>Famagusta, CY</p>
               </div>
               <div className="bg-gray-50 p-6 rounded-lg shadow-md hover:shadow-xl transition-shadow">
-                <h3 className="text-xl font-bold mb-2">Chicago Office</h3>
-                <p className="text-gray-600">789 Michigan Ave<br/>Chicago, IL 60601</p>
+                <h3 className="text-xl font-bold mb-2">Girne Office</h3>
+                <p className="text-gray-600">Ecevit Cd<br/>Girne, CY</p>
               </div>
             </div>
           </div>
