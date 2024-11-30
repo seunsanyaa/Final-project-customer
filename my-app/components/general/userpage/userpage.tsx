@@ -29,7 +29,6 @@ interface ExtractedInfo {
   fullName: string;
   license: string;
   expirationDate: string;
-  address?: string;
 }
 
 export function User_page() {
@@ -43,9 +42,7 @@ export function User_page() {
 
   // Update state initialization to use loaded data
   const [personalInfo, setPersonalInfo] = useState<PersonalInfo>({
-    fullName: typeof userData === 'object' && userData 
-      ? `${userData.firstName} ${userData.lastName}` 
-      : "",
+    fullName: userData ? `${userData.firstName} ${userData.lastName}` : "",
     dob: customerData?.dateOfBirth ?? "",
     license: customerData?.licenseNumber ?? "",
     nationality: customerData?.nationality ?? "",
@@ -54,7 +51,7 @@ export function User_page() {
   });
 
   const [contactInfo, setContactInfo] = useState<ContactInfo>({
-    email: typeof userData === 'object' ? userData.email : "",
+    email: userData?.email ?? "",
     phone: customerData?.phoneNumber ?? "",
   });
 
@@ -217,20 +214,14 @@ export function User_page() {
     if (!license) {
       const licenseLine = lines.find(line => line.match(/SMITH\d{9,}/));
       if (licenseLine) {
-        const match = licenseLine.match(/SMITH\d{9,}/);
-        if (match) {
-          license = match[0];
-        }
+        license = licenseLine.match(/SMITH\d{9,}/)[0];
       }
     }
 
     if (!expirationDate) {
       const expLine = lines.find(line => line.includes('07.11.2046'));
       if (expLine) {
-        const match = expLine.match(/(\d{2}\.\d{2}\.\d{4})/);
-        if (match) {
-          expirationDate = match[1];
-        }
+        expirationDate = expLine.match(/(\d{2}\.\d{2}\.\d{4})/)[1];
       }
     }
 
@@ -243,7 +234,7 @@ export function User_page() {
 
   // Optional: Update state when data loads
   useEffect(() => {
-    if (userData && typeof userData !== 'string' && customerData) {
+    if (userData && customerData) {
       setPersonalInfo({
         fullName: `${userData.firstName} ${userData.lastName}`,
         dob: customerData.dateOfBirth,

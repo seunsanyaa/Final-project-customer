@@ -1,7 +1,5 @@
 import { v } from 'convex/values';
 import { mutation, query } from './_generated/server';
-import { api } from './_generated/api';
-import { Id } from './_generated/dataModel';
 
 // Create a new booking
 export const createBooking = mutation({
@@ -73,7 +71,8 @@ export const deleteBooking = mutation({
 
 // Get bookings by customer ID
 export const getBookingsByCustomer = query({
-	args: { customerId: v.string() },
+	// Validate the customerId argument against the 'bookings' table
+	args: { customerId: v.string() }, // Use string validation for customerId
 	handler: async (ctx, args) => {
 		const bookings = await ctx.db
 			.query('bookings')
@@ -159,7 +158,9 @@ export const getBookingDetails = query({
 
 		const car = await ctx.db
 			.query('cars')
-			.withIndex('by_registrationNumber', (q) => q.eq('registrationNumber', booking.carId))
+			.withIndex('by_registrationNumber', (q) =>
+				q.eq('registrationNumber', booking.carId)
+			)
 			.first();
 
 		const payments = await ctx.db
@@ -167,11 +168,16 @@ export const getBookingDetails = query({
 			.withIndex('by_bookingId', (q) => q.eq('bookingId', args.bookingId))
 			.collect();
 
-		const totalPaid = payments.reduce((sum, payment) => sum + payment.amount, 0);
+		const totalPaid = payments.reduce(
+			(sum, payment) => sum + payment.amount,
+			0
+		);
 
 		return {
 			...booking,
-			carDetails: car ? `${car.maker} ${car.model} (${car.year})` : 'Not available',
+			carDetails: car
+				? `${car.maker} ${car.model} (${car.year})`
+				: 'Not available',
 			make: car?.maker,
 			model: car?.model,
 			color: car?.color,
@@ -197,18 +203,21 @@ export const updateBookingWithTotalPaid = mutation({
 			.query('payments')
 			.withIndex('by_bookingId', (q) => q.eq('bookingId', args.id))
 			.collect();
-  
+
 		// Handle case where no payments exist
 		if (!payments || payments.length === 0) {
 			return `No payments found for booking ID ${args.id}.`;
 		}
-  
+
 		// Sum the paid amounts
-		const totalPaidAmount = payments.reduce((sum, payment) => sum + payment.amount, 0);
-  
+		const totalPaidAmount = payments.reduce(
+			(sum, payment) => sum + payment.amount,
+			0
+		);
+
 		// Update the booking with the new total paid amount
 		await ctx.db.patch(args.id, { paidAmount: totalPaidAmount });
-  
+
 		return `Booking with ID ${args.id} has been updated with total paid amount: ${totalPaidAmount}.`;
 	},
 });
@@ -217,10 +226,11 @@ export const updateBookingWithTotalPaid = mutation({
 export const getCarByCarId = query({
 	args: { carId: v.string() },
 	handler: async (ctx, args) => {
-		
 		const car = await ctx.db
 			.query('cars')
-			.withIndex('by_registrationNumber', (q) => q.eq('registrationNumber', args.carId))
+			.withIndex('by_registrationNumber', (q) =>
+				q.eq('registrationNumber', args.carId)
+			)
 			.first();
 
 		if (!car) {
@@ -253,7 +263,9 @@ export const getPendingReviewsByCustomer = query({
 			pendingReviews.map(async (booking) => {
 				const car = await ctx.db
 					.query('cars')
-					.withIndex('by_registrationNumber', (q) => q.eq('registrationNumber', booking.carId))
+					.withIndex('by_registrationNumber', (q) =>
+						q.eq('registrationNumber', booking.carId)
+					)
 					.first();
 
 				return {
@@ -273,95 +285,4 @@ export const getPendingReviewsByCustomer = query({
 
 		return bookingsWithCarDetails;
 	},
-});
-
-// Add this mutation
-export const checkAndUpdateBookingStatus = mutation({
-	args: {
-		bookingId: v.id("bookings"),
-	},
-	handler: async (ctx, args) => {
-		const booking = await ctx.db.get(args.bookingId);
-		if (!booking) {
-			throw new Error("Booking not found");
-		}
-
-		const today = new Date();
-		today.setHours(0, 0, 0, 0);
-
-		const endDate = new Date(booking.endDate);
-		endDate.setHours(0, 0, 0, 0);
-
-		// Check if booking is past and fully paid
-		if (endDate < today && 
-			booking.paidAmount >= booking.totalCost && 
-			booking.status !== 'completed') {
-			
-			// Update to completed
-			await ctx.db.patch(args.bookingId, {
-				status: 'completed'
-			});
-
-			return {
-				success: true,
-				message: "Booking marked as completed",
-				status: 'completed'
-			};
-		}
-
-		return {
-			success: false,
-			message: "Booking not eligible for completion",
-			status: booking.status
-		};
-	},
-});
-
-// Modify the awardBookingRewardPoints mutation to check payment session
-export const awardBookingRewardPoints = mutation({
-	args: {
-		bookingId: v.id('bookings'),
-		customerId: v.string(),
-	},
-	handler: async (ctx, args) => {
-		// Check if there's a completed payment session for this booking
-		const paymentSession = await ctx.db
-			.query("paymentSessions")
-			.withIndex("by_bookingId", q => q.eq("bookingId", args.bookingId))
-			.filter(q => q.eq(q.field("status"), "completed"))
-			.first();
-
-		if (!paymentSession) {
-			return {
-				success: false,
-				message: 'No completed payment session found for this booking'
-			};
-		}
-
-		const booking = await ctx.db.get(args.bookingId);
-		if (!booking) {
-			throw new Error('Booking not found');
-		}
-
-		// Calculate points (10% of total cost)
-		const pointsToAward = Math.floor(booking.totalCost * 0.1);
-
-		// Award points to customer
-		const customer = await ctx.db
-			.query('customers')
-			.withIndex('by_userId', (q) => q.eq('userId', args.customerId))
-			.first();
-
-		if (customer) {
-			await ctx.db.patch(customer._id, {
-				rewardPoints: (customer.rewardPoints || 0) + pointsToAward
-			});
-		}
-
-		return {
-			success: true,
-			message: `Awarded ${pointsToAward} points`,
-			pointsAwarded: pointsToAward
-		};
-	}
 });
