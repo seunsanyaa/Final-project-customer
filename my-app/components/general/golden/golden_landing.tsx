@@ -13,11 +13,11 @@ import { Carousel, CarouselContent, CarouselItem } from "@/components/ui/carouse
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 export function Golden_Landing() {
-  const [ref1, inView1] = useInView({ threshold: 0.6, triggerOnce: true });
-  const [ref2, inView2] = useInView({ threshold: 0.6, triggerOnce: true });
-  const [ref3, inView3] = useInView({ threshold: 0.6, triggerOnce: true });
-  const [ref4, inView4] = useInView({ threshold: 0.6, triggerOnce: true });
-  const [refPremium, inViewPremium] = useInView({ threshold: 0.6, triggerOnce: true });
+  const [ref1, inView1] = useInView({ threshold: 0.0, triggerOnce: true });
+  const [ref2, inView2] = useInView({ threshold: 0.0, triggerOnce: true });
+  const [ref3, inView3] = useInView({ threshold: 0.0, triggerOnce: true });
+  const [ref4, inView4] = useInView({ threshold: 0.0, triggerOnce: true });
+  const [refPremium, inViewPremium] = useInView({ threshold: 0.0, triggerOnce: true });
 
   return (
     <div className="flex flex-col min-h-[100dvh]">
@@ -175,7 +175,7 @@ export function Golden_Landing() {
                     </Link>
                   </div>
                   <img
-                    src="https://res.cloudinary.com/dbsxjsktb/image/upload/v1732914585/chauffeur_eltpzl.png"
+                    src="https://res.cloudinary.com/di8yfpruz/image/upload/v1732981665/CAR-DRIVERS-IN-BANGALORE-1-removebg_xbmvr4.png"
                     alt="Chauffeur Service"
                     className="w-[600px] h-[400px] object-cover"
                   />
@@ -206,7 +206,7 @@ export function Golden_Landing() {
                     </Link>
                   </div>
                   <img
-                    src="https://res.cloudinary.com/dbsxjsktb/image/upload/v1732914585/chauffeur_eltpzl.png"
+                    src="https://res.cloudinary.com/di8yfpruz/image/upload/v1732981665/CAR-DRIVERS-IN-BANGALORE-1-removebg_xbmvr4.png"
                     alt="Chauffeur Service"
                     className="w-[600px] h-[400px] object-cover"
                   />
@@ -237,7 +237,7 @@ export function Golden_Landing() {
                     </Link>
                   </div>
                   <img
-                    src="https://res.cloudinary.com/dbsxjsktb/image/upload/v1732914585/chauffeur_eltpzl.png"
+                    src="https://res.cloudinary.com/di8yfpruz/image/upload/v1732981665/CAR-DRIVERS-IN-BANGALORE-1-removebg_xbmvr4.png"
                     alt="Chauffeur Service"
                     className="w-[600px] h-[400px] object-cover"
                   />
