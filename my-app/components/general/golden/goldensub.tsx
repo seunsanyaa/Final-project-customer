@@ -70,39 +70,6 @@ export const GoldenSubscribe = () => {
         throw new Error('Invalid plan selected');
       }
 
-<<<<<<< Updated upstream
-      console.log('Creating payment session with details:', {
-        planId,
-        price: selectedPlanDetails.price,
-        userId: user.id
-      });
-
-      // Create payment session
-      const result = await initializePaymentSession({
-        paidAmount: 0,
-        paymentType: 'stripe',
-        userId: user.id,
-        totalAmount: selectedPlanDetails.price,
-        isSubscription: true,
-        subscriptionPlan: planId
-      }).catch(error => {
-        console.error('Payment session creation failed:', error);
-        throw new Error(`Payment session creation failed: ${error.message}`);
-      });
-
-      console.log('Payment session creation result:', result);
-
-      // Check for either sessionId or _id
-      const sessionId = result?.sessionId;
-      
-      if (!sessionId) {
-        console.error('Invalid payment session result:', result);
-        throw new Error('Failed to create payment session: No session ID returned');
-      }
-
-      console.log('Using session ID:', sessionId);
-
-=======
       // Create payment session
       const result = await initializePaymentSession({
         paidAmount: 0,
@@ -118,7 +85,6 @@ export const GoldenSubscribe = () => {
         throw new Error('Failed to create payment session: No session ID returned');
       }
 
->>>>>>> Stashed changes
       // Create Stripe subscription
       const response = await fetch('/api/subscription-creation', {
         method: 'POST',
@@ -136,32 +102,14 @@ export const GoldenSubscribe = () => {
       }
 
       const { clientSecret } = await response.json();
-<<<<<<< Updated upstream
-
-=======
->>>>>>> Stashed changes
       if (!clientSecret) {
         throw new Error('No client secret received');
       }
 
-<<<<<<< Updated upstream
-      console.log('Redirecting with params:', {
-        planId,
-        sessionId,
-        clientSecret: clientSecret ? '[PRESENT]' : '[MISSING]'
-      });
-
-      router.push(`/Golden/subscribe/payment?plan=${planId}&sessionId=${sessionId}&clientSecret=${clientSecret}`);
-    } catch (error: any) {
-      console.error('Subscription initialization failed:', error);
-      // You might want to show this error to the user
-      // setError(error.message);
-=======
       router.push(`/Golden/subscribe/payment?plan=${planId}&sessionId=${sessionId}&clientSecret=${clientSecret}`);
     } catch (error: any) {
       console.error('Subscription initialization failed:', error);
       // Consider adding error state and displaying to user
->>>>>>> Stashed changes
     } finally {
       setIsLoading(false);
     }
