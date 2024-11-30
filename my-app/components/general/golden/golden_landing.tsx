@@ -12,12 +12,20 @@ import { Footer } from '../head/footer';
 import { Carousel, CarouselContent, CarouselItem } from "@/components/ui/carousel";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
+<<<<<<< Updated upstream
 export function Golden_Landing() {
+=======
+export function GoldenLanding() {
+>>>>>>> Stashed changes
   const [ref1, inView1] = useInView({ threshold: 0.0, triggerOnce: true });
   const [ref2, inView2] = useInView({ threshold: 0.0, triggerOnce: true });
   const [ref3, inView3] = useInView({ threshold: 0.0, triggerOnce: true });
   const [ref4, inView4] = useInView({ threshold: 0.0, triggerOnce: true });
+<<<<<<< Updated upstream
   const [refPremium, inViewPremium] = useInView({ threshold: 0.0, triggerOnce: true });
+=======
+  const [refPremium, inViewPremium] = useInView({ threshold: 0.6, triggerOnce: true });
+>>>>>>> Stashed changes
 
   return (
     <div className="flex flex-col min-h-[100dvh]">
@@ -42,7 +50,7 @@ export function Golden_Landing() {
                   </p>
                   <div className="mt-6">
                     <Link href='/Golden/subscribe'>
-                      <Button className="inline-flex h-10 items-center justify-center rounded-md px-8 text-sm font-medium shadow transition-colors hover:bg-primary/90">
+                      <Button className="inline-flex h-10 items-center justify-center rounded-md px-8 text-sm font-medium shadow transition-colors hover:bg-customyello hover:text-black">
                         Subscribe Now
                       </Button>
                     </Link>
@@ -56,13 +64,13 @@ export function Golden_Landing() {
               </div>
               
               {/* Image Gallery */}
-              <div className="flex flex-col md:flex-row justify-center items-center gap-4 mt-8">
+              <div className="flex flex-col md:flex-row justify-center items-center gap-4 mt-2">
                 <img
                   src="https://res.cloudinary.com/dbsxjsktb/image/upload/v1732911061/desktop-wallpaper-2021-rolls-rolls-royce-2021-removebg_hbwbio.png"
                   alt="Rolls Royce"
-                  width={900}
+                  width={1500}
                   height={500}
-                  className="w-full md:w-[60%] h-auto max-h-[500px] object-contain rounded-lg"
+                  className="w-full md:w-[80%] h-auto max-h-[500px] object-contain rounded-lg"
                 />
               </div>
             </div>
@@ -71,10 +79,11 @@ export function Golden_Landing() {
         <section ref={refPremium} className={`w-full py-12 bg-gradient-to-b from-gray-200 to-white ${
   inViewPremium ? 'animate-fadeInUp' : 'opacity-0'
 }`}>
+
   <div className="container mx-auto px-4">
-    <div className="text-center mb-12">
-      <h2 className="text-4xl font-bold mb-4">Premium Fleet</h2>
-      <p className="text-xl text-gray-600">Experience luxury with our exclusive collection</p>
+    <div className="text-center mb-12 p-4">
+        <h2 className="text-4xl font-bold mb-4">Premium Fleet</h2>
+        <p className="text-xl text-gray-600">Experience luxury with our exclusive collection</p>
     </div>
     <Carousel>
       <CarouselContent>

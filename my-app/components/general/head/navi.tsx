@@ -190,7 +190,7 @@ export const Navi: React.FC<NaviProps> = ({ className }) => {
               Accessibility
             </Link>
             <Link
-              href="/Golden"
+              href="/Golden/GoldenHome"
               className="text-muted-foreground hover:bg-[#000000] rounded-lg py-1 px-1 hover:text-[#FFD700] transition-colors"
             >
               Golden Members
@@ -289,7 +289,7 @@ export const Navi: React.FC<NaviProps> = ({ className }) => {
               <Link href="/accessibility">Accessibility</Link>
             </li>
             <li className="p-4 text-xl font-semibold">
-              <Link href="/Golden">Golden Members</Link>
+              <Link href="/Golden/GoldenHome">Golden Members</Link>
             </li>
             <li>
               <Separator />
