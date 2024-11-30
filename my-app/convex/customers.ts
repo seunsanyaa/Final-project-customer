@@ -26,7 +26,6 @@ export const createCustomer = mutation({
 		phoneNumber: v.string(),
 		licenseNumber: v.string(),
 		address: v.string(),
-		expirationDate: v.optional(v.string()),
 	},
 	handler: async (ctx, args) => {
 		const existingCustomer = await ctx.db
@@ -57,7 +56,6 @@ export const createCustomer = mutation({
 			licenseNumber: args.licenseNumber,
 			address: args.address,
 			dateOfBirth: args.dateOfBirth,
-			expirationDate: args.expirationDate ?? '',
 			goldenMember: false,
 			rewardPoints: 0,
 		});
@@ -177,7 +175,6 @@ export const upsertCustomer = mutation({
 				licenseNumber: args.licenseNumber ?? '',
 				address: args.address ?? '',
 				dateOfBirth: args.dateOfBirth ?? '',
-				expirationDate: args.expirationDate ?? '',
 				goldenMember: false,
 				rewardPoints: args.rewardPoints ?? 0,
 			});
@@ -214,29 +211,24 @@ export const getCustomerByUserId = query({
 export const upgradeCustomer = mutation({
 	args: {
 		userId: v.string(),
-		subscriptionPlan: v.string(),
+		subscriptionPlan: v.string()
 	},
 	handler: async (ctx, args) => {
-		const existingCustomer = await ctx.db
+		const customer = await ctx.db
 			.query('customers')
-			.withIndex('by_userId', (q) => q.eq('userId', args.userId))
+			.withIndex('by_userId', q => q.eq('userId', args.userId))
 			.first();
 
-		if (!existingCustomer) {
-			return `Customer with ID ${args.userId} does not exist.`;
+		if (!customer) {
+			throw new Error('Customer not found');
 		}
 
-		// Set expiration date to one month from now
-		const expirationDate = new Date();
-		expirationDate.setMonth(expirationDate.getMonth() + 1);
-
-		await ctx.db.patch(existingCustomer._id, {
-			goldenMember: true,
+		await ctx.db.patch(customer._id, {
 			subscriptionPlan: args.subscriptionPlan,
-			expirationDate: expirationDate.toISOString(),
+			goldenMember: true,
 		});
 
-		return `Customer with ID ${args.userId} has been upgraded to Golden Member with ${args.subscriptionPlan} plan.`;
+		return customer._id;
 	},
 });
 

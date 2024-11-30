@@ -208,7 +208,7 @@ export function NewBooking3() {
       });
 
       // Create payment session
-      const paymentSession = await createPaymentSession({
+      const { sessionId } = await createPaymentSession({
         bookingId,
         userId: user.id,
         paymentType: paymentMethod,
@@ -225,7 +225,7 @@ export function NewBooking3() {
       }
 
       // Redirect to payment page with all necessary information
-      router.push(`/Newbooking/payment/${paymentSession._id}?email=${encodeURIComponent(user.emailAddresses[0].emailAddress)}`);
+      router.push(`/Newbooking/payment/${sessionId}?email=${encodeURIComponent(user.emailAddresses[0].emailAddress)}`);
     } catch (error) {
       console.error('Error creating booking:', error);
     }

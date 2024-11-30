@@ -4,11 +4,12 @@ import { Id } from './_generated/dataModel';
 
 export const createPayment = mutation({
 	args: {
-		bookingId: v.id('bookings'),
+		bookingId: v.optional(v.id('bookings')),
 		amount: v.number(),
 		paymentDate: v.string(),
 		paymentType: v.string(),
 		paymentIntentId: v.optional(v.string()),
+		isSubscription: v.optional(v.boolean()),
 	},
 	handler: async (ctx, args) => {
 		if (args.paymentIntentId) {
@@ -23,27 +24,15 @@ export const createPayment = mutation({
 		}
 		const timestamp = Date.now();
 		const randomPart = Math.floor(Math.random() * 10000).toString().padStart(4, '0');
-		let receiptNumber = `REC-${timestamp}-${randomPart}`;
-
-		let existingReceiptPayment;
-		do {
-			existingReceiptPayment = await ctx.db
-				.query('payments')
-				.withIndex('by_receiptNumber', (q) => q.eq('receiptNumber', receiptNumber))
-				.first();
-
-			if (existingReceiptPayment) {
-				receiptNumber = `REC-${Date.now()}-${Math.floor(Math.random() * 10000).toString().padStart(4, '0')}`;
-			}
-		} while (existingReceiptPayment);
+		const receiptNumber = `REC-${timestamp}-${randomPart}`;
 
 		const paymentId = await ctx.db.insert('payments', {
-			receiptNumber: receiptNumber,
-			bookingId: args.bookingId,
+			receiptNumber,
 			amount: args.amount,
 			paymentDate: args.paymentDate,
 			paymentType: args.paymentType,
-			paymentIntentId: args.paymentIntentId || "paid cash",
+			paymentIntentId: args.paymentIntentId,
+			isSubscription: args.isSubscription || false,
 		});
 
 		return { paymentId, receiptNumber };
@@ -168,21 +157,36 @@ export const createPaymentSession = mutation({
 		isSubscription: v.optional(v.boolean()),
 	},
 	handler: async (ctx, args) => {
-		// Create a new payment session
-		const sessionId = await ctx.db.insert('paymentSessions', {
-			bookingId: args.bookingId,
-			totalAmount: args.totalAmount,
-			paidAmount: args.paidAmount,
-			paymentType: args.paymentType,
-			userId: args.userId,
-			status: 'pending',
-			createdAt: new Date().toISOString(),
-			expiresAt: new Date(Date.now() + 30 * 60 * 1000).toISOString(), // 30 minutes expiry
-			subscriptionPlan: args.subscriptionPlan,
-			isSubscription: args.isSubscription || false,
-		});
+		console.log('Creating payment session with args:', args);
 
-		return { _id: sessionId };
+		try {
+			const sessionData: any = {
+				paidAmount: args.paidAmount,
+				paymentType: args.paymentType,
+				userId: args.userId,
+				status: 'pending',
+				createdAt: new Date().toISOString(),
+				expiresAt: new Date(Date.now() + 30 * 60 * 1000).toISOString(),
+			};
+
+			if (args.isSubscription) {
+				// Fields specific to subscriptions
+				sessionData.subscriptionPlan = args.subscriptionPlan;
+				sessionData.isSubscription = true;
+			} else {
+				// Fields specific to rentals
+				sessionData.bookingId = args.bookingId;
+				sessionData.totalAmount = args.totalAmount;
+			}
+
+			const id = await ctx.db.insert('paymentSessions', sessionData);
+
+			console.log('Successfully created session with ID:', id);
+			return { sessionId: id };
+		} catch (error) {
+			console.error('Error creating payment session:', error);
+			throw error;
+		}
 	},
 });
 
@@ -251,6 +255,13 @@ export const createSubscription = mutation({
 		const endDate = new Date();
 		endDate.setMonth(endDate.getMonth() + 1); // 1 month subscription
 
+		// First, verify the payment session exists and is completed
+		const paymentSession = await ctx.db.get(args.paymentSessionId);
+		if (!paymentSession || paymentSession.status !== 'completed') {
+			throw new Error('Invalid or incomplete payment session');
+		}
+
+		// Create the subscription
 		const subscriptionId = await ctx.db.insert('subscriptions', {
 			userId: args.userId,
 			plan: args.plan,
@@ -260,6 +271,49 @@ export const createSubscription = mutation({
 			lastPaymentDate: now.toISOString(),
 			nextPaymentDate: endDate.toISOString(),
 			paymentSessionId: args.paymentSessionId,
+			amount: args.amount,
+		});
+
+		// Update the customer's subscription plan
+		const customer = await ctx.db
+			.query('customers')
+			.withIndex('by_userId', q => q.eq('userId', args.userId))
+			.first();
+
+		if (customer) {
+			await ctx.db.patch(customer._id, {
+				subscriptionPlan: args.plan,
+			});
+		}
+
+		return { subscriptionId };
+	},
+});
+
+export const completeSubscriptionPayment = mutation({
+	args: {
+		sessionId: v.id('paymentSessions'),
+		userId: v.string(),
+		plan: v.string(),
+		amount: v.number(),
+	},
+	handler: async (ctx, args) => {
+		// Update payment session status
+		await ctx.db.patch(args.sessionId, {
+			status: 'completed',
+			updatedAt: new Date().toISOString(),
+		});
+
+		// Create subscription
+		const { subscriptionId } = await ctx.db.insert('subscriptions', {
+			userId: args.userId,
+			plan: args.plan,
+			status: 'active',
+			startDate: new Date().toISOString(),
+			endDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(), // 30 days
+			lastPaymentDate: new Date().toISOString(),
+			nextPaymentDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
+			paymentSessionId: args.sessionId,
 			amount: args.amount,
 		});
 

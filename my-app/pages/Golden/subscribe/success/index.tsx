@@ -18,9 +18,11 @@ export default function SubscriptionSuccess() {
 
   const sessionId = searchParams?.get('session_id') as Id<"paymentSessions">;
   const planId = searchParams?.get('plan');
+  const paymentIntentId = searchParams?.get('payment_intent');
 
   const updatePaymentSession = useMutation(api.payment.updatePaymentSessionStatus);
   const createSubscription = useMutation(api.payment.createSubscription);
+  const createPayment = useMutation(api.payment.createPayment);
   const upgradeCustomer = useMutation(api.customers.upgradeCustomer);
 
   useEffect(() => {
@@ -34,21 +36,38 @@ export default function SubscriptionSuccess() {
           status: 'completed'
         });
 
+        // Get plan amount
+        const planPrices = {
+          silver_elite: 199,
+          gold_elite: 399,
+          platinum_elite: 799
+        };
+        const amount = planPrices[planId as keyof typeof planPrices];
+
+        // Calculate expiration date (1 month from now)
+        
         // 2. Create subscription record
         const { subscriptionId } = await createSubscription({
           userId: user.id,
           plan: planId,
-          amount: 0, // You'll need to pass the actual amount
+          amount,
           paymentSessionId: sessionId,
         });
+        await createPayment({
+          amount,
+          paymentDate: new Date().toISOString(),
+          paymentType: 'stripe',
+          paymentIntentId: paymentIntentId || undefined,
+          isSubscription: true
+        });
 
-        // 3. Upgrade customer status
+        // 4. Upgrade customer status with expiration date
         await upgradeCustomer({
           userId: user.id,
           subscriptionPlan: planId,
         });
 
-        // 4. Redirect to dashboard
+        // 5. Redirect to dashboard after short delay
         setTimeout(() => {
           router.push('/dashboard');
         }, 2000);

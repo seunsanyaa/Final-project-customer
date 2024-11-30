@@ -13,7 +13,6 @@ import { Id } from "@/convex/_generated/dataModel";
 
 const stripePromise = loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY!);
 
-// Separate the checkout form to avoid re-renders
 const CheckoutForm = ({ planDetails, sessionId, planId }: { 
   planDetails: any, 
   sessionId: Id<"paymentSessions">,
@@ -25,7 +24,8 @@ const CheckoutForm = ({ planDetails, sessionId, planId }: {
   const [error, setError] = useState<string | null>(null);
   const updatePaymentSession = useMutation(api.payment.updatePaymentSessionStatus);
 
-  const handleSubmit = async () => {
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
     if (!stripe || !elements) return;
 
     setIsProcessing(true);
@@ -98,15 +98,20 @@ const CheckoutForm = ({ planDetails, sessionId, planId }: {
 export default function SubscriptionPayment() {
   const searchParams = useSearchParams();
   const [isLoading, setIsLoading] = useState(true);
+  const [clientSecret, setClientSecret] = useState<string | null>(null);
 
-  const planId = searchParams?.get('plan');
-  const sessionId = searchParams?.get('sessionId') as Id<"paymentSessions">;
-  const clientSecret = searchParams?.get('clientSecret');
+  // Get URL parameters safely
+  const planId = searchParams ? searchParams.get('plan') : null;
+  const rawSessionId = searchParams ? searchParams.get('sessionId') : null;
+  const clientSecretFromUrl = searchParams ? searchParams.get('clientSecret') : null;
 
-  const paymentSession = useQuery(api.payment.getPaymentSession, 
-    sessionId ? { sessionId } : "skip"
-  );
+  // Only cast to Id if we have a sessionId
+  const sessionId = rawSessionId as Id<"paymentSessions"> | null;
 
+  // Only make the query if we have a valid sessionId
+  const paymentSession = sessionId ? useQuery(api.payment.getPaymentSession, { sessionId }) : null;
+
+  // Define plans
   const plans = {
     silver_elite: {
       name: 'Silver Elite',
@@ -140,16 +145,19 @@ export default function SubscriptionPayment() {
     }
   };
 
+  // Get selected plan details
   const selectedPlan = planId ? plans[planId as keyof typeof plans] : null;
 
   useEffect(() => {
-    // Check if we have all required data
-    if (sessionId && clientSecret && selectedPlan && paymentSession) {
+    // Set client secret from URL parameter
+    if (clientSecretFromUrl) {
+      setClientSecret(clientSecretFromUrl);
       setIsLoading(false);
     }
-  }, [sessionId, clientSecret, selectedPlan, paymentSession]);
+  }, [clientSecretFromUrl]);
 
-  if (!sessionId || !clientSecret || !selectedPlan) {
+  // Show error if missing required parameters
+  if (!planId || !sessionId || !clientSecretFromUrl || !selectedPlan) {
     return (
       <>
         <Navi />

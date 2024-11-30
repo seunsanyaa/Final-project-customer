@@ -12,13 +12,12 @@ import { Loader2 } from "lucide-react";
 import { useMutation } from "convex/react";
 import { api } from "@/convex/_generated/api";
 
-export function GoldenSubscribe() {
-  const { user, isLoaded } = useUser();
-  const router = useRouter();
+export const GoldenSubscribe = () => {
   const [selectedPlan, setSelectedPlan] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
-
-  const createPaymentSession = useMutation(api.payment.createPaymentSession);
+  const { user } = useUser();
+  const router = useRouter();
+  const initializePaymentSession = useMutation(api.payment.createPaymentSession);
 
   const plans = [
     {
@@ -56,20 +55,14 @@ export function GoldenSubscribe() {
     }
   ];
 
-  useEffect(() => {
-    if (!isLoaded) return;
-    if (!user) {
-      router.push('/sign-in');
-    }
-  }, [user, isLoaded, router]);
-
   const handleSubscribe = async (planId: string) => {
-    setIsLoading(true);
-    setSelectedPlan(planId);
-
     try {
+      setIsLoading(true);
+      setSelectedPlan(planId);
+
       if (!user) {
-        throw new Error('User not authenticated');
+        router.push('/sign-in');
+        return;
       }
 
       const selectedPlanDetails = plans.find(p => p.id === planId);
@@ -77,41 +70,76 @@ export function GoldenSubscribe() {
         throw new Error('Invalid plan selected');
       }
 
-      const paymentSession = await createPaymentSession({
-        paidAmount: selectedPlanDetails.price,
-        paymentType: 'subscription',
-        userId: user.id,
-        subscriptionPlan: planId,
-        isSubscription: true,
+      console.log('Creating payment session with details:', {
+        planId,
+        price: selectedPlanDetails.price,
+        userId: user.id
       });
 
-      const response = await fetch('/api/create-payment-intent', {
+      // Create payment session
+      const result = await initializePaymentSession({
+        paidAmount: 0,
+        paymentType: 'stripe',
+        userId: user.id,
+        totalAmount: selectedPlanDetails.price,
+        isSubscription: true,
+        subscriptionPlan: planId
+      }).catch(error => {
+        console.error('Payment session creation failed:', error);
+        throw new Error(`Payment session creation failed: ${error.message}`);
+      });
+
+      console.log('Payment session creation result:', result);
+
+      // Check for either sessionId or _id
+      const sessionId = result?.sessionId;
+      
+      if (!sessionId) {
+        console.error('Invalid payment session result:', result);
+        throw new Error('Failed to create payment session: No session ID returned');
+      }
+
+      console.log('Using session ID:', sessionId);
+
+      // Create Stripe subscription
+      const response = await fetch('/api/subscription-creation', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          type: 'subscription',
           planId,
-          amount: selectedPlanDetails.price,
           email: user.emailAddresses[0].emailAddress,
+          sessionId: sessionId
         }),
       });
 
-      const data = await response.json();
-      if (data.error) {
-        throw new Error(data.error);
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Failed to create subscription');
       }
 
-      router.push(`/Golden/subscribe/success?session_id=${paymentSession._id}&plan=${planId}&client_secret=${data.clientSecret}`);
-    } catch (error) {
-      console.error('Subscription error:', error);
+      const { clientSecret } = await response.json();
+
+      if (!clientSecret) {
+        throw new Error('No client secret received');
+      }
+
+      console.log('Redirecting with params:', {
+        planId,
+        sessionId,
+        clientSecret: clientSecret ? '[PRESENT]' : '[MISSING]'
+      });
+
+      router.push(`/Golden/subscribe/payment?plan=${planId}&sessionId=${sessionId}&clientSecret=${clientSecret}`);
+    } catch (error: any) {
+      console.error('Subscription initialization failed:', error);
+      // You might want to show this error to the user
+      // setError(error.message);
     } finally {
       setIsLoading(false);
     }
   };
 
-  if (!isLoaded || !user) {
+  if (!user) {
     return (
       <div className="h-screen w-screen flex items-center justify-center">
         <Loader2 className="h-8 w-8 animate-spin text-primary"/>

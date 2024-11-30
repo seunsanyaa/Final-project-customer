@@ -31,7 +31,6 @@ export default defineSchema({
 		licensePicture: v.optional(v.string()),
 		goldenMember: v.boolean(),
 		promotions: v.optional(v.array(v.id('promotions'))),
-		expirationDate: v.optional(v.string()),
 		usedPromotions: v.optional(v.array(v.id('promotions'))),
 		rewardPoints: v.number(),
 		subscriptionPlan: v.optional(v.string()),
@@ -101,11 +100,12 @@ export default defineSchema({
 
 	payments: defineTable({
 		receiptNumber: v.string(),
-		bookingId: v.id('bookings'),
+		bookingId: v.optional(v.id('bookings')),
 		amount: v.number(),
 		paymentDate: v.string(),
 		paymentType: v.string(),
-		paymentIntentId: v.string(),
+		paymentIntentId: v.optional(v.string()),
+		isSubscription: v.optional(v.boolean()),
 	})
 		.index('by_receiptNumber', ['receiptNumber'])
 		.index('by_bookingId', ['bookingId'])
