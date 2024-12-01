@@ -11,13 +11,21 @@ import CheckIcon from '@/svgs/CheckIcon';
 import { Footer } from '../head/footer';
 import { Carousel, CarouselContent, CarouselItem } from "@/components/ui/carousel";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { useUser } from "@clerk/nextjs";
+import { useQuery } from "convex/react";
+import { api } from "@/convex/_generated/api";
 
 export function GoldenLanding() {
+  const { user } = useUser();
   const [ref1, inView1] = useInView({ threshold: 0.0, triggerOnce: true });
   const [ref2, inView2] = useInView({ threshold: 0.0, triggerOnce: true });
   const [ref3, inView3] = useInView({ threshold: 0.0, triggerOnce: true });
   const [ref4, inView4] = useInView({ threshold: 0.0, triggerOnce: true });
   const [refPremium, inViewPremium] = useInView({ threshold: 0.6, triggerOnce: true });
+
+  const isGoldenMember = useQuery(api.customers.isGoldenMember, { 
+    userId: user?.id ?? "" 
+  });
 
   return (
     <div className="flex flex-col min-h-[100dvh]">
@@ -41,9 +49,9 @@ export function GoldenLanding() {
                     Unlock exclusive perks, premium vehicles, and personalized service with our Golden Membership.
                   </p>
                   <div className="mt-6">
-                    <Link href='/Golden/subscribe'>
+                    <Link href={isGoldenMember ? '/User_Account' : '/Golden/subscribe'}>
                       <Button className="inline-flex h-10 items-center justify-center rounded-md px-8 text-sm font-medium shadow transition-colors hover:bg-customyello hover:text-black">
-                        Subscribe Now
+                        {isGoldenMember ? 'Manage Subscription' : 'Subscribe Now'}
                       </Button>
                     </Link>
                   </div>
@@ -86,11 +94,13 @@ export function GoldenLanding() {
               <p className="text-lg md:text-xl lg:text-2xl text-gray-600">
                 Experience unmatched comfort with our premium sedan fleet. Exclusive access for Gold members.
               </p>
-              <Link href="/PremiumCars">
-                <Button className="bg-customyello text-primary-foreground border-2 border-black p-4 shadow-md hover:bg-orange-500 transition">
-                  Learn More
-                </Button>
-              </Link>
+              {isGoldenMember && (
+                <Link href="/PremiumCars">
+                  <Button className="bg-customyello text-primary-foreground border-2 border-black p-4 shadow-md hover:bg-orange-500 transition">
+                    Learn More
+                  </Button>
+                </Link>
+              )}
             </div>
             <img
               src="https://res.cloudinary.com/dbsxjsktb/image/upload/w_1000,ar_16:9,c_fill,g_auto,e_sharpen/v1732832958/hero-2019-porsche-boxster-1920x565-removebg_hlhjvr.png"
@@ -106,11 +116,13 @@ export function GoldenLanding() {
               <p className="text-lg md:text-xl lg:text-2xl text-gray-600">
                 Discover our collection of high-end SUVs perfect for any occasion.
               </p>
-              <Link href="/PremiumCars">
-                <Button className="bg-customyello text-primary-foreground border-2 border-black p-4 shadow-md hover:bg-orange-500 transition">
-                  Learn More
-                </Button>
-              </Link>
+              {isGoldenMember && (
+                <Link href="/PremiumCars">
+                  <Button className="bg-customyello text-primary-foreground border-2 border-black p-4 shadow-md hover:bg-orange-500 transition">
+                    Learn More
+                  </Button>
+                </Link>
+              )}
             </div>
             <img
               src="https://res.cloudinary.com/dbsxjsktb/image/upload/w_1000,ar_16:9,c_fill,g_auto,e_sharpen/v1732830903/2020-range-rover-sport-1920x565__1_-removebg_f6qehx.png"
@@ -126,11 +138,13 @@ export function GoldenLanding() {
               <p className="text-lg md:text-xl lg:text-2xl text-gray-600">
                 Feel the thrill with our exclusive sports car collection.
               </p>
-              <Link href="/PremiumCars">
-                <Button className="bg-customyello text-primary-foreground border-2 border-black p-4 shadow-md hover:bg-orange-500 transition">
-                  Learn More
-                </Button>
-              </Link>
+              {isGoldenMember && (
+                <Link href="/PremiumCars">
+                  <Button className="bg-customyello text-primary-foreground border-2 border-black p-4 shadow-md hover:bg-orange-500 transition">
+                    Learn More
+                  </Button>
+                </Link>
+              )}
             </div>
             <img
               src="https://res.cloudinary.com/dbsxjsktb/image/upload/v1732833992/BMW_4_Series_LE_upscale_balanced_x4-removebg-preview_pl3neq.png"
@@ -169,11 +183,13 @@ export function GoldenLanding() {
                     <p className="text-lg md:text-xl lg:text-2xl text-gray-600">
                       Experience our chauffeur services and travel kits designed for your utmost convenience.
                     </p>
-                    <Link href="/PremiumServices">
-                      <Button className="bg-customyello text-primary-foreground border-2 border-black p-4 shadow-md hover:bg-orange-500 transition">
-                        Discover Now
-                      </Button>
-                    </Link>
+                    {isGoldenMember && (
+                      <Link href="/PremiumServices">
+                        <Button className="bg-customyello text-primary-foreground border-2 border-black p-4 shadow-md hover:bg-orange-500 transition">
+                          Discover Now
+                        </Button>
+                      </Link>
+                    )}
                   </div>
                   <img
                     src="https://res.cloudinary.com/di8yfpruz/image/upload/v1732981665/CAR-DRIVERS-IN-BANGALORE-1-removebg_xbmvr4.png"
@@ -200,11 +216,13 @@ export function GoldenLanding() {
                     <p className="text-lg md:text-xl lg:text-2xl text-gray-600">
                       Experience our chauffeur services and travel kits designed for your utmost convenience.
                     </p>
-                    <Link href="/PremiumServices">
-                      <Button className="bg-customyello text-primary-foreground border-2 border-black p-4 shadow-md hover:bg-orange-500 transition">
-                        Discover Now
-                      </Button>
-                    </Link>
+                    {isGoldenMember && (
+                      <Link href="/PremiumServices">
+                        <Button className="bg-customyello text-primary-foreground border-2 border-black p-4 shadow-md hover:bg-orange-500 transition">
+                          Discover Now
+                        </Button>
+                      </Link>
+                    )}
                   </div>
                   <img
                     src="https://res.cloudinary.com/di8yfpruz/image/upload/v1732981665/CAR-DRIVERS-IN-BANGALORE-1-removebg_xbmvr4.png"
@@ -231,11 +249,13 @@ export function GoldenLanding() {
                     <p className="text-lg md:text-xl lg:text-2xl text-gray-600">
                       Experience our chauffeur services and travel kits designed for your utmost convenience.
                     </p>
-                    <Link href="/PremiumServices">
-                      <Button className="bg-customyello text-primary-foreground border-2 border-black p-4 shadow-md hover:bg-orange-500 transition">
-                        Discover Now
-                      </Button>
-                    </Link>
+                    {isGoldenMember && (
+                      <Link href="/PremiumServices">
+                        <Button className="bg-customyello text-primary-foreground border-2 border-black p-4 shadow-md hover:bg-orange-500 transition">
+                          Discover Now
+                        </Button>
+                      </Link>
+                    )}
                   </div>
                   <img
                     src="https://res.cloudinary.com/di8yfpruz/image/upload/v1732981665/CAR-DRIVERS-IN-BANGALORE-1-removebg_xbmvr4.png"
