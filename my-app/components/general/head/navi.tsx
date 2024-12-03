@@ -200,7 +200,7 @@ export const Navi: React.FC<NaviProps> = ({ className }) => {
         <div className="flex items-center gap-4">
           <Translate />
           <SignedOut>
-            <Link href="/login" className="text-muted-foreground hover:text-primary-foreground transition-colors">
+            <Link href="/Login" className="text-muted-foreground hover:text-primary-foreground transition-colors">
               Sign In
             </Link>
           </SignedOut>

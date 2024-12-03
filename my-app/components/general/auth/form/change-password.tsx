@@ -86,7 +86,7 @@ export function ChangeForm({ }) {
         newPassword: data.password,
       })
         .then(() => {
-         void router.push("/login");
+         void router.push("/Login");
         })
         .catch(() => {
           toast({
