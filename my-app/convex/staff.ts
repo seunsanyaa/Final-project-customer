@@ -58,3 +58,15 @@ export const deleteStaffMember = mutation({
     return await ctx.db.delete(args.id);
   },
 });
+
+// Add this new query
+export const getStaffByEmail = query({
+  args: { email: v.string() },
+  handler: async (ctx, args) => {
+    const staff = await ctx.db
+      .query("staff")
+      .withIndex("by_email", (q) => q.eq("email", args.email))
+      .first();
+    return staff;
+  },
+});
