@@ -30,6 +30,7 @@ const Lottie = dynamic(() => import('lottie-react'), {
 
 export default function AllVehicles() {
   const [showAdvanced, setShowAdvanced] = useState(false);
+  const [selectedCategory, setSelectedCategory] = useState<string>("");
 
   // Declare all state variables first
   const [searchParams, setSearchParams] = useState({
@@ -61,6 +62,9 @@ export default function AllVehicles() {
 
   // Then use them in the query
   const cars = useQuery(api.car.getFilteredCars, searchParams);
+  const carsByCategory = useQuery(api.car.getCarsByCategory, {
+    category: selectedCategory,
+  });
 
   const lottieRef = useRef<LottieRefCurrentProps>(null);
 
@@ -100,14 +104,6 @@ export default function AllVehicles() {
       </div>
     );
   }
-
-  // Change bodyType state to category
-  const [selectedCategory, setSelectedCategory] = useState<string>("");
-
-  // Change query to use categories instead of body type
-  const carsByCategory = useQuery(api.car.getCarsByCategory, {
-    category: selectedCategory,
-  });
 
   // Update the displayed cars logic
   const displayedCars = selectedCategory === "all" ? cars : carsByCategory;

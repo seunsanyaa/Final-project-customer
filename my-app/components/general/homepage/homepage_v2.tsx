@@ -36,15 +36,20 @@ export function Homepage_v2() {
   const lottieRef = useRef<LottieRefCurrentProps>(null);
   const [isLoading, setIsLoading] = useState(true);
 
+  const reviews = useQuery(api.review.getTopReviews);
+  const userIds = Array.from(new Set(reviews?.map(review => review.userId) ?? []));
+  const usersData = useQuery(api.users.getManyUsers, { userIds }) ?? [];
+  const userMap = new Map(usersData.map(user => [user.userId, user]));
+  const shuffledReviews = reviews?.filter(review => review.numberOfStars >= 4)
+    .sort(() => Math.random() - 0.5)
+    .slice(0, 6);
+
   useEffect(() => {
-    // Set a 2-second timer before hiding the loading screen
     const timer = setTimeout(() => {
       setIsLoading(false);
     }, 2000);
-
-    // Cleanup the timer if component unmounts
     return () => clearTimeout(timer);
-  }, []); // Empty dependency array means this runs once on mount
+  }, []);
 
   useEffect(() => {
     const link = document.createElement('link');
@@ -74,26 +79,8 @@ export function Homepage_v2() {
     );
   }
 
-  // Fetch top reviews
-  const reviews = useQuery(api.review.getTopReviews);
-  
-  // Get unique user IDs from reviews
-  const userIds = Array.from(new Set(reviews?.map(review => review.userId) ?? []));
-  
-  // Fetch all user details at once
-  const usersData = useQuery(api.users.getManyUsers, { userIds }) ?? [];
-
-  // Create a map of userId to user details for quick lookup
-  const userMap = new Map(usersData.map(user => [user.userId, user]));
-
-  // Filter 4+ star reviews and shuffle them
-  const shuffledReviews = reviews?.filter(review => review.numberOfStars >= 4)
-    .sort(() => Math.random() - 0.5)
-    .slice(0, 6);
-
   return (
     <div className="flex flex-col min-h-dvh font-roboto">
-      {/* <Loader />  */}
       <Navi className="bg-gradient-to-r from-gray-800 to-gray-600"/>
       <main className="flex-1 top-0 mt-0">
       <section  ref={ref1}className={`relative top-0 md:py-16 w-full h-[610px] px-4 md:px-6 lg:px-10 bg-cover bg-center bg-no-repeat ${
