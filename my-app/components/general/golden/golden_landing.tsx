@@ -81,9 +81,12 @@ export function GoldenLanding() {
 }`}>
 
   <div className="container mx-auto px-4">
-    <div className="text-center mb-12 p-4">
-        <h2 className="text-4xl font-bold mb-4">Premium Fleet</h2>
-        <p className="text-xl text-gray-600">Experience luxury with our exclusive collection</p>
+    <div className="text-center mb-12 p-4 relative">
+      <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,_#ffd70066_10%,_#daa52066_30%,_transparent_70%)] mix-blend-multiply"></div>
+      <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_20%,_#ffd70066_5%,_transparent_50%)] mix-blend-overlay"></div>
+      <div className="absolute inset-0 bg-[radial-gradient(circle_at_70%_80%,_#daa52066_5%,_transparent_50%)] mix-blend-overlay"></div>
+      <h2 className="text-4xl font-bold mb-4 relative z-10">Premium Fleet</h2>
+      <p className="text-xl text-gray-600 relative z-10">Experience luxury with our exclusive collection</p>
     </div>
     <Carousel>
       <CarouselContent>
@@ -163,9 +166,12 @@ export function GoldenLanding() {
   inView3 ? 'animate-fadeInUp' : 'opacity-0'
 }`}>
   <div className="container mx-auto px-4">
-    <div className="text-center mb-12">
-      <h2 className="text-4xl font-bold mb-4">Our Services</h2>
-      <p className="text-xl text-gray-600">Explore the exclusive services we offer</p>
+  <div className="text-center mb-12 p-4 relative">
+      <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,_#ffd70066_10%,_#daa52066_30%,_transparent_70%)] mix-blend-multiply"></div>
+      <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_20%,_#ffd70066_5%,_transparent_50%)] mix-blend-overlay"></div>
+      <div className="absolute inset-0 bg-[radial-gradient(circle_at_70%_80%,_#daa52066_5%,_transparent_50%)] mix-blend-overlay"></div>
+    <h2 className="text-4xl font-bold mb-4 relative z-10">Our Services</h2>
+      <p className="text-xl text-gray-600 relative z-10">Explore the exclusive services we offer</p>
     </div>
     <Carousel>
       <CarouselContent>
