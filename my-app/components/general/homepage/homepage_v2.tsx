@@ -17,11 +17,16 @@ import ChevronRightIcon from '@/svgs/ChevronRightIcon';
 import { Navi } from "../head/navi";
 import { Footer } from "../head/footer";
 import { useEffect, useRef, useState } from 'react'; // Added for font loading
-import Lottie, { LottieRefCurrentProps } from "lottie-react"; // Import Lottie
-import loadingAnimation from "@/public/animations/intro.json"; // Import your animation
+import dynamic from 'next/dynamic';
+import loadingAnimation from "@/public/animations/intro.json";
 import { useQuery } from 'convex/react';
 import { api } from '@/convex/_generated/api';
 import Image from "next/image";
+import { LottieRefCurrentProps } from "lottie-react";
+// Add dynamic import for Lottie
+const Lottie = dynamic(() => import('lottie-react'), {
+  ssr: false,
+});
 
 export function Homepage_v2() {
   const [ref1, inView1] = useInView({ threshold: 0.6, triggerOnce: true });
@@ -56,18 +61,18 @@ export function Homepage_v2() {
     carousel.scrollTo({ left: scrollPosition, behavior: 'smooth' });
   };
 
-  // if (isLoading) {
-  //   return (
-  //     <div className="flex items-center justify-center h-screen">
-  //       <Lottie
-  //         lottieRef={lottieRef}
-  //         animationData={loadingAnimation}
-  //         loop={true}
-  //         className="w-[400px] h-[400px]"
-  //       />
-  //     </div>
-  //   );
-  // }
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center h-screen">
+        <Lottie
+          lottieRef={lottieRef}
+          animationData={loadingAnimation}
+          loop={true}
+          className="w-[400px] h-[400px]"
+        />
+      </div>
+    );
+  }
 
   // Fetch top reviews
   const reviews = useQuery(api.review.getTopReviews);

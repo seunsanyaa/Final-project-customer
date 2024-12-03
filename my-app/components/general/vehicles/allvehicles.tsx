@@ -19,8 +19,14 @@ import {
 import { api } from "@/convex/_generated/api";
 import { Footer } from "../head/footer";
 import { Navi } from "../head/navi";
-import Lottie, { LottieRefCurrentProps } from "lottie-react";
-import loadingAnimation from "@/public/animations/loadingAnimation.json"; // Import your animation
+import dynamic from 'next/dynamic';
+import loadingAnimation from "@/public/animations/loadingAnimation.json";
+import { LottieRefCurrentProps } from "lottie-react";
+
+// Add dynamic import for Lottie
+const Lottie = dynamic(() => import('lottie-react'), {
+  ssr: false,
+});
 
 export default function AllVehicles() {
   const [showAdvanced, setShowAdvanced] = useState(false);
@@ -82,18 +88,18 @@ export default function AllVehicles() {
     });
   };
 
-  // if (!cars) {
-  //   return (
-  //     <div className="flex items-center justify-center h-screen">
-  //       <Lottie
-  //         lottieRef={lottieRef}
-  //         animationData={loadingAnimation}
-  //         loop={true}
-  //         className="w-48 h-48"
-  //       />
-  //     </div>
-  //   );
-  // }
+  if (!cars) {
+    return (
+      <div className="flex items-center justify-center h-screen">
+        <Lottie
+          lottieRef={lottieRef}
+          animationData={loadingAnimation}
+          loop={true}
+          className="w-48 h-48"
+        />
+      </div>
+    );
+  }
 
   // Change bodyType state to category
   const [selectedCategory, setSelectedCategory] = useState<string>("");

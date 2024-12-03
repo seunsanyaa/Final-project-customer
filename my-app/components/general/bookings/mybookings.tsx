@@ -11,9 +11,15 @@ import { api } from "@/convex/_generated/api";
 import { useQuery, useMutation } from "convex/react";
 import {useUser} from "@clerk/nextjs"
 import { useRef } from "react"
-import Lottie, { LottieRefCurrentProps } from "lottie-react"
-import loadingAnimation from "@/public/animations/loadingAnimation.json"
+import dynamic from 'next/dynamic';
+import loadingAnimation from "@/public/animations/loadingAnimation.json";
 import { Redirection } from "@/components/ui/redirection";
+import { LottieRefCurrentProps } from "lottie-react"
+
+// Add dynamic import for Lottie
+const Lottie = dynamic(() => import('lottie-react'), {
+  ssr: false,
+});
 
 interface Booking {
   _id: string;
@@ -115,19 +121,19 @@ export function Mybookings() {
   }
 
   
-  // if (loading) {
-  //   return (
-  //     <div className="flex items-center justify-center h-screen">
-  //       <Lottie
-  //         lottieRef={lottieRef}
-  //         animationData={loadingAnimation}
-  //         loop={false} // Disable looping
-  //         autoplay={true} // Ensure autoplay is enabled
-  //         className="w-48 h-48"
-  //       />
-  //     </div>
-  //   );
-  // }
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center h-screen">
+        <Lottie
+          lottieRef={lottieRef}
+          animationData={loadingAnimation}
+          loop={false}
+          autoplay={true}
+          className="w-48 h-48"
+        />
+      </div>
+    );
+  }
 
   if (customerId === "") {
     return <Redirection />;
