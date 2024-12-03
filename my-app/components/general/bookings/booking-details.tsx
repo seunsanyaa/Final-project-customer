@@ -53,7 +53,7 @@ export default function BookingDetails() {
         <div className="max-w-4xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
           <div className="text-center">
             <h1 className="text-2xl font-semibold">No Active Booking</h1>
-            <p className="mt-2">You don't have any active bookings at the moment.</p>
+            <p className="mt-2">You don&apos;t have any active bookings at the moment.</p>
           </div>
         </div>
         <Separator />

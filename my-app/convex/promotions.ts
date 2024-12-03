@@ -1,6 +1,13 @@
 import { v } from 'convex/values';
 import { mutation, query } from './_generated/server';
 import { Promotion } from '../types/Promotion';
+import { Id } from '../convex/_generated/dataModel';
+
+type Car = {
+  _id: string;
+  categories?: string[];
+  // ... other properties ...
+};
 
 // Create a new promotion
 export const createPromotion = mutation({
@@ -261,7 +268,7 @@ export const getApplicablePromotions = query({
     userId: v.string() 
   },
   handler: async (ctx, { carId, userId }) => {
-    const car = await ctx.db.get(carId);
+    const car = await ctx.db.get(carId as Id<"cars">);
     if (!car) return [];
 
     const customer = await ctx.db

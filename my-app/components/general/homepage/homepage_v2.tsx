@@ -21,6 +21,7 @@ import Lottie, { LottieRefCurrentProps } from "lottie-react"; // Import Lottie
 import loadingAnimation from "@/public/animations/intro.json"; // Import your animation
 import { useQuery } from 'convex/react';
 import { api } from '@/convex/_generated/api';
+import Image from "next/image";
 
 export function Homepage_v2() {
   const [ref1, inView1] = useInView({ threshold: 0.6, triggerOnce: true });
@@ -72,7 +73,7 @@ export function Homepage_v2() {
   const reviews = useQuery(api.review.getTopReviews);
   
   // Get unique user IDs from reviews
-  const userIds = [...new Set(reviews?.map(review => review.userId) ?? [])];
+  const userIds = Array.from(new Set(reviews?.map(review => review.userId) ?? []));
   
   // Fetch all user details at once
   const usersData = useQuery(api.users.getManyUsers, { userIds }) ?? [];
@@ -151,12 +152,14 @@ export function Homepage_v2() {
                         </Button>
                       </Link>
                     </div>
-                    <img
+                    <Image
                       src="https://res.cloudinary.com/dbsxjsktb/image/upload/v1729195988/1714578868267_yicf3b.avif"
-                      width="400"
-                      height="300"
+                      width={600}
+                      height={500}
                       alt="Car"
-                      className="w-[600px] h-[500px] object-cover" /> 
+                      className="w-[600px] h-[500px] object-cover"
+                      priority
+                    /> 
                   </div>
                 </CarouselItem>
                 <CarouselItem>
@@ -171,10 +174,12 @@ export function Homepage_v2() {
                         Book Now
                       </Button></Link>
                     </div>
-                    <img
-                    src="https://res.cloudinary.com/dbsxjsktb/image/upload/v1729196318/1727199981315_ixilao.avif"
-                    alt="Car"
-                    className="w-[500px] h-[400px] object-cover"
+                    <Image
+                      src="https://res.cloudinary.com/dbsxjsktb/image/upload/v1729196318/1727199981315_ixilao.avif"
+                      alt="Car"
+                      width={500}
+                      height={400}
+                      className="w-[500px] h-[400px] object-cover"
                     />
                   </div>
                 </CarouselItem>
@@ -190,12 +195,12 @@ export function Homepage_v2() {
                         Book Now
                       </Button></Link>
                     </div>
-                    <img
-                    src="https://res.cloudinary.com/dbsxjsktb/image/upload/v1729196547/1727199981443_oidgif.avif"
-                    width="400"
-                    height="300"
-                    alt="Car"
-                    className="w-[500px] h-[400px] object-cover"
+                    <Image
+                      src="https://res.cloudinary.com/dbsxjsktb/image/upload/v1729196547/1727199981443_oidgif.avif"
+                      width={500}
+                      height={400}
+                      alt="Car"
+                      className="w-[500px] h-[400px] object-cover"
                     />
                   </div>
                 </CarouselItem>
@@ -217,7 +222,13 @@ export function Homepage_v2() {
             </div>
             <div className="grid gap-6 grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-3 mt-20 pl-14 pr-14 ml-14 mr-14 mb-20"> 
               <div className="flex flex-col items-center justify-center gap-4 p-6 transition-transform transform hover:scale-105 hover:shadow-lg bg-card hover:bg-gradient-to-r from-blue-500 to-green-500"> 
-                <img src="https://res.cloudinary.com/dbsxjsktb/image/upload/v1729522582/2021-toyota-camry-se-sedan-white_featured_yakvxp.avif" alt="Sedan" className="w-[300px] h-[220px] rounded-lg" /> 
+                <Image
+                  src="https://res.cloudinary.com/dbsxjsktb/image/upload/v1729522582/2021-toyota-camry-se-sedan-white_featured_yakvxp.avif"
+                  alt="Sedan"
+                  width={300}
+                  height={220}
+                  className="w-[300px] h-[220px] rounded-lg"
+                /> 
                 <div className="text-center mb-0 mt-0">
                   <h3 className="text-4xl font-semibold text-black mt-0">Sedans</h3>
                   <p className="text-black font-semibold">Comfortable and efficient.</p> 
@@ -228,7 +239,13 @@ export function Homepage_v2() {
                 </Link>
               </div>
               <div className="flex flex-col items-center justify-center gap-4 p-6 transition-transform transform hover:scale-105 hover:shadow-lg bg-card hover:bg-gradient-to-r from-blue-500 to-green-500"> 
-                <img src="https://res.cloudinary.com/dbsxjsktb/image/upload/v1729522583/2022-chevrolet-tahoe-lt-4wd-suv-beige_featured_bsxp0g.avif" alt="SUV" className="w-[300px] h-[220px] rounded-lg" /> 
+                <Image
+                  src="https://res.cloudinary.com/dbsxjsktb/image/upload/v1729522583/2022-chevrolet-tahoe-lt-4wd-suv-beige_featured_bsxp0g.avif"
+                  alt="SUV"
+                  width={300}
+                  height={220}
+                  className="w-[300px] h-[220px] rounded-lg"
+                /> 
                 <div className="text-center mb-0 mt-0">
                   <h3 className="text-4xl font-semibold text-black">SUVs</h3>
                   <p className="text-black font-semibold">Spacious and versatile.</p> 
@@ -239,7 +256,13 @@ export function Homepage_v2() {
                 </Link>
               </div>
               <div className="flex flex-col items-center justify-center gap-4 p-6 transition-transform transform hover:scale-105 hover:shadow-lg bg-card hover:bg-gradient-to-r from-blue-500 to-green-500"> 
-                <img src="https://res.cloudinary.com/dbsxjsktb/image/upload/v1729527582/2022-genesis-g80-4wd-sedan-white_featured_e84fej.avif" alt="Luxury" className="w-[300px] h-[220px] rounded-lg" /> 
+                <Image
+                  src="https://res.cloudinary.com/dbsxjsktb/image/upload/v1729527582/2022-genesis-g80-4wd-sedan-white_featured_e84fej.avif"
+                  alt="Luxury"
+                  width={300}
+                  height={220}
+                  className="w-[300px] h-[220px] rounded-lg"
+                /> 
                 <div className="text-center mb-0 mt-0">
                   <h3 className="text-4xl font-semibold text-black mt-1">Luxury</h3>
                   <p className="text-black font-semibold">Indulge in style and comfort.</p> 
@@ -250,7 +273,13 @@ export function Homepage_v2() {
                 </Link>
               </div>
               <div className="flex flex-col items-center justify-center gap-4 p-6 transition-transform transform hover:scale-105 hover:shadow-lg bg-card hover:bg-gradient-to-r from-blue-500 to-green-500"> 
-                <img src="https://res.cloudinary.com/dihvudxbt/image/upload/v1729200173/JKAR_22_Compact_Cargo_Van_AngularFront_US_ENG_280x210_wsqbrx.avif" alt="Van" className="w-[300px] h-[220px] rounded-lg" /> 
+                <Image
+                  src="https://res.cloudinary.com/dihvudxbt/image/upload/v1729200173/JKAR_22_Compact_Cargo_Van_AngularFront_US_ENG_280x210_wsqbrx.avif"
+                  alt="Van"
+                  width={300}
+                  height={220}
+                  className="w-[300px] h-[220px] rounded-lg"
+                /> 
                 <div className="text-center mb-0 mt-0">
                   <h3 className="text-4xl font-semibold text-black">Vans</h3>
                   <p className="text-black font-semibold mb-0">Spacious and practical.</p> 
@@ -261,7 +290,13 @@ export function Homepage_v2() {
                 </Link>
               </div>
               <div className="flex flex-col items-center justify-center gap-4 p-6 transition-transform transform hover:scale-105 hover:shadow-lg bg-card hover:bg-gradient-to-r from-blue-500 to-green-500"> 
-                <img src="https://res.cloudinary.com/dbsxjsktb/image/upload/v1729522582/2020-ford-mustang-ecoboost-premium-convertible-white_featured_c4qsq5.avif" alt="Van" className="w-[300px] h-[220px] rounded-lg" /> 
+                <Image
+                  src="https://res.cloudinary.com/dbsxjsktb/image/upload/v1729522582/2020-ford-mustang-ecoboost-premium-convertible-white_featured_c4qsq5.avif"
+                  alt="Convertible"
+                  width={300}
+                  height={220}
+                  className="w-[300px] h-[220px] rounded-lg"
+                /> 
                 <div className="text-center mb-0 mt-0">
                   <h3 className="text-4xl font-semibold text-black">Convertible</h3>
                   <p className="text-black font-semibold mb-0">Spacious and practical.</p> 
@@ -272,7 +307,13 @@ export function Homepage_v2() {
                 </Link>
               </div>
               <div className="flex flex-col items-center justify-center gap-4 p-6 transition-transform transform hover:scale-105 hover:shadow-lg bg-card hover:bg-gradient-to-r from-blue-500 to-green-500"> 
-                <img src="https://res.cloudinary.com/dbsxjsktb/image/upload/v1729527063/2022-ram-1500-limited-swb-crew-pick-up-silver_featured_x2xwqj.avif" alt="Van" className="w-[300px] h-[220px] rounded-lg" /> 
+                <Image
+                  src="https://res.cloudinary.com/dbsxjsktb/image/upload/v1729527063/2022-ram-1500-limited-swb-crew-pick-up-silver_featured_x2xwqj.avif"
+                  alt="Pickup Truck"
+                  width={300}
+                  height={220}
+                  className="w-[300px] h-[220px] rounded-lg"
+                /> 
                 <div className="text-center mb-0 mt-0">
                   <h3 className="text-4xl font-semibold text-black">Pickup Truck</h3>
                   <p className="text-black font-semibold mb-0">Spacious and practical.</p> 

@@ -92,7 +92,7 @@ export function SignupPage() {
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="driverLicense">Driver's License Number</Label>
+                <Label htmlFor="driverLicense">Driver&apos;s License Number</Label>
                 <Input 
                   id="driverLicense" 
                   type="text" 
@@ -119,13 +119,19 @@ export function SignupPage() {
             </div>
           </form>
         </CardContent>
-        <CardFooter className="flex justify-center">
+        <CardFooter className="flex flex-col space-y-4 items-center">
           <div className="text-sm">
             Already have an account?{" "}
-            <Link href="/Login" className="text-blue-500 hover:underline">
-              Log in
+            <Link href="/login" className="text-blue-500 hover:underline">
+              Sign in
             </Link>
           </div>
+          <p className="text-xs text-muted-foreground">
+            By signing up, you agree to our{" "}
+            <Link href="/terms" className="text-blue-500 hover:underline">Terms of Service</Link>
+            {" "}and{" "}
+            <Link href="/privacy" className="text-blue-500 hover:underline">Privacy Policy</Link>
+          </p>
         </CardFooter>
       </Card>
     </div>

@@ -14,6 +14,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useUser } from "@clerk/nextjs";
 import { useQuery } from "convex/react";
 import { api } from "@/convex/_generated/api";
+import Image from "next/image";
 
 export function GoldenLanding() {
   const { user } = useUser();
@@ -56,16 +57,19 @@ export function GoldenLanding() {
                     </Link>
                   </div>
                 </div>
-                <img
+                <Image
                   src="https://res.cloudinary.com/dbsxjsktb/image/upload/v1732882737/mansory-rolls-royce-ghost-2021-white-background-2021-5k-8k-4480x2520-6204_tqdabr.jpg"
                   alt="Luxury Car"
+                  width={700}
+                  height={400}
                   className="w-full md:w-[700px] h-[500px] md:h-[400px] object-cover rounded-lg"
+                  priority
                 />
               </div>
               
               {/* Image Gallery */}
               <div className="flex flex-col md:flex-row justify-center items-center gap-4 mt-2">
-                <img
+                <Image
                   src="https://res.cloudinary.com/dbsxjsktb/image/upload/v1732911061/desktop-wallpaper-2021-rolls-rolls-royce-2021-removebg_hbwbio.png"
                   alt="Rolls Royce"
                   width={1500}
@@ -105,9 +109,11 @@ export function GoldenLanding() {
                 </Link>
               )}
             </div>
-            <img
+            <Image
               src="https://res.cloudinary.com/dbsxjsktb/image/upload/w_1000,ar_16:9,c_fill,g_auto,e_sharpen/v1732832958/hero-2019-porsche-boxster-1920x565-removebg_hlhjvr.png"
               alt="Luxury Sedan"
+              width={800}
+              height={400}
               className="w-[800px] h-[400px] object-cover"
             />
           </div>
@@ -127,9 +133,11 @@ export function GoldenLanding() {
                 </Link>
               )}
             </div>
-            <img
+            <Image
               src="https://res.cloudinary.com/dbsxjsktb/image/upload/w_1000,ar_16:9,c_fill,g_auto,e_sharpen/v1732830903/2020-range-rover-sport-1920x565__1_-removebg_f6qehx.png"
               alt="Luxury SUV"
+              width={800}
+              height={400}
               className="w-[800px] h-[400px] object-cover"
             />
           </div>
@@ -149,9 +157,11 @@ export function GoldenLanding() {
                 </Link>
               )}
             </div>
-            <img
+            <Image
               src="https://res.cloudinary.com/dbsxjsktb/image/upload/v1732833992/BMW_4_Series_LE_upscale_balanced_x4-removebg-preview_pl3neq.png"
               alt="Sports Car"
+              width={800}
+              height={400}
               className="w-[800px] h-[400px] object-cover"
             />
           </div>
@@ -197,9 +207,11 @@ export function GoldenLanding() {
                       </Link>
                     )}
                   </div>
-                  <img
+                  <Image
                     src="https://res.cloudinary.com/di8yfpruz/image/upload/v1732981665/CAR-DRIVERS-IN-BANGALORE-1-removebg_xbmvr4.png"
                     alt="Chauffeur Service"
+                    width={600}
+                    height={400}
                     className="w-[600px] h-[400px] object-cover"
                   />
                 </div>
@@ -230,9 +242,11 @@ export function GoldenLanding() {
                       </Link>
                     )}
                   </div>
-                  <img
+                  <Image
                     src="https://res.cloudinary.com/di8yfpruz/image/upload/v1732981665/CAR-DRIVERS-IN-BANGALORE-1-removebg_xbmvr4.png"
                     alt="Chauffeur Service"
+                    width={600}
+                    height={400}
                     className="w-[600px] h-[400px] object-cover"
                   />
                 </div>
@@ -263,9 +277,11 @@ export function GoldenLanding() {
                       </Link>
                     )}
                   </div>
-                  <img
+                  <Image
                     src="https://res.cloudinary.com/di8yfpruz/image/upload/v1732981665/CAR-DRIVERS-IN-BANGALORE-1-removebg_xbmvr4.png"
                     alt="Chauffeur Service"
+                    width={600}
+                    height={400}
                     className="w-[600px] h-[400px] object-cover"
                   />
                 </div>

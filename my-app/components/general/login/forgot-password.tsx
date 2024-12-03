@@ -29,7 +29,7 @@ export function ForgotPassword() {
           </div>
           <CardTitle className="text-2xl font-bold text-center">Forgot Password</CardTitle>
           <CardDescription className="text-center">
-            Enter your email address and we'll send you a link to reset your password
+            Enter your email address and we&apos;ll send you a link to reset your password
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -56,7 +56,7 @@ export function ForgotPassword() {
             <Alert>
               <AlertTitle>Check your email</AlertTitle>
               <AlertDescription>
-                We've sent a password reset link to {email}. Please check your inbox and follow the instructions to reset your password.
+                We&apos;ve sent a password reset link to {email}. Please check your inbox and follow the instructions to reset your password.
               </AlertDescription>
             </Alert>
           )}

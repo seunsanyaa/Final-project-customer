@@ -3,7 +3,7 @@ import { NextApiRequest, NextApiResponse } from 'next';
 import Stripe from 'stripe';
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
-  apiVersion: '2024-09-30.acacia', // Ensure you're using the correct Stripe API version
+  apiVersion: '2024-10-28.acacia', // Ensure you're using the correct Stripe API version
 });
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {

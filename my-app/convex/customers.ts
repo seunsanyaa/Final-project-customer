@@ -26,6 +26,7 @@ export const createCustomer = mutation({
 		phoneNumber: v.string(),
 		licenseNumber: v.string(),
 		address: v.string(),
+		expirationDate: v.string(),
 	},
 	handler: async (ctx, args) => {
 		const existingCustomer = await ctx.db
@@ -58,6 +59,7 @@ export const createCustomer = mutation({
 			dateOfBirth: args.dateOfBirth,
 			goldenMember: false,
 			rewardPoints: 0,
+			expirationDate: args.expirationDate,
 		});
 
 		return `Customer with ID ${args.userId} has been created.`;
@@ -177,6 +179,7 @@ export const upsertCustomer = mutation({
 				dateOfBirth: args.dateOfBirth ?? '',
 				goldenMember: false,
 				rewardPoints: args.rewardPoints ?? 0,
+				expirationDate: args.expirationDate ?? '',
 			});
 			return `Customer with ID ${args.userId} has been created.`;
 		}
@@ -290,3 +293,5 @@ export const isGoldenMember = query({
 		return customer.goldenMember; // Return the goldenMember status
 	},
 });
+
+

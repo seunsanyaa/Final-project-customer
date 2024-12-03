@@ -23,11 +23,11 @@ interface Booking {
   startDate: string;
   endDate: string;
   totalCost: number;
-  licensePlate: string;
   pickupLocation: string;
   dropoffLocation: string;
   carId: string;
   trim: string; // Added trim field
+
 }
 
 export function Mybookings() {
@@ -66,7 +66,7 @@ export function Mybookings() {
     // Create a promise for fetching bookings
     const fetchBookings = new Promise<void>((resolve) => {
       if (bookings) {
-        setFilteredBookings(bookings as Booking[]);
+        setFilteredBookings(bookings);
       }
       resolve();
     });
@@ -178,9 +178,9 @@ export function Mybookings() {
               <div className="flex items-center justify-between">
                 <div>
                   <h2 className="text-2xl font-semibold">Current Booking</h2>
-      <p className="text-muted-foreground">Rental Dates: {currentBooking.startDate} - {currentBooking.endDate}</p>
-      </div>
-          <div className="text-right">
+                  <p className="text-muted-foreground">Rental Dates: {currentBooking?.startDate} - {currentBooking?.endDate}</p>
+                </div>
+                <div className="text-right">
             <h3 className="text-3xl font-bold">${currentBooking ? currentBooking.totalCost : 0}</h3>
             <p className="text-muted-foreground">Total Cost</p>
           </div>

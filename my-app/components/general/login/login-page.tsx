@@ -80,7 +80,7 @@ export function LoginPage() {
             Forgot password?
           </Link>
           <div className="text-sm">
-            Don't have an account?{" "}
+            Don&apos;t have an account?{" "}
             <Link href="/login/signup" className="text-blue-500 hover:underline">
               Sign up
             </Link>
