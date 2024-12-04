@@ -52,7 +52,7 @@ export const createCustomer = mutation({
 		await ctx.db.insert('customers', {
 			userId: user.userId,
 			nationality: args.nationality,
-			age: age, // Dynamically calculated age
+			age: age,
 			phoneNumber: args.phoneNumber,
 			licenseNumber: args.licenseNumber,
 			address: args.address,

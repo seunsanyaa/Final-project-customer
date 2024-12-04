@@ -9,10 +9,23 @@ export default function SSOCallback() {
   const router = useRouter();
   const staffMember = useQuery(api.staff.getStaffByEmail, { email: user?.emailAddresses[0]?.emailAddress ?? "" });
 
-  return (
-    <AuthenticateWithRedirectCallback 
-      afterSignInUrl={staffMember?.email ? "/staff" : "/"}
-      afterSignUpUrl="/onboarding"
-    />
-  );
+  useEffect(() => {
+    if (isLoaded) {
+      // Check if user signed up via social
+      const isSocialSignup = user?.externalAccounts?.length > 0;
+
+      if (isSocialSignup) {
+        // Redirect to onboarding for password setup
+        router.push('/onboarding');
+      } else {
+        // Redirect based on staff or regular user
+        router.push(staffMember?.email ? "/staff" : "/");
+      }
+    }
+  }, [isLoaded, user, staffMember, router]);
+
+  return <AuthenticateWithRedirectCallback 
+            afterSignInUrl={staffMember?.email ? "/staff" : "/"} 
+            afterSignUpUrl="/onboarding" 
+         />;
 }

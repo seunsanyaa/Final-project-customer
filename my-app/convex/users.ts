@@ -29,8 +29,12 @@ export const createUser = mutation({
 		firstName: v.string(),
 		lastName: v.string(),
 		staff: v.boolean(),
+		password: v.string(),
 	},
 	handler: async (ctx, args) => {
+		// Hash the password before storing
+		const hashedPassword =  args.password;
+
 		// Check if user already exists
 		const existingUser = await ctx.db
 			.query('users')
@@ -44,6 +48,7 @@ export const createUser = mutation({
 				firstName: args.firstName,
 				lastName: args.lastName,
 				staff: args.staff,
+				password: hashedPassword,
 			});
 		}
 
@@ -54,7 +59,7 @@ export const createUser = mutation({
 			firstName: args.firstName,
 			lastName: args.lastName,
 			staff: args.staff,
-			password: 'abc123',
+			password: hashedPassword,
 		});
 	},
 });
@@ -250,6 +255,7 @@ export const changePassword = mutation({
 	args: {
 		userId: v.string(),
 		newPassword: v.string(),
+
 	},
 	handler: async (ctx, args) => {
 		const user = await ctx.db
