@@ -2,7 +2,7 @@ import Link from "next/link"
 
 export function Footer() {
   return (
-    <footer className="border-t bg-[hsl(var(--footer-bg))] text-[hsl(var(--footer-fg))]">
+    <footer className="border-t bg-primary text-primary-foreground">
       <div className="container mx-auto px-4 py-8 mr-5">
         {/* Main Grid Layout */}
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-3 gap-8 mb-8 mr-0 ml-14">
