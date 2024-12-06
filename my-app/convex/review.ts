@@ -3,7 +3,6 @@ import { mutation, query } from "./_generated/server";
 import { Car } from "../types/car";
 import { Booking } from "../types/booking";
 import { Review } from "../types/review";
-import { Id } from "../convex/_generated/dataModel";
 /**
  * Helper function to update the average rating of a car.
  * @param ctx - The Convex context.
@@ -121,7 +120,7 @@ export const getReviewsByUserId = query({
     // Enrich each review with car details
     const enrichedReviews = await Promise.all(
       reviews.map(async (review: Review) => {
-        const booking = await ctx.db.get(review.bookingId as Id<"bookings">) as Booking;
+        const booking = await ctx.db.get(review.bookingId) as Booking;
         if (booking) {
           const car = await ctx.db
             .query("cars")

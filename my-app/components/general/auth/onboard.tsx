@@ -7,7 +7,6 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
-import { useSignUp } from "@clerk/nextjs";
 
 export default function OnboardComponent() {
   const { user, isLoaded, isSignedIn } = useUser();
@@ -16,9 +15,8 @@ export default function OnboardComponent() {
   const createUser = useMutation(api.users.createUser);
   const createCustomer = useMutation(api.customers.createCustomer);
   const getCustomer = useQuery(api.customers.getCustomerByUserId, { userId: user?.id ?? "" });
-  const { signUp } = useSignUp();
 
-  const [isChecking, setIsChecking] = useState(false);
+  const [isChecking, setIsChecking] = useState(true);
 
   const [formData, setFormData] = useState({
     firstName: "",
@@ -29,8 +27,6 @@ export default function OnboardComponent() {
     licenseNumber: "",
     address: "",
     expirationDate: "",
-    confirmEmail: "",
-    confirmPassword: "",
   });
 
   useEffect(() => {
@@ -66,15 +62,6 @@ export default function OnboardComponent() {
     };
   }, [isLoaded, isSignedIn, getCustomer, router]);
 
-  useEffect(() => {
-    // Check for pending signup data
-    const pendingSignup = sessionStorage.getItem('pendingSignup');
-    if (!pendingSignup) {
-      router.push('/create-account');
-      return;
-    }
-  }, [router]);
-
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData({
       ...formData,
@@ -85,53 +72,21 @@ export default function OnboardComponent() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    const pendingSignup = JSON.parse(sessionStorage.getItem('pendingSignup') || '{}');
-    if (!pendingSignup.email || !pendingSignup.password) {
-      router.push('/create-account');
-      return;
-    }
-
-    if (formData.confirmEmail !== pendingSignup.email) {
-      toast({
-        title: "Error",
-        description: "Email addresses do not match",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    if (formData.confirmPassword !== pendingSignup.password) {
-      toast({
-        title: "Error",
-        description: "Passwords do not match",
-        variant: "destructive",
-      });
-      return;
-    }
+    if (!user) return;
 
     try {
-      // First create the Clerk account
-      const signUpAttempt = await signUp?.create({
-        emailAddress: pendingSignup.email,
-        password: pendingSignup.password,
-      });
-
-      // Prepare email verification
-      await signUp?.prepareEmailAddressVerification({ strategy: "email_code" });
-
-      // Create user in your DB
+      // Create user if not already created
       await createUser({
-        userId: signUpAttempt?.createdUserId || '',
-        email: pendingSignup.email,
+        userId: user.id,
+        email: user.emailAddresses[0].emailAddress,
         firstName: formData.firstName,
         lastName: formData.lastName,
         staff: false,
-        password: pendingSignup.password,
       });
 
       // Create customer record
       await createCustomer({
-        userId: signUpAttempt?.createdUserId || '',
+        userId: user.id,
         nationality: formData.nationality,
         dateOfBirth: formData.dateOfBirth,
         phoneNumber: formData.phoneNumber,
@@ -140,18 +95,12 @@ export default function OnboardComponent() {
         expirationDate: formData.expirationDate,
       });
 
-      // Prepare email verification
-      await signUp?.prepareEmailAddressVerification({ strategy: "email_code" });
-
-      // Clear the pending signup data
-      sessionStorage.removeItem('pendingSignup');
-
       toast({
         title: "Success!",
-        description: "Please verify your email address.",
+        description: "Your profile has been created successfully.",
       });
 
-      router.push("/verify-email");
+      router.push("/vehicles");
     } catch (error) {
       toast({
         title: "Error",
@@ -161,8 +110,8 @@ export default function OnboardComponent() {
     }
   };
 
-  if (!isLoaded) {
-    return <div>Loading...</div>;
+  if (!isLoaded || !isSignedIn || isChecking) {
+    return <div>Loading...</div>; // Or a more sophisticated loading component
   }
 
   if (getCustomer === null) {
@@ -265,30 +214,6 @@ export default function OnboardComponent() {
               onChange={handleChange}
               pattern="\d{2}\.\d{2}\.\d{4}"
               required
-            />
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="confirmEmail">Confirm Email</Label>
-            <Input
-              id="confirmEmail"
-              name="confirmEmail"
-              type="email"
-              required
-              onChange={handleChange}
-              value={formData.confirmEmail}
-            />
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="confirmPassword">Confirm Password</Label>
-            <Input
-              id="confirmPassword"
-              name="confirmPassword"
-              type="password"
-              required
-              onChange={handleChange}
-              value={formData.confirmPassword}
             />
           </div>
 

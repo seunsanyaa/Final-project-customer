@@ -4,7 +4,6 @@ import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import CalendarDaysIcon from "@/svgs/CalendarDaysIcon";
 import { useRouter } from "next/router";
-import Image from "next/image";
 
 import {
   Select,
@@ -22,14 +21,13 @@ import { useQuery } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import { useUser } from "@clerk/nextjs";
 import { useMutation } from "convex/react";
-import { Id } from "../../../convex/_generated/dataModel";
 
 interface PromotionCardProps {
   _id: string;
   title: string;
   description: string;
   endDate: string;
-  type: 'discount' | 'offer' | 'upgrade'|'permenant';
+  type: 'discount' | 'offer' | 'upgrade';
   image: string;
   goldenMembersOnly: boolean;
 }
@@ -43,7 +41,7 @@ const PromotionCard: React.FC<PromotionCardProps> = ({ _id, title, description, 
     userId: user?.id ?? "" 
   });
 
-  const isRedeemed = customerData?.promotions?.includes(_id as Id<"promotions">);
+  const isRedeemed = customerData?.promotions?.includes(_id);
   const isGoldenMember = customerData?.goldenMember ?? false;
 
   const handleRedeem = async () => {
@@ -57,7 +55,7 @@ const PromotionCard: React.FC<PromotionCardProps> = ({ _id, title, description, 
     try {
       await redeemPromo({
         userId: user.id,
-        promotionId: _id as Id<"promotions">, 
+        promotionId: _id,
       });
     } catch (error) {
       console.error('Error redeeming promotion:', error);
@@ -66,7 +64,7 @@ const PromotionCard: React.FC<PromotionCardProps> = ({ _id, title, description, 
 
   return (
     <Card className={isRedeemed ? "opacity-50" : ""}>
-      <Image
+      <img
         src={image || "/placeholder.svg"}
         width={400}
         height={200}
@@ -117,7 +115,7 @@ export function PromotionsPage() {
 
   const filteredPromotions = promotions.filter(promotion => {
     if (filter === "expiring-soon") {
-      return new Date(promotion.promotionEndDate ?? "") < new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
+      return new Date(promotion.promotionEndDate) < new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
     }
     return true;
   });
@@ -135,21 +133,20 @@ export function PromotionsPage() {
               </h2>
               <p className="text-primary-foreground mb-6">
                 New members can save big on their next car rental. Offer ends
-                soon, so don&apos;t miss out!
+                soon, so don't miss out!
               </p>
               <Button size="lg" variant="secondary" className="hover:bg-secondary-foreground hover:text-white transition duration-300">
                 Redeem Offer
               </Button>
             </div>
             <div className="hidden md:block">
-              <Image
+              <img
                 src="/placeholder.svg"
                 width={500}
                 height={300}
                 alt="Featured Promotion"
                 className="object-cover"
                 style={{ aspectRatio: "500/300", objectFit: "cover" }}
-                priority
               />
             </div>
           </div>
@@ -192,8 +189,8 @@ export function PromotionsPage() {
                 _id={promotion._id}
                 title={promotion.promotionTitle}
                 description={promotion.promotionDescription}
-                endDate={promotion.promotionEndDate ?? ""}
-                type={promotion.promotionType }
+                endDate={promotion.promotionEndDate}
+                type={promotion.promotionType}
                 image={promotion.promotionImage}
                 goldenMembersOnly={promotion.goldenMembersOnly}
               />

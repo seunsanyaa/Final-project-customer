@@ -12,7 +12,6 @@ import { useQuery } from 'convex/react';
 import { api } from '../../../convex/_generated/api';
 import { useParams } from 'next/navigation';
 import { Id } from '../../../convex/_generated/dataModel';
-import Link from 'next/link';
 
 export function Payment_Page() {
   const params = useParams();
@@ -123,10 +122,10 @@ function PaymentForm({
 
   const paymentSession = useQuery(api.payment.getPaymentSession, { sessionId });
   const booking = useQuery(api.bookings.getBooking, { 
-    id: paymentSession?.bookingId as Id<"bookings">
+    id: paymentSession?.bookingId 
   });
   const car = useQuery(api.car.getCar, { 
-    registrationNumber: booking?.carId as string
+    registrationNumber: booking?.carId 
   });
 
   const rentalDuration = booking ? 
@@ -198,7 +197,7 @@ function PaymentForm({
                   onChange={(e) => setAgreedToTerms(e.target.checked)}
                 />
                 <label htmlFor="terms" className="text-sm">
-                  I agree to the <Link href="/terms" className="text-primary">terms and conditions</Link>.
+                  I agree to the <a href="/terms" className="text-primary">terms and conditions</a>.
                 </label>
               </div>
               {errorMessage && (
@@ -224,7 +223,7 @@ function PaymentForm({
                   <CarIcon className="w-12 h-12 text-primary" />
                   <div>
                     <h3 className="text-lg font-semibold">
-                      {car && typeof car !== 'string' ? `${car.maker} ${car.model} ${car.year}` : 'Loading...'}
+                      {car ? `${car.maker} ${car.model} ${car.year}` : 'Loading...'}
                     </h3>
                     <p className="text-muted-foreground">
                       {rentalDuration} {rentalDuration === 1 ? 'Day' : 'Days'} Rental

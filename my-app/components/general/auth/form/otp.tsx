@@ -125,13 +125,13 @@ export function OTPForm({
       
           className="relative mt-4 w-full space-y-6  border-t pt-2"
           style={
-            router.pathname === "/Login" ||
+            router.pathname === "/login" ||
             router.pathname === "/create-account"
               ? {}
               : { borderTop: "none" }
           }
         >
-          {router.pathname === "/Login" ||
+          {router.pathname === "/login" ||
           router.pathname === "/create-account" ? (
             <div
               className="absolute left-0 right-0 flex justify-center "

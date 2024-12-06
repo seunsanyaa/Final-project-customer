@@ -86,7 +86,6 @@ export function NewBooking3() {
     const regularPromotions = promotions.filter(promo => {
       if (promo.promotionType !== 'discount') return false;
       if (promo.target === 'all') return true;
-      if (typeof carDetails === 'string') return false;
       return promo.specificTarget.some(target => 
         target === carDetails._id || 
         (carDetails.categories && carDetails.categories.includes(target))
@@ -95,7 +94,7 @@ export function NewBooking3() {
 
     const permanentPromotions = userPromotions
       .filter(promo => 
-        promo && !promo.isUsed && 
+        !promo.isUsed && 
         promo.promotionType === 'permenant'
       );
     
@@ -220,7 +219,7 @@ export function NewBooking3() {
       // If promotion is selected, mark it as used
       if (selectedPromotion) {
         await markPromotionAsUsed({
-          promotionId: selectedPromotion as Id<"promotions">,
+          promotionId: selectedPromotion,
           userId: user.id,
         });
       }
@@ -260,24 +259,20 @@ export function NewBooking3() {
         <h2 className="text-2xl font-semibold mb-4">Available Discounts</h2>
         <div className="grid gap-4 md:grid-cols-2">
           {applicablePromotions.map((promo) => {
-            const isUserPromo = userPromotions?.some(up => up && promo && up._id === promo._id);
+            const isUserPromo = userPromotions?.some(up => up._id === promo._id);
             
             return (
               <Card 
-                key={promo?._id} 
+                key={promo._id} 
                 className={`cursor-pointer ${
-                  selectedPromotion === promo?._id ? 'border-2 border-blue-500' : ''
+                  selectedPromotion === promo._id ? 'border-2 border-blue-500' : ''
                 }`}
-                onClick={() => setSelectedPromotion(
-                  promo?._id ? 
-                  (promo._id === selectedPromotion ? null : promo._id.toString()) 
-                  : null
-                )}
+                onClick={() => setSelectedPromotion(promo._id === selectedPromotion ? null : promo._id)}
               >
                 <CardContent className="p-6">
-                  <h3 className="text-lg font-semibold">{promo?.promotionTitle}</h3>
-                  <p className="text-muted-foreground">{promo?.promotionDescription}</p>
-                  <p className="text-lg font-bold mt-2">{promo?.promotionValue}% OFF</p>
+                  <h3 className="text-lg font-semibold">{promo.promotionTitle}</h3>
+                  <p className="text-muted-foreground">{promo.promotionDescription}</p>
+                  <p className="text-lg font-bold mt-2">{promo.promotionValue}% OFF</p>
                   {isUserPromo && (
                     <p className="text-sm text-blue-600 mt-1">Your Redeemed Promotion</p>
                   )}

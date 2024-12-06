@@ -3,7 +3,6 @@ import Stripe from 'stripe';
 import { buffer } from 'micro';
 import { ConvexHttpClient } from 'convex/browser';
 import { api } from '../../../convex/_generated/api';
-import { Id } from '../../../convex/_generated/dataModel';
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
   apiVersion: '2024-10-28.acacia',
@@ -37,8 +36,7 @@ export default async function handler(
       event = stripe.webhooks.constructEvent(buf, sig, webhookSecret);
     } catch (err) {
       console.error('Webhook signature verification failed:', err);
-      const errorMessage = err instanceof Error ? err.message : 'Unknown error';
-      return res.status(400).send(`Webhook Error: ${errorMessage}`);
+      return res.status(400).send(`Webhook Error: ${err.message}`);
     }
 
     // Handle the event
@@ -49,17 +47,12 @@ export default async function handler(
       try {
         // Get payment session
         const session = await convex.query(api.payment.getPaymentSession, { 
-          sessionId: sessionId as Id<"paymentSessions">
+          sessionId 
         });
 
         if (!session) {
           throw new Error('Payment session not found');
         }
-
-        // Fetch the booking details using the bookingId
-        const booking = await convex.query(api.bookings.getBooking, {
-          id: session.bookingId as Id<"bookings">
-        });
 
         // Create payment record
         await convex.mutation(api.payment.createPayment, {
@@ -71,29 +64,29 @@ export default async function handler(
         });
 
         // Update booking status
-        const newPaidAmount = (booking?.paidAmount || 0) + session.paidAmount;
-        let newStatus = booking?.status || 'pending';
+        const newPaidAmount = (session.booking.paidAmount || 0) + session.paidAmount;
+        let newStatus = session.booking.status || 'pending';
 
         if (newStatus === 'pending') {
           newStatus = 'inprogress';
-        } else if (newPaidAmount >= (booking?.totalCost || 0)) {
+        } else if (newPaidAmount >= (session.booking.totalCost || 0)) {
           newStatus = 'completed';
         }
 
         await convex.mutation(api.bookings.updateBooking, {
-          id: session.bookingId as Id<"bookings">,
+          id: session.booking._id,
           status: newStatus,
           paidAmount: Math.ceil(newPaidAmount * 100) / 100,
         });
 
         // Mark session as completed and delete it
         await convex.mutation(api.payment.updatePaymentSessionStatus, {
-          sessionId: sessionId as Id<"paymentSessions">,
+          sessionId,
           status: 'completed',
         });
 
         await convex.mutation(api.payment.deletePaymentSession, {
-          sessionId: sessionId as Id<"paymentSessions">,
+          sessionId,
         });
       } catch (error) {
         console.error('Error processing webhook:', error);

@@ -19,19 +19,11 @@ import {
 import { api } from "@/convex/_generated/api";
 import { Footer } from "../head/footer";
 import { Navi } from "../head/navi";
-import dynamic from 'next/dynamic';
-import loadingAnimation from "@/public/animations/loadingAnimation.json";
-import { LottieRefCurrentProps } from "lottie-react";
-import axios from 'axios'; // Add this import
-
-// Add dynamic import for Lottie
-const Lottie = dynamic(() => import('lottie-react'), {
-  ssr: false,
-});
+import Lottie, { LottieRefCurrentProps } from "lottie-react";
+import loadingAnimation from "@/public/animations/loadingAnimation.json"; // Import your animation
 
 export default function AllVehicles() {
   const [showAdvanced, setShowAdvanced] = useState(false);
-  const [selectedCategory, setSelectedCategory] = useState<string>("");
 
   // Declare all state variables first
   const [searchParams, setSearchParams] = useState({
@@ -63,9 +55,6 @@ export default function AllVehicles() {
 
   // Then use them in the query
   const cars = useQuery(api.car.getFilteredCars, searchParams);
-  const carsByCategory = useQuery(api.car.getCarsByCategory, {
-    category: selectedCategory,
-  });
 
   const lottieRef = useRef<LottieRefCurrentProps>(null);
 
@@ -93,68 +82,26 @@ export default function AllVehicles() {
     });
   };
 
-  // Add new state variables for AI chat
-  const [customerQuery, setCustomerQuery] = useState("");
-  const [aiResponse, setAiResponse] = useState("");
-  const [isLoading, setIsLoading] = useState(false);
+  // if (!cars) {
+  //   return (
+  //     <div className="flex items-center justify-center h-screen">
+  //       <Lottie
+  //         lottieRef={lottieRef}
+  //         animationData={loadingAnimation}
+  //         loop={true}
+  //         className="w-48 h-48"
+  //       />
+  //     </div>
+  //   );
+  // }
 
-  // Add AI query handler
-  const handleAiQuery = async () => {
-    if (!customerQuery.trim()) return;
-    
-    setIsLoading(true);
-    try {
-      const response = await fetch('/api/chat', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Accept': 'application/json',
-        },
-        body: JSON.stringify({
-          query: customerQuery
-        })
-      });
-      
-      // Check if the response is JSON
-      const contentType = response.headers.get("content-type");
-      if (!contentType || !contentType.includes("application/json")) {
-        throw new Error("Response is not JSON");
-      }
+  // Change bodyType state to category
+  const [selectedCategory, setSelectedCategory] = useState<string>("");
 
-      const data = await response.json();
-      console.log('Received response data:', data);
-
-      if (data.error) {
-        throw new Error(data.error);
-      }
-
-      setAiResponse(data.response || 'No response received');
-    } catch (error: any) {
-      console.error('Detailed error:', error);
-      try {
-        const responseText = await response?.text();
-        console.error('Raw response:', responseText);
-      } catch (e) {
-        console.error('Could not get response text:', e);
-      }
-      setAiResponse("I apologize, but I'm having trouble connecting right now. Please try again in a moment.");
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  if (!cars) {
-    return (
-      <div className="flex items-center justify-center h-screen">
-        <Lottie
-          lottieRef={lottieRef}
-          animationData={loadingAnimation}
-          loop={true}
-          className="w-48 h-48"
-        />
-      </div>
-    );
-  }
+  // Change query to use categories instead of body type
+  const carsByCategory = useQuery(api.car.getCarsByCategory, {
+    category: selectedCategory,
+  });
 
   // Update the displayed cars logic
   const displayedCars = selectedCategory === "all" ? cars : carsByCategory;
@@ -310,54 +257,6 @@ export default function AllVehicles() {
                   </div>
                 </div>
               )}
-            </div>
-          </div>
-          <div className="w-full max-w-3xl mx-auto mb-8">
-            <div className="bg-card rounded-lg shadow-xl p-6">
-              <div className="flex flex-col space-y-4">
-                <h2 className="text-2xl font-bold">Chat with our Car Assistant</h2>
-                
-                {/* Chat history display */}
-                {aiResponse && (
-                  <div className="bg-muted rounded-lg p-4 max-h-48 overflow-y-auto">
-                    <div className="space-y-2">
-                      <div className="bg-primary/10 rounded p-2">
-                        <p className="text-sm font-semibold">You asked:</p>
-                        <p className="text-sm">{customerQuery}</p>
-                      </div>
-                      <div className="bg-secondary/10 rounded p-2">
-                        <p className="text-sm font-semibold">AI Assistant:</p>
-                        <p className="text-sm whitespace-pre-wrap">{aiResponse}</p>
-                      </div>
-                    </div>
-                  </div>
-                )}
-
-                {/* Input area */}
-                <div className="flex gap-2">
-                  <Input
-                    placeholder="Ask me anything about cars..."
-                    value={customerQuery}
-                    onChange={(e) => setCustomerQuery(e.target.value)}
-                    onKeyPress={(e) => e.key === 'Enter' && handleAiQuery()}
-                    className="flex-1"
-                  />
-                  <Button 
-                    onClick={handleAiQuery}
-                    disabled={isLoading}
-                    className="hover:bg-blue-500 hover:shadow-lg transition-all duration-300"
-                  >
-                    {isLoading ? (
-                      <div className="flex items-center gap-2">
-                        <span className="animate-spin">⌛</span>
-                        <span>Thinking...</span>
-                      </div>
-                    ) : (
-                      "Ask AI"
-                    )}
-                  </Button>
-                </div>
-              </div>
             </div>
           </div>
           <section className="relative w-full h-auto overflow-hidden bg-gradient-to-b from-gray-200 to-white">

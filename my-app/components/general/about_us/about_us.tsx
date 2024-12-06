@@ -7,7 +7,7 @@ import { CheckIcon } from "@radix-ui/react-icons";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import dynamic from 'next/dynamic';
-import Image from "next/image";
+
 const MapComponent = dynamic(
   () => import('@/components/ui/map'),
   { ssr: false }
@@ -51,7 +51,7 @@ export function AboutUs() {
                   Welcome to our innovative car rental platform, where convenience meets reliability. Our journey began with a simple yet powerful vision: to revolutionize the car rental experience by making it more accessible, transparent, and user-friendly than ever before.
                 </p>
                 <p>
-                  Our system is thoughtfully designed to streamline the entire rental process, ensuring seamless interactions and transactions for our valued customers. We&apos;ve created an intuitive platform that not only simplifies the booking process but also provides comprehensive management tools for our team.
+                  Our system is thoughtfully designed to streamline the entire rental process, ensuring seamless interactions and transactions for our valued customers. We've created an intuitive platform that not only simplifies the booking process but also provides comprehensive management tools for our team.
                 </p>
                 <p>
                   What sets us apart is our dedication to both customer satisfaction and operational excellence. Our platform features detailed analytical reporting and management tools, enabling data-driven decisions that continuously improve our service quality.
@@ -76,7 +76,7 @@ export function AboutUs() {
                     At Renta, we believe that mobility should be accessible to everyone. Our commitment to inclusive service has driven us to develop one of the most comprehensive accessible vehicle fleets in the industry.
                   </p>
                   <p>
-                    Our accessible vehicles are thoughtfully equipped with features designed to accommodate various needs, from wheelchair accessibility to specialized controls. We understand that each customer&apos;s requirements are unique, which is why we offer a diverse range of vehicles and customization options.
+                    Our accessible vehicles are thoughtfully equipped with features designed to accommodate various needs, from wheelchair accessibility to specialized controls. We understand that each customer's requirements are unique, which is why we offer a diverse range of vehicles and customization options.
                   </p>
                   <Link href="/accessibility">
                     <Button className="bg-blue-500 text-white hover:bg-blue-600 mt-4">
@@ -85,7 +85,7 @@ export function AboutUs() {
                   </Link>
                 </div>
                 <div className="flex-1">
-                  <Image
+                  <img
                     src="https://res.cloudinary.com/dbsxjsktb/image/upload/v1730212805/Honda_Odyssey4_odbyjm.jpg"
                     alt="Accessible Vehicle"
                     className="rounded-lg shadow-xl w-full"
@@ -107,9 +107,9 @@ export function AboutUs() {
               </h2>
               <div className="flex flex-col md:flex-row gap-8 items-center">
                 <div className="flex-1">
-                  <Image
-                    src="https://res.cloudinary.com/dbsxjsktb/image/upload/v1732833992/BMW_4_Series_LE_upscale_balanced_x4-removebg-preview_pl3neq.png"
-                    alt="Luxury Vehicle"
+                  <img
+              src="https://res.cloudinary.com/dbsxjsktb/image/upload/v1732833992/BMW_4_Series_LE_upscale_balanced_x4-removebg-preview_pl3neq.png"
+              alt="Luxury Vehicle"
                     className="rounded-lg shadow-xl w-full"
                   />
                 </div>

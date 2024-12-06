@@ -5,7 +5,7 @@ import { api } from '@/convex/_generated/api';
 import { ChevronUp, ChevronDown, Star } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/card";
 import { Textarea } from "@/components/ui/textarea";
-import { Id } from '../../../convex/_generated/dataModel'
+
 type BookingWithCarDetails = {
   _id: string;
   customerId: string;
@@ -52,7 +52,7 @@ const PreviousBookings: React.FC<{ customerId: string }> = ({ customerId }) => {
     setError(null);
     try {
       await createReview({
-        bookingId: bookingId as   Id<'bookings'>,
+        bookingId: bookingId as Id<'bookings'>,
         rating: newRating,
         userId: customerId,
         comment: newReview,
@@ -95,8 +95,8 @@ const PreviousBookings: React.FC<{ customerId: string }> = ({ customerId }) => {
                 <CardContent>
                   <p><strong>Total Cost:</strong> ${booking.totalCost.toFixed(2)}</p>
                   <p><strong>Status:</strong> {booking.status}</p>
-                  {booking.reviewId ? (
-                    <p className="text-green-600">You&apos;ve already reviewed this booking.</p>
+                  {booking.reviewed ? (
+                    <p className="text-green-600">You've already reviewed this booking.</p>
                   ) : (
                     <Button onClick={() => handleExpandBooking(booking._id)}>
                       Leave a Review

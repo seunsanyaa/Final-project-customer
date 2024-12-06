@@ -12,8 +12,6 @@ import { getReviewsByUserId, createReview } from '../../../convex/review'
 import PreviousBookings from './PreviousBookings'
 import { api } from '@/convex/_generated/api'
 import { Dialog, DialogContent } from "@/components/ui/dialog"
-import Image from "next/image";
-import { Id } from '../../../convex/_generated/dataModel'
 
 type Review = {
   _id: string;
@@ -72,7 +70,7 @@ export default function MainPage({ userId }: MainPageProps) {
 
     try {
       const reviewId = await createReviewMutation({
-        bookingId: bookingId as Id<"bookings">,
+        bookingId,
         rating: newRating,
         userId,
         comment: newReview,
@@ -105,17 +103,15 @@ export default function MainPage({ userId }: MainPageProps) {
             {userReviews.map((review) => (
               <Card 
                 key={review._id} 
-                className="w-full mx-auto mt-1 rounded-lg p-1 bg-white shadow-xl"
-                style={{ border: "none" }}
+                // className="overflow-hidden cursor-pointer hover:shadow-lg transition-shadow"
+                className="w-full mx-auto mt-1 rounded-lg p-1 bg-white shadow-xl" style={{ border: "none" }}
                 onClick={() => handleReviewClick(review)}
               >
                 <CardHeader className="p-0">
                   {review.carDetails?.pictures ? (
-                    <Image 
+                    <img 
                       src={review.carDetails.pictures[0]} 
                       alt={`${review.carDetails.maker} ${review.carDetails.model}`} 
-                      width={400}
-                      height={300}
                       className="w-full h-48 object-cover" 
                     />
                   ) : (
@@ -180,13 +176,10 @@ export default function MainPage({ userId }: MainPageProps) {
               {/* Car Image */}
               <div className="w-full h-64 overflow-hidden rounded-t-lg">
                 {selectedReview.carDetails?.pictures ? (
-                  <Image 
+                  <img 
                     src={selectedReview.carDetails.pictures[0]} 
                     alt={`${selectedReview.carDetails.maker} ${selectedReview.carDetails.model}`} 
-                    width={800}
-                    height={400}
-                    className="w-full h-full object-cover"
-                    priority 
+                    className="w-full h-full object-cover" 
                   />
                 ) : (
                   <div className="w-full h-full bg-muted flex items-center justify-center">

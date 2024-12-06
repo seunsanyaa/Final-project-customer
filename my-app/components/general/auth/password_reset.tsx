@@ -43,9 +43,10 @@ export default function ResetComponent() {
             Reset Password
           </h2>
           <p className="paragraph-muted pb-4 text-base font-normal">
-            Enter your user account&apos;s verified email address and we will send you a password reset link.
+            Enter your user account's verified email address and we will send you a password reset link.
           </p>
-          <ResetForm func={handleEmail} />
+          {/* Render ResetForm only if email hasn't been sent */}
+          <ResetForm func={handleEmail} />gtbbbt
         </>
       )}
     </div>

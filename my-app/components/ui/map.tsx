@@ -1,5 +1,5 @@
 'use client'
-import React, { useEffect, useState, useMemo } from 'react';
+import React, { useEffect, useState } from 'react';
 import { MapContainer, TileLayer, Marker, Popup, useMap } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
 import L from 'leaflet';
@@ -81,11 +81,7 @@ const icons = {
 // RecenterControl Component
 const RecenterControl: React.FC<{ position: [number, number] | null }> = ({ position }) => {
   const map = useMap();
-  
-  const nicosiaLocation = useMemo<[number, number]>(() => 
-    [35.190103, 33.362347], 
-    []
-  );
+  const nicosiaLocation: [number, number] = [35.190103, 33.362347]; // Nicosia office coordinates
 
   useEffect(() => {
     const recenterControl = L.Control.extend({
@@ -108,7 +104,7 @@ const RecenterControl: React.FC<{ position: [number, number] | null }> = ({ posi
 
         L.DomEvent.on(button, 'click', function (e) {
           e.preventDefault();
-          map.setView(nicosiaLocation, 13);
+          map.setView(nicosiaLocation, 13); // Zoom level set to 13
         });
 
         return container;
@@ -121,7 +117,7 @@ const RecenterControl: React.FC<{ position: [number, number] | null }> = ({ posi
     return () => {
       map.removeControl(control);
     };
-  }, [map, nicosiaLocation]);
+  }, [map]);
 
   return null;
 };

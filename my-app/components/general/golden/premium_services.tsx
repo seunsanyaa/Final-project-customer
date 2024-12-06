@@ -4,7 +4,6 @@ import Link from 'next/link';
 import { Button } from "@/components/ui/button"
 import { Navi } from '../head/navi';
 import { Footer } from '../head/footer';
-import Image from "next/image";
 
 export function PremiumServices() {
   const ref3 = React.useRef(null);
@@ -33,13 +32,10 @@ export function PremiumServices() {
                   <li>Priority vehicle preparation and delivery</li>
                 </ul>
               </div>
-              <Image
+              <img
                 src="https://res.cloudinary.com/dbsxjsktb/image/upload/v1730212805/chauffeur_service.jpg"
                 alt="Chauffeur Service"
-                width={500}
-                height={400}
                 className="w-[500px] h-[400px] object-cover rounded-lg"
-                priority
               />
             </section>
           </div>
@@ -48,11 +44,9 @@ export function PremiumServices() {
           <section ref={ref3} className={`relative w-full h-auto overflow-hidden bg-gradient-to-b from-gray-200 to-white mb-8 p-6 rounded-lg shadow-lg ${
             inView3 ? 'animate-fadeInUp' : "opacity-0"}`}>
             <div className="flex justify-between items-center">
-              <Image
+              <img
                 src="https://res.cloudinary.com/dbsxjsktb/image/upload/v1730212805/rewards_program.jpg"
                 alt="Rewards Program"
-                width={500}
-                height={400}
                 className="w-[500px] h-[400px] object-cover rounded-lg"
               />
               <div className="text-right ml-8">

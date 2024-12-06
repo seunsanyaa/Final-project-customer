@@ -1,5 +1,5 @@
-import { GoldenLanding } from "@/components/general/golden/golden_landing";
+import { Goldhome } from "@/components/general/golden/goldhome";
 
-export default function GoldenPage() {
-  return <GoldenLanding />
+export default function cardetails() {
+  return <Goldhome/>
 }

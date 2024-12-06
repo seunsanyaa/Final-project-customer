@@ -86,14 +86,13 @@ export function Carinfo() {
             </div>
 
             <div className="grid gap-2">
-              <Image
+              <img
                 src={car.pictures[0] || ""}
                 alt={`Exterior view of the ${car.model || "Lorem ipsum"}`}
                 width={1500}
                 height={800}
                 className="rounded-lg object-cover w-full"
                 style={{ aspectRatio: "16/10", objectFit: "cover" }}
-                priority
               />
             </div>
           </div>

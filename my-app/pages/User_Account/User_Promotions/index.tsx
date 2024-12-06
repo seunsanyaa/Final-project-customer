@@ -8,7 +8,6 @@ import { useQuery, useMutation } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import { useUser } from "@clerk/nextjs";
 import { Badge } from "@/components/ui/badge";
-import { Id } from "../../../convex/_generated/dataModel";
 
 export default function UserPromotions() {
   const { user } = useUser();
@@ -31,7 +30,7 @@ export default function UserPromotions() {
     return Math.ceil(total * 100) / 100; // Round up to 2 decimal places
   }, [bookings]);
 
-  const handleClaimReward = async (promotionId: Id<"promotions">) => {
+  const handleClaimReward = async (promotionId: string) => {
     if (!user?.id) return;
     try {
       await redeemPromo({
@@ -48,7 +47,7 @@ export default function UserPromotions() {
     try {
       await deactivatePromo({
         userId: user.id,
-        promotionId: promotionId as Id<"promotions">,
+        promotionId,
       });
     } catch (error) {
       console.error('Error deactivating promotion:', error);
@@ -70,8 +69,8 @@ export default function UserPromotions() {
   }, [permanentPromotions, bookings]);
 
   // Check if a promotion is active
-  const isPromotionActive = (promotionId: Id<"promotions">) => {
-    return userRedeemedPromotions?.some(promo => promo?._id === promotionId) ?? false;
+  const isPromotionActive = (promotionId: string) => {
+    return userRedeemedPromotions?.some(promo => promo._id === promotionId) ?? false;
   };
 
   return (
@@ -150,7 +149,7 @@ export default function UserPromotions() {
                               />
                             </div>
                             <p className="text-sm text-muted-foreground mt-2">
-                              ${Math.max(0, Math.ceil(((promotion.minimumMoneySpent ?? 0) - totalMoneySpent) * 100) / 100)} more to unlock
+                              ${Math.max(0, Math.ceil((promotion.minimumMoneySpent - totalMoneySpent) * 100) / 100)} more to unlock
                             </p>
                           </div>
                         ) : (
@@ -191,10 +190,10 @@ export default function UserPromotions() {
                           <div className="flex justify-center">
                             <Button
                               className="px-6 py-3 text-sm font-semibold text-white bg-blue-600 hover:bg-blue-500 rounded-lg transition-colors hover:bg-muted shadow-2xl"
-                              disabled={Boolean(
+                              disabled={
                                 (promotion.minimumMoneySpent && promotion.minimumMoneySpent > 0 && totalMoneySpent < promotion.minimumMoneySpent) || 
                                 (promotion.minimumRentals && promotion.minimumRentals > 0 && (bookings?.length || 0) < promotion.minimumRentals)
-                              )}
+                              }
                               onClick={() => handleClaimReward(promotion._id)}
                             >
                               {((!promotion.minimumMoneySpent || totalMoneySpent >= promotion.minimumMoneySpent) && 
@@ -210,27 +209,34 @@ export default function UserPromotions() {
                 ))}
 
                 {/* Active Benefits Section */}
-                {userRedeemedPromotions?.filter(promotion => promotion !== null).map((promotion) => (
-                  <Card key={promotion._id} className="bg-gray-50">
-                    <CardContent className="p-4">
-                      <div className="flex justify-between items-start">
-                        <div>
-                          <h4 className="font-semibold">{promotion.promotionTitle}</h4>
-                          <p className="text-sm text-muted-foreground">{promotion.promotionDescription}</p>
-                          <Badge className="mt-2">Active</Badge>
-                        </div>
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          className="text-red-500 hover:text-red-700"
-                          onClick={() => handleDeactivate(promotion._id)}
-                        >
-                          Deactivate
-                        </Button>
-                      </div>
-                    </CardContent>
-                  </Card>
-                ))}
+                {userRedeemedPromotions && userRedeemedPromotions.length > 0 && (
+                  <div className="mt-8">
+                    <h3 className="text-xl font-semibold mb-4">Your Active Benefits</h3>
+                    <div className="grid gap-4">
+                      {userRedeemedPromotions.map((promotion) => (
+                        <Card key={promotion._id} className="bg-gray-50">
+                          <CardContent className="p-4">
+                            <div className="flex justify-between items-start">
+                              <div>
+                                <h4 className="font-semibold">{promotion.promotionTitle}</h4>
+                                <p className="text-sm text-muted-foreground">{promotion.promotionDescription}</p>
+                                <Badge className="mt-2">Active</Badge>
+                              </div>
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                className="text-red-500 hover:text-red-700"
+                                onClick={() => handleDeactivate(promotion._id)}
+                              >
+                                Deactivate
+                              </Button>
+                            </div>
+                          </CardContent>
+                        </Card>
+                      ))}
+                    </div>
+                  </div>
+                )}
               </CardContent>
             </Card>
           </div>

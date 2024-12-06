@@ -305,7 +305,7 @@ export const completeSubscriptionPayment = mutation({
 		});
 
 		// Create subscription
-		const subscriptionId = await ctx.db.insert('subscriptions', {
+		const { subscriptionId } = await ctx.db.insert('subscriptions', {
 			userId: args.userId,
 			plan: args.plan,
 			status: 'active',
@@ -318,23 +318,5 @@ export const completeSubscriptionPayment = mutation({
 		});
 
 		return { subscriptionId };
-	},
-});
-
-export const deletePaymentSession = mutation({
-	args: {
-		sessionId: v.id('paymentSessions'),
-	},
-	handler: async (ctx, args) => {
-		// Check if the session exists
-		const session = await ctx.db.get(args.sessionId);
-		if (!session) {
-			throw new Error("Payment session not found");
-		}
-
-		// Delete the session
-		await ctx.db.delete(args.sessionId);
-
-		return { status: 'success' };
 	},
 });

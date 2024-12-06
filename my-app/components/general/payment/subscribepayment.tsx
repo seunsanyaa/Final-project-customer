@@ -1,13 +1,12 @@
 import { useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { PaymentElement, Elements, useStripe, useElements } from "@stripe/react-stripe-js";
+import { PaymentElement, Elements } from "@stripe/react-stripe-js";
 import { loadStripe } from "@stripe/stripe-js";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Navi } from "@/components/general/head/navi";
 import { Footer } from "@/components/general/head/footer";
 import { Loader2 } from "lucide-react";
-import { Id } from "../../../convex/_generated/dataModel";
 
 const stripePromise = loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY!);
 
@@ -15,11 +14,8 @@ export default function SubscriptionPayment() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const planId = searchParams?.get('plan');
-  const sessionId = searchParams?.get('sessionId');
   const [clientSecret, setClientSecret] = useState("");
   const [isLoading, setIsLoading] = useState(true);
-  const stripe = useStripe();
-  const elements = useElements();
 
   const plans = {
     silver_elite: {
@@ -47,7 +43,7 @@ export default function SubscriptionPayment() {
             'Content-Type': 'application/json',
           },
           body: JSON.stringify({
-            sessionId: sessionId as Id<"paymentSessions">,
+            sessionId: router.query.sessionId,
           }),
         });
         const data = await response.json();
@@ -59,10 +55,10 @@ export default function SubscriptionPayment() {
       }
     };
 
-    if (sessionId) {
+    if (router.query.sessionId) {
       fetchClientSecret();
     }
-  }, [sessionId]);
+  }, [router.query.sessionId]);
 
   if (isLoading || !selectedPlan) {
     return (
@@ -101,10 +97,6 @@ export default function SubscriptionPayment() {
                   <Button 
                     className="w-full mt-6"
                     onClick={() => {
-                      if (!stripe || !elements) {
-                        // Stripe.js has not yet loaded.
-                        return;
-                      }
                       stripe.confirmPayment({
                         elements,
                         confirmParams: {
