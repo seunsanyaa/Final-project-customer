@@ -1,5 +1,5 @@
 'use client'
-import { useState, useEffect } from "react"
+import { useState, useEffect, useCallback } from "react"
 import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem } from "@/components/ui/dropdown-menu"
 import ChevronDownIcon from '@/svgs/ChevronDownIcon'
 import FlagIcon from '@/svgs/FlagIcon'
@@ -55,13 +55,40 @@ export const Translate = () => {
     }
   }, [userSettings, user?.id]);
 
+  const initializeGoogleTranslate = useCallback(() => {
+    removeGoogleTranslate();
+
+    // Set the cookie for Turkish translation
+    document.cookie = 'googtrans=/en/tr';
+    document.cookie = `googtrans=/en/tr;domain=.${window.location.hostname}`;
+    document.cookie = `googtrans=/en/tr;domain=${window.location.hostname}`;
+
+    // Create and add the script
+    const script = document.createElement('script');
+    script.src = '//translate.google.com/translate_a/element.js?cb=googleTranslateElementInit';
+    script.async = true;
+
+    // Define the initialization function
+    window.googleTranslateElementInit = function() {
+      new window.google.translate.TranslateElement({
+        pageLanguage: 'en',
+        includedLanguages: 'tr',
+        autoDisplay: false,
+        layout: window.google.translate.TranslateElement.InlineLayout.NO_IFRAME
+      });
+    };
+
+    // Add script to document
+    document.head.appendChild(script);
+  }, []);
+
   useEffect(() => {
     if (localSettings.language === 'turkish') {
       initializeGoogleTranslate();
     } else {
       removeGoogleTranslate();
     }
-  }, [localSettings.language]);
+  }, [localSettings.language, initializeGoogleTranslate]);
 
   const updateSettings = async (newSettings: Partial<UserSettings>) => {
     const updatedSettings = { ...localSettings, ...newSettings };
@@ -113,33 +140,6 @@ export const Translate = () => {
 
     // Reload the page for both languages
     window.location.reload();
-  };
-
-  const initializeGoogleTranslate = () => {
-    removeGoogleTranslate();
-
-    // Set the cookie for Turkish translation
-    document.cookie = 'googtrans=/en/tr';
-    document.cookie = `googtrans=/en/tr;domain=.${window.location.hostname}`;
-    document.cookie = `googtrans=/en/tr;domain=${window.location.hostname}`;
-
-    // Create and add the script
-    const script = document.createElement('script');
-    script.src = '//translate.google.com/translate_a/element.js?cb=googleTranslateElementInit';
-    script.async = true;
-
-    // Define the initialization function
-    window.googleTranslateElementInit = function() {
-      new window.google.translate.TranslateElement({
-        pageLanguage: 'en',
-        includedLanguages: 'tr',
-        autoDisplay: false,
-        layout: window.google.translate.TranslateElement.InlineLayout.NO_IFRAME
-      });
-    };
-
-    // Add script to document
-    document.head.appendChild(script);
   };
 
   const removeGoogleTranslate = () => {

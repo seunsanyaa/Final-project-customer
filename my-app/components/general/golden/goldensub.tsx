@@ -70,12 +70,6 @@ export const GoldenSubscribe = () => {
         throw new Error('Invalid plan selected');
       }
 
-      console.log('Creating payment session with details:', {
-        planId,
-        price: selectedPlanDetails.price,
-        userId: user.id
-      });
-
       // Create payment session
       const result = await initializePaymentSession({
         paidAmount: 0,
@@ -84,22 +78,12 @@ export const GoldenSubscribe = () => {
         totalAmount: selectedPlanDetails.price,
         isSubscription: true,
         subscriptionPlan: planId
-      }).catch(error => {
-        console.error('Payment session creation failed:', error);
-        throw new Error(`Payment session creation failed: ${error.message}`);
       });
 
-      console.log('Payment session creation result:', result);
-
-      // Check for either sessionId or _id
       const sessionId = result?.sessionId;
-      
       if (!sessionId) {
-        console.error('Invalid payment session result:', result);
         throw new Error('Failed to create payment session: No session ID returned');
       }
-
-      console.log('Using session ID:', sessionId);
 
       // Create Stripe subscription
       const response = await fetch('/api/subscription-creation', {
@@ -118,22 +102,14 @@ export const GoldenSubscribe = () => {
       }
 
       const { clientSecret } = await response.json();
-
       if (!clientSecret) {
         throw new Error('No client secret received');
       }
 
-      console.log('Redirecting with params:', {
-        planId,
-        sessionId,
-        clientSecret: clientSecret ? '[PRESENT]' : '[MISSING]'
-      });
-
       router.push(`/Golden/subscribe/payment?plan=${planId}&sessionId=${sessionId}&clientSecret=${clientSecret}`);
     } catch (error: any) {
       console.error('Subscription initialization failed:', error);
-      // You might want to show this error to the user
-      // setError(error.message);
+      // Consider adding error state and displaying to user
     } finally {
       setIsLoading(false);
     }
@@ -159,9 +135,13 @@ export const GoldenSubscribe = () => {
 
         <div className="grid md:grid-cols-3 gap-8 mb-8">
           {plans.map((plan) => (
-            <Card key={plan.id} className={`relative overflow-hidden transition-all duration-300 ${
-              selectedPlan === plan.id ? 'ring-2 ring-primary' : ''
-            }`}>
+            <Card 
+              key={plan.id} 
+              className={`relative flex flex-col items-center justify-center p-0 transition-all duration-300 transform hover:scale-105 hover:shadow-2xl bg-card hover:bg-gradient-to-r from-blue-500 to-green-500 border-none hover:z-50 ${
+                selectedPlan === plan.id ? 'ring-2 ring-primary' : ''
+              }`}
+              style={{ border: "none" }}
+            >
               <CardHeader>
                 <CardTitle className="text-2xl font-bold">{plan.name}</CardTitle>
                 <p className="text-3xl font-bold">${plan.price}<span className="text-sm">/month</span></p>
@@ -175,16 +155,18 @@ export const GoldenSubscribe = () => {
                     </li>
                   ))}
                 </ul>
-                <Button
-                  className="w-full"
-                  onClick={() => handleSubscribe(plan.id)}
-                  disabled={isLoading}
-                >
-                  {isLoading && selectedPlan === plan.id ? (
-                    <Loader2 className="h-4 w-4 animate-spin mr-2" />
-                  ) : null}
-                  Subscribe Now
-                </Button>
+                <div className="flex justify-center">
+                  <Button
+                    className="hover:bg-blue-500 hover:shadow-lg transition-all duration-300 rounded-lg mt-0 mb-5 hover:bg-muted"
+                    onClick={() => handleSubscribe(plan.id)}
+                    disabled={isLoading}
+                  >
+                    {isLoading && selectedPlan === plan.id ? (
+                      <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                    ) : null}
+                    Subscribe Now
+                  </Button>
+                </div>
               </CardContent>
             </Card>
           ))}

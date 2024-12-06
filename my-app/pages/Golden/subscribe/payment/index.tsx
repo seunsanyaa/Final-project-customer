@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { PaymentElement, Elements, useStripe, useElements } from "@stripe/react-stripe-js";
-import { loadStripe } from "@stripe/stripe-js";
+import { loadStripe, StripeElementsOptions } from "@stripe/stripe-js";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Navi } from "@/components/general/head/navi";
@@ -108,8 +108,10 @@ export default function SubscriptionPayment() {
   // Only cast to Id if we have a sessionId
   const sessionId = rawSessionId as Id<"paymentSessions"> | null;
 
-  // Only make the query if we have a valid sessionId
-  const paymentSession = sessionId ? useQuery(api.payment.getPaymentSession, { sessionId }) : null;
+  // Move the hook outside of the condition and pass null as sessionId if it's not available
+  const paymentSession = useQuery(api.payment.getPaymentSession, { 
+    sessionId: sessionId as Id<"paymentSessions">
+  });
 
   // Define plans
   const plans = {
@@ -193,7 +195,7 @@ export default function SubscriptionPayment() {
       <Navi />
       <main className="container mx-auto px-4 py-8">
         <div className="max-w-4xl mx-auto">
-          <Elements stripe={stripePromise} options={options}>
+          <Elements stripe={stripePromise} options={options as StripeElementsOptions}>
             <CheckoutForm 
               planDetails={selectedPlan} 
               sessionId={sessionId}

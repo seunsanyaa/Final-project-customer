@@ -6,6 +6,28 @@ import { Separator } from "@/components/ui/separator";
 import { useQuery } from 'convex/react';
 import { api } from '@/convex/_generated/api';
 import { useUser } from "@clerk/nextjs";
+import Image from "next/image";
+
+// Define a local type for a car with reviews
+type CarWithReviews = {
+  _id: string;
+  maker: string;
+  model: string;
+  year: number;
+  pictures: string[];
+  pricePerDay: number;
+  reviews?: Review[];
+  averageRating?: number;
+  numberOfReviews?: number;
+};
+
+type Review = {
+  _id: string;
+  userName: string;
+  reviewDate: string;
+  numberOfStars: number;
+  comment: string;
+};
 
 export default function AllRatings() {
   const { user } = useUser();
@@ -14,7 +36,7 @@ export default function AllRatings() {
   const [expandedCar, setExpandedCar] = useState<string | null>(null);
   
   // Get all cars with reviews
-  const carsWithReviews = useQuery(api.car.getCarsWithReviews) || [];
+  const carsWithReviews: CarWithReviews[] = useQuery(api.car.getCarsWithReviews) || [];
   
   // Get detailed car info with reviews when a car is selected
   const selectedCarWithReviews = useQuery(
@@ -105,12 +127,13 @@ export default function AllRatings() {
     
     {/* Right Side: Image */}
     {selectedCarWithReviews.pictures && selectedCarWithReviews.pictures.length > 0 ? (
-      <img
+      <Image
         src={selectedCarWithReviews.pictures[0]}
         alt={`${selectedCarWithReviews.maker} ${selectedCarWithReviews.model}`}
         width={300}
         height={200}
         className="mt-6 lg:mt-0 lg:ml-6 lg:w-1/3"
+        priority
       />
     ) : (
       <div className="w-full h-64 bg-muted flex items-center justify-center mt-6 lg:mt-0 lg:ml-6 lg:w-1/2">
@@ -144,10 +167,12 @@ export default function AllRatings() {
           >
             <CardHeader className="p-0">
               {car.pictures && car.pictures.length > 0 ? (
-                <img 
-                  src={car.pictures[0]} 
-                  alt={`${car.maker} ${car.model}`} 
-                  className="w-full h-48 object-cover" 
+                <Image
+                  src={car.pictures[0]}
+                  alt={`${car.maker} ${car.model}`}
+                  width={400}
+                  height={300}
+                  className="w-full h-48 object-cover"
                 />
               ) : (
                 <div className="w-full h-48 bg-muted flex items-center justify-center">
@@ -176,12 +201,12 @@ export default function AllRatings() {
               <Separator className="my-4" />
               <div className="space-y-4">
                 {expandedCar === car._id ? (
-                  car.topReviews?.map(renderReview)
+                  car.reviews?.map(renderReview)
                 ) : (
-                  car.reviews?.[0] && renderReview(car.reviews[0])
+                  car.reviews && car.reviews[0] && renderReview(car.reviews[0])
                 )}
               </div>
-              {car.reviews?.length > 1 && (
+              {car.reviews && car.reviews.length > 1 && (
                 <Button
                   variant="ghost"
                   className="w-full mt-4"
@@ -195,7 +220,7 @@ export default function AllRatings() {
                   ) : (
                     <>
                       <ChevronDown className="mr-2 h-4 w-4" />
-                      Show Top Reviews ({car.topReviews?.length - 1} more)
+                      Show More Reviews ({car.reviews?.length - 1} more)
                     </>
                   )}
                 </Button>

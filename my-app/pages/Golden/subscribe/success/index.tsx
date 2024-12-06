@@ -83,7 +83,18 @@ export default function SubscriptionSuccess() {
     if (sessionId && planId && user && isProcessing) {
       processSubscription();
     }
-  }, [sessionId, planId, user, isProcessing]);
+  }, [
+    sessionId, 
+    planId, 
+    user, 
+    isProcessing, 
+    createPayment,
+    createSubscription,
+    paymentIntentId,
+    router,
+    updatePaymentSession,
+    upgradeCustomer
+  ]);
 
   if (error) {
     return (

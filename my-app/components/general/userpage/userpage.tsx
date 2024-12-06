@@ -145,8 +145,7 @@ export function User_page() {
 
     try {
       await worker.load(); // Load the Tesseract core
-      await worker.loadLanguage('eng'); // Load the English language
-      await worker.initialize('eng'); // Initialize the worker with English
+      await worker.reinitialize('eng'); // Initialize the worker with English
 
       const { data: { text } } = await worker.recognize(file);
       
