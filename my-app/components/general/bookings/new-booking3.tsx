@@ -17,8 +17,17 @@ import { Id } from '../../../convex/_generated/dataModel';
 import { useUser } from "@clerk/nextjs";
 import { useConvexAuth } from "convex/react";
 // import { Redirection } from "@/components/ui/redirection";
-import MapComponent from '@/components/ui/map_for_bookings';
+import dynamic from 'next/dynamic';
 import { MapPin } from 'lucide-react'; // Import the map icon
+
+// Dynamically import the MapComponent with ssr disabled
+const MapComponent = dynamic(
+  () => import('@/components/ui/map_for_bookings'),
+  { 
+    ssr: false,
+    loading: () => <p>Loading map...</p>
+  }
+);
 
 // Add these types at the top of the file
 type Promotion = {
@@ -31,11 +40,14 @@ type Promotion = {
   target: 'all' | 'specific' | 'none';
 };
 
-// Add this custom hook at the top of the file
+// Update the useCurrency hook to include client-side check
 const useCurrency = () => {
   const [currency, setCurrency] = useState<string>('USD');
 
   useEffect(() => {
+    // Only run on client-side
+    if (typeof window === 'undefined') return;
+
     // Set initial currency from localStorage
     const settings = localStorage.getItem('userSettings');
     if (settings) {
