@@ -17,6 +17,8 @@ import { Id } from '../../../convex/_generated/dataModel';
 import { useUser } from "@clerk/nextjs";
 import { useConvexAuth } from "convex/react";
 // import { Redirection } from "@/components/ui/redirection";
+import MapComponent from '@/components/ui/map_for_bookings';
+import { MapPin } from 'lucide-react'; // Import the map icon
 
 // Add these types at the top of the file
 type Promotion = {
@@ -80,6 +82,8 @@ export function NewBooking3() {
   const [sentPrice, setSentPrice] = useState<number | null>(null);
   const [selectedPromotion, setSelectedPromotion] = useState<string | null>(null);
   const currency = useCurrency();
+  const [showPickupMap, setShowPickupMap] = useState(false);
+  const [showDropoffMap, setShowDropoffMap] = useState(false);
 
   // 3. Get query params
   const { registrationNumber, pricePerDay } = router.query as {
@@ -481,6 +485,30 @@ export function NewBooking3() {
     return `$${amount.toFixed(2)}`;
   };
 
+  // Add these new handlers
+  const handlePickupLocationSelect = (lat: number, lng: number) => {
+    // Convert coordinates to address using reverse geocoding
+    fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}`)
+      .then(response => response.json())
+      .then(data => {
+        const address = data.display_name;
+        setPickupLocation(address);
+        setShowPickupMap(false);
+      })
+      .catch(error => console.error('Error:', error));
+  };
+
+  const handleDropoffLocationSelect = (lat: number, lng: number) => {
+    fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}`)
+      .then(response => response.json())
+      .then(data => {
+        const address = data.display_name;
+        setDropoffLocation(address);
+        setShowDropoffMap(false);
+      })
+      .catch(error => console.error('Error:', error));
+  };
+
   return (
     <>
       <Navi/>
@@ -520,23 +548,53 @@ export function NewBooking3() {
                     </div>
                     <div>
                       <Label htmlFor="pickup">Pickup Location</Label>
-                      <Input 
-                        id="pickup" 
-                        placeholder="Enter location" 
-                        className="mt-1 w-full bg-card rounded-lg shadow-lg relative"
-                        value={pickupLocation}
-                        onChange={(e) => setPickupLocation(e.target.value)}
-                      />
+                      <div className="relative flex gap-2">
+                        <Input 
+                          id="pickup" 
+                          placeholder="Enter location" 
+                          className="mt-1 w-full bg-card rounded-lg shadow-lg relative"
+                          value={pickupLocation}
+                          onChange={(e) => setPickupLocation(e.target.value)}
+                        />
+                        <Button
+                          variant="outline"
+                          size="icon"
+                          className="mt-1"
+                          onClick={() => setShowPickupMap(!showPickupMap)}
+                        >
+                          <MapPin className="h-4 w-4" />
+                        </Button>
+                      </div>
+                      {showPickupMap && (
+                        <div className="mt-2">
+                          <MapComponent onLocationSelect={handlePickupLocationSelect} />
+                        </div>
+                      )}
                     </div>
                     <div>
                       <Label htmlFor="dropoff">Drop-off Location</Label>
-                      <Input 
-                        id="dropoff" 
-                        placeholder="Enter location" 
-                        className="mt-1 w-full bg-card rounded-lg shadow-lg relative"
-                        value={dropoffLocation}
-                        onChange={(e) => setDropoffLocation(e.target.value)}
-                      />
+                      <div className="relative flex gap-2">
+                        <Input 
+                          id="dropoff" 
+                          placeholder="Enter location" 
+                          className="mt-1 w-full bg-card rounded-lg shadow-lg relative"
+                          value={dropoffLocation}
+                          onChange={(e) => setDropoffLocation(e.target.value)}
+                        />
+                        <Button
+                          variant="outline"
+                          size="icon"
+                          className="mt-1"
+                          onClick={() => setShowDropoffMap(!showDropoffMap)}
+                        >
+                          <MapPin className="h-4 w-4" />
+                        </Button>
+                      </div>
+                      {showDropoffMap && (
+                        <div className="mt-2">
+                          <MapComponent onLocationSelect={handleDropoffLocationSelect} />
+                        </div>
+                      )}
                     </div>
                   </div>
                 </div>
