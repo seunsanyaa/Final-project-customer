@@ -1,5 +1,5 @@
 'use client'
-import React, { useRef, useState, useMemo } from "react";
+import React, { useRef, useState, useMemo, useEffect } from "react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
@@ -29,6 +29,33 @@ type Promotion = {
   target: 'all' | 'specific' | 'none';
 };
 
+// Add this custom hook at the top of the file
+const useCurrency = () => {
+  const [currency, setCurrency] = useState<string>('USD');
+
+  useEffect(() => {
+    // Set initial currency from localStorage
+    const settings = localStorage.getItem('userSettings');
+    if (settings) {
+      const parsedSettings = JSON.parse(settings);
+      setCurrency(parsedSettings.currency || 'USD');
+    }
+
+    // Handle currency changes
+    const handleCurrencyChange = (e: Event) => {
+      const customEvent = e as CustomEvent;
+      setCurrency(customEvent.detail.currency);
+    };
+
+    window.addEventListener('currencyChange', handleCurrencyChange);
+    return () => {
+      window.removeEventListener('currencyChange', handleCurrencyChange);
+    };
+  }, []);
+
+  return currency;
+};
+
 export function NewBooking3() {
   // 1. All hooks must be at the top level
   const router = useRouter();
@@ -52,6 +79,7 @@ export function NewBooking3() {
   const [totalDays, setTotalDays] = useState(1);
   const [sentPrice, setSentPrice] = useState<number | null>(null);
   const [selectedPromotion, setSelectedPromotion] = useState<string | null>(null);
+  const currency = useCurrency();
 
   // 3. Get query params
   const { registrationNumber, pricePerDay } = router.query as {
@@ -310,31 +338,31 @@ export function NewBooking3() {
         </div>
         <Separator />
         <div className="flex items-center justify-between">
-          <p>Car Rental (${pricePerDay}/day × {totalDays} days)</p>
-          <p className="font-semibold">${basePrice.toFixed(2)}</p>
+          <p>Car Rental ({formatPrice(parseFloat(pricePerDay ?? '0'))}/day × {totalDays} days)</p>
+          <p className="font-semibold">{formatPrice(basePrice)}</p>
         </div>
         {extras.insurance && (
           <div className="flex items-center justify-between">
-            <p>Insurance ($10/day × {totalDays} days)</p>
-            <p className="font-semibold">${(10 * totalDays).toFixed(2)}</p>
+            <p>Insurance ({formatPrice(10)}/day × {totalDays} days)</p>
+            <p className="font-semibold">{formatPrice(10 * totalDays)}</p>
           </div>
         )}
         {extras.gps && (
           <div className="flex items-center justify-between">
-            <p>GPS ($5/day × {totalDays} days)</p>
-            <p className="font-semibold">${(5 * totalDays).toFixed(2)}</p>
+            <p>GPS ({formatPrice(5)}/day × {totalDays} days)</p>
+            <p className="font-semibold">{formatPrice(5 * totalDays)}</p>
           </div>
         )}
         {extras.childSeat && (
           <div className="flex items-center justify-between">
-            <p>Child Seat ($8/day × {totalDays} days)</p>
-            <p className="font-semibold">${(8 * totalDays).toFixed(2)}</p>
+            <p>Child Seat ({formatPrice(8)}/day × {totalDays} days)</p>
+            <p className="font-semibold">{formatPrice(8 * totalDays)}</p>
           </div>
         )}
         {extras.chauffer && (
           <div className="flex items-center justify-between bg-customyello">
-            <p>Chauffer Service ($100/day × {totalDays} days)</p>
-            <p className="font-semibold">${(100 * totalDays).toFixed(2)}</p>
+            <p>Chauffer Service ({formatPrice(100)}/day × {totalDays} days)</p>
+            <p className="font-semibold">{formatPrice(100 * totalDays)}</p>
           </div>
         )}
         {extras.travelKit && (
@@ -355,7 +383,7 @@ export function NewBooking3() {
         <div className="flex items-center justify-between">
           <p className="text-lg font-semibold">Total</p>
           <p className="text-lg font-semibold">
-            ${total.display}
+            {formatPrice(parseFloat(total.amount.toString()))}
           </p>
         </div>
         {paymentMethod && (
@@ -423,7 +451,7 @@ export function NewBooking3() {
           <div>
             <h3 className="text-xl font-semibold mb-4">Full Payment</h3>
             <p className="text-lg font-semibold mb-4">
-              Pay ${calculateFullPrice()} upfront
+              Pay {formatPrice(parseFloat(calculateFullPrice()))} upfront
             </p>
             <h4 className="font-semibold mb-2">Advantages of Full Payment:</h4>
             <ul className="list-disc pl-5 mb-4">
@@ -443,6 +471,15 @@ export function NewBooking3() {
       </CardContent>
     </Card>
   );
+
+  // Update the formatPrice function
+  const formatPrice = (amount: number) => {
+    if (!amount) return '';
+    if (currency === 'TRY') {
+      return `₺${(amount * 34).toFixed(2)}`;
+    }
+    return `$${amount.toFixed(2)}`;
+  };
 
   return (
     <>

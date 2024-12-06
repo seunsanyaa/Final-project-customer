@@ -73,7 +73,7 @@ export function Homepage_v2() {
           lottieRef={lottieRef}
           animationData={loadingAnimation}
           loop={true}
-          className="w-[400px] h-[400px]"
+          className="w-[1500px] h-[1500px] mr-20"
         />
       </div>
     );

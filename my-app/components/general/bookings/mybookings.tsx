@@ -36,6 +36,33 @@ interface Booking {
 
 }
 
+// Add this custom hook near the top of the file
+const useCurrency = () => {
+  const [currency, setCurrency] = useState<string>('USD');
+
+  useEffect(() => {
+    // Set initial currency from localStorage
+    const settings = localStorage.getItem('userSettings');
+    if (settings) {
+      const parsedSettings = JSON.parse(settings);
+      setCurrency(parsedSettings.currency || 'USD');
+    }
+
+    // Handle currency changes
+    const handleCurrencyChange = (e: Event) => {
+      const customEvent = e as CustomEvent;
+      setCurrency(customEvent.detail.currency);
+    };
+
+    window.addEventListener('currencyChange', handleCurrencyChange);
+    return () => {
+      window.removeEventListener('currencyChange', handleCurrencyChange);
+    };
+  }, []);
+
+  return currency;
+};
+
 export function Mybookings() {
   const { user } = useUser();
   const [filteredBookings, setFilteredBookings] = useState<Booking[]>([]);
@@ -120,7 +147,18 @@ export function Mybookings() {
     setIsDialogOpen(true);
   }
 
+  // Add currency state
+  const currency = useCurrency();
   
+  // Add formatPrice helper function
+  const formatPrice = (amount: number) => {
+    if (!amount) return '';
+    if (currency === 'TRY') {
+      return `₺${(amount * 34).toFixed(2)}`;
+    }
+    return `$${amount.toFixed(2)}`;
+  };
+
   if (loading) {
     return (
       <div className="flex items-center justify-center h-screen">
@@ -187,7 +225,7 @@ export function Mybookings() {
                   <p className="text-muted-foreground">Rental Dates: {currentBooking?.startDate} - {currentBooking?.endDate}</p>
                 </div>
                 <div className="text-right">
-            <h3 className="text-3xl font-bold">${currentBooking ? currentBooking.totalCost : 0}</h3>
+            <h3 className="text-3xl font-bold">{formatPrice(currentBooking ? currentBooking.totalCost : 0)}</h3>
             <p className="text-muted-foreground">Total Cost</p>
           </div>
         </div>
@@ -314,7 +352,7 @@ export function Mybookings() {
                       </div>
                       <div>
                         <div className="text-sm font-medium">Total Cost</div>
-                        <div>${booking.totalCost.toFixed(2)}</div>
+                        <div>{formatPrice(booking.totalCost)}</div>
                       </div>
                     </div>
                   </CardContent>
@@ -358,7 +396,7 @@ export function Mybookings() {
                       </div>
                       <div>
                         <div className="text-sm font-medium">Total Cost</div>
-                        <div>${booking.totalCost.toFixed(2)}</div>
+                        <div>{formatPrice(booking.totalCost)}</div>
                       </div>
                     </div>
                   </CardContent>
@@ -401,7 +439,7 @@ export function Mybookings() {
                       </div>
                       <div>
                         <div className="text-sm font-medium">Total Cost</div>
-                        <div>${booking.totalCost.toFixed(2)}</div>
+                        <div>{formatPrice(booking.totalCost)}</div>
                       </div>
                     </div>
                   </CardContent>
@@ -435,7 +473,7 @@ export function Mybookings() {
                 </div>
                 <div>
                   <h3 className="font-semibold">Total Cost</h3>
-                  <p>${selectedBooking.totalCost.toFixed(2)}</p>
+                  <p>{formatPrice(selectedBooking.totalCost)}</p>
                 </div>
               </div>
               

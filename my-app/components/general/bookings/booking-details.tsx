@@ -16,6 +16,33 @@ import { Redirection } from "@/components/ui/redirection";
 // import { useReactToPrint, PrintContextConsumer } from 'react-to-print';
 // import { PrinterIcon } from '@heroicons/react/24/outline';
 
+// Add this custom hook near the top of the file
+const useCurrency = () => {
+  const [currency, setCurrency] = useState<string>('USD');
+
+  useEffect(() => {
+    // Set initial currency from localStorage
+    const settings = localStorage.getItem('userSettings');
+    if (settings) {
+      const parsedSettings = JSON.parse(settings);
+      setCurrency(parsedSettings.currency || 'USD');
+    }
+
+    // Handle currency changes
+    const handleCurrencyChange = (e: Event) => {
+      const customEvent = e as CustomEvent;
+      setCurrency(customEvent.detail.currency);
+    };
+
+    window.addEventListener('currencyChange', handleCurrencyChange);
+    return () => {
+      window.removeEventListener('currencyChange', handleCurrencyChange);
+    };
+  }, []);
+
+  return currency;
+};
+
 export default function BookingDetails() {
   const { user } = useUser();
   const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
@@ -55,6 +82,18 @@ export default function BookingDetails() {
   //     return Promise.resolve();
   //   }
   // });
+
+  // Add currency state
+  const currency = useCurrency();
+  
+  // Add formatPrice helper function
+  const formatPrice = (amount: number) => {
+    if (!amount) return '';
+    if (currency === 'TRY') {
+      return `₺${(amount * 34).toFixed(2)}`;
+    }
+    return `$${amount.toFixed(2)}`;
+  };
 
   if (!user) {
     return <Redirection />;
@@ -234,14 +273,16 @@ export default function BookingDetails() {
                       <div className="text-sm font-medium text-muted-foreground">
                         Original Booking Cost
                       </div>
-                      <div className="text-base font-semibold">${bookingDetails.totalCost}.00</div>
+                      <div className="text-base font-semibold">
+                        {formatPrice(bookingDetails.totalCost)}
+                      </div>
                     </div>
                     <div>
                       <div className="text-sm font-medium text-muted-foreground">
                         Paid Amount
                       </div>
                       <div className="text-base font-semibold text-green-500">
-                        ${bookingDetails.paidAmount}
+                        {formatPrice(bookingDetails.paidAmount)}
                       </div>
                     </div>
                   </div>
@@ -250,7 +291,9 @@ export default function BookingDetails() {
                       <div className="text-sm font-medium text-muted-foreground">
                         Remaining Cost
                       </div>
-                      <div className="text-base font-semibold">${(bookingDetails.totalCost - bookingDetails.paidAmount).toFixed(2)}</div>
+                      <div className="text-base font-semibold">
+                        {formatPrice(bookingDetails.totalCost - bookingDetails.paidAmount)}
+                      </div>
                     </div>
                     <div>
                       <div className="text-sm font-medium text-muted-foreground">

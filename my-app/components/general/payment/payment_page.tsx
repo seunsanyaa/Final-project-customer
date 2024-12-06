@@ -14,6 +14,32 @@ import { useParams } from 'next/navigation';
 import { Id } from '../../../convex/_generated/dataModel';
 import Link from 'next/link';
 
+const useCurrency = () => {
+  const [currency, setCurrency] = useState<string>('USD');
+
+  useEffect(() => {
+    // Set initial currency from localStorage
+    const settings = localStorage.getItem('userSettings');
+    if (settings) {
+      const parsedSettings = JSON.parse(settings);
+      setCurrency(parsedSettings.currency || 'USD');
+    }
+
+    // Handle currency changes
+    const handleCurrencyChange = (e: Event) => {
+      const customEvent = e as CustomEvent;
+      setCurrency(customEvent.detail.currency);
+    };
+
+    window.addEventListener('currencyChange', handleCurrencyChange);
+    return () => {
+      window.removeEventListener('currencyChange', handleCurrencyChange);
+    };
+  }, []);
+
+  return currency;
+};
+
 export function Payment_Page() {
   const params = useParams();
   const searchParams = useSearchParams();
@@ -37,6 +63,18 @@ export function Payment_Page() {
 
   const stripePromise = loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY!);
 
+  // Add currency state
+  const currency = useCurrency();
+  
+  // Add formatPrice helper function
+  const formatPrice = (amount: number) => {
+    if (!amount) return '';
+    if (currency === 'TRY') {
+      return `₺${(amount * 34).toFixed(2)}`;
+    }
+    return `$${amount.toFixed(2)}`;
+  };
+
   useEffect(() => {
     if (paidAmount > 0 && email) {
       setIsLoading(true);
@@ -49,6 +87,7 @@ export function Payment_Page() {
           amount: paidAmount,
           sessionId,
           email,
+          currency, // Add currency to the request
         }),
       })
         .then((res) => res.json())
@@ -65,7 +104,7 @@ export function Payment_Page() {
         })
         .finally(() => setIsLoading(false));
     }
-  }, [paidAmount, sessionId, email]);
+  }, [paidAmount, sessionId, email, currency]); // Add currency to dependencies
 
   const appearance: Appearance = {
     theme: 'stripe',
@@ -94,6 +133,7 @@ export function Payment_Page() {
             setAgreedToTerms={setAgreedToTerms} 
             total={paidAmount}
             sessionId={sessionId}
+            currency={currency} // Pass currency to PaymentForm
           />
         </Elements>
       ) : (
@@ -109,12 +149,14 @@ function PaymentForm({
   agreedToTerms, 
   setAgreedToTerms, 
   total,
-  sessionId
+  sessionId,
+  currency // Add currency prop
 }: { 
   agreedToTerms: boolean, 
   setAgreedToTerms: (agreed: boolean) => void, 
   total: number,
-  sessionId: Id<"paymentSessions">
+  sessionId: Id<"paymentSessions">,
+  currency: string
 }) {
   const stripe = useStripe();
   const elements = useElements();
@@ -132,6 +174,15 @@ function PaymentForm({
   const rentalDuration = booking ? 
     Math.ceil((new Date(booking.endDate).getTime() - new Date(booking.startDate).getTime()) / (1000 * 60 * 60 * 24)) 
     : 0;
+
+  // Add formatPrice helper function
+  const formatPrice = (amount: number) => {
+    if (!amount) return '';
+    if (currency === 'TRY') {
+      return `₺${(amount * 34).toFixed(2)}`;
+    }
+    return `$${amount.toFixed(2)}`;
+  };
 
   const handleSubmit = async () => {
     if (!stripe || !elements) {
@@ -248,15 +299,15 @@ function PaymentForm({
                 <CardContent className="space-y-2">
                   <div className="flex justify-between">
                     <span>Base Price:</span>
-                    <span>${total ? (total-total*0.2).toFixed(2) : '0.00'}</span>
+                    <span>{formatPrice(total ? (total-total*0.2) : 0)}</span>
                   </div>
                   <div className="flex justify-between">
                     <span>Taxes & Fees:</span>
-                    <span>${total ? ((total-total*0.2)*0.2).toFixed(2) : '0.00'}</span>
+                    <span>{formatPrice(total ? ((total-total*0.2)*0.2) : 0)}</span>
                   </div>
                   <div className="flex justify-between">
                     <span>Total Price:</span>
-                    <span className="font-bold">${total ? (total).toFixed(2) : '0.00'}</span>
+                    <span className="font-bold">{formatPrice(total)}</span>
                   </div>
                 </CardContent>
               </Card>

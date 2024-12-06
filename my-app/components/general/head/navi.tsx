@@ -17,6 +17,7 @@ interface NaviProps {
 interface UserSettings {
   darkMode: boolean;
   language: string;
+  currency: string;
 }
 
 // Add type declaration for google translate
@@ -31,14 +32,13 @@ export const Navi: React.FC<NaviProps> = ({ className }) => {
   const [isMenuOpen, setIsMenuOpen] = useState(false)
   const { user } = useUser()
   const [localSettings, setLocalSettings] = useState<UserSettings>(() => {
-    // Try to get settings from localStorage on initial load
     if (typeof window !== 'undefined') {
       const saved = localStorage.getItem('userSettings');
       if (saved) {
         return JSON.parse(saved);
       }
     }
-    return { darkMode: false, language: 'english' };
+    return { darkMode: false, language: 'english', currency: 'USD' };
   });
 
   const userSettings = useQuery(api.settings.fetchSettings, { 
@@ -49,7 +49,8 @@ export const Navi: React.FC<NaviProps> = ({ className }) => {
     if (user?.id && userSettings) {
       const newSettings = {
         darkMode: userSettings.darkMode,
-        language: userSettings.language
+        language: userSettings.language,
+        currency: userSettings.language === 'turkish' ? 'TRY' : 'USD'
       };
       setLocalSettings(newSettings);
       localStorage.setItem('userSettings', JSON.stringify(newSettings));
@@ -67,8 +68,20 @@ export const Navi: React.FC<NaviProps> = ({ className }) => {
   useEffect(() => {
     if (localSettings.language === 'turkish') {
       initializeGoogleTranslate();
+      const updatedSettings = { ...localSettings, currency: 'TRY' };
+      setLocalSettings(updatedSettings);
+      localStorage.setItem('userSettings', JSON.stringify(updatedSettings));
+      window.dispatchEvent(new CustomEvent('currencyChange', { 
+        detail: { currency: 'TRY' }
+      }));
     } else {
       removeGoogleTranslate();
+      const updatedSettings = { ...localSettings, currency: 'USD' };
+      setLocalSettings(updatedSettings);
+      localStorage.setItem('userSettings', JSON.stringify(updatedSettings));
+      window.dispatchEvent(new CustomEvent('currencyChange', { 
+        detail: { currency: 'USD' }
+      }));
     }
   }, [localSettings.language]);
 

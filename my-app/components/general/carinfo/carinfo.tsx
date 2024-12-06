@@ -13,8 +13,34 @@ import { Card, CardContent } from "@/components/ui/card";
 import Image from "next/image";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
+import { useState, useEffect } from 'react';
+
+const useCurrency = () => {
+  const [currency, setCurrency] = useState<string>('USD');
+
+  useEffect(() => {
+    const settings = localStorage.getItem('userSettings');
+    if (settings) {
+      const parsedSettings = JSON.parse(settings);
+      setCurrency(parsedSettings.currency || 'USD');
+    }
+
+    const handleCurrencyChange = (e: Event) => {
+      const customEvent = e as CustomEvent;
+      setCurrency(customEvent.detail.currency);
+    };
+
+    window.addEventListener('currencyChange', handleCurrencyChange);
+    return () => {
+      window.removeEventListener('currencyChange', handleCurrencyChange);
+    };
+  }, []);
+
+  return currency;
+};
 
 export function Carinfo() {
+  const currency = useCurrency();
   const router = useRouter();
   // Ensure registrationNumber is a string before using it
   const registrationNumber = typeof router.query.id === 'string' ? router.query.id : '';
@@ -50,6 +76,14 @@ export function Carinfo() {
     });
   };
 
+  const formatPrice = (amount: number) => {
+    if (!amount) return '';
+    if (currency === 'TRY') {
+      return `₺${(amount * 34).toFixed(2)}`;
+    }
+    return `$${amount.toFixed(2)}`;
+  };
+
   return (
     <>
       <Navi />
@@ -71,7 +105,9 @@ export function Carinfo() {
               <div>
                 <h2 className="text-3xl font-bold">Pricing</h2>
                 <p className="mt-4 text-muted-foreground text-xl">
-                  Starting at <span className="text-foreground font-semibold">${car.pricePerDay}</span>
+                  Starting at <span className="text-foreground font-semibold">
+                    {formatPrice(car.pricePerDay)}
+                  </span>
                 </p>
               </div>
 
