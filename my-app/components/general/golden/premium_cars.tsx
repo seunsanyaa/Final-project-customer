@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button"
 import { useInView } from 'react-intersection-observer';
 import { Navi } from "../head/navi"
 import { Footer } from "../head/footer"
+import Image from "next/image";
 
 export function PremiumCars() {
   const [ref1, inView1] = useInView({ threshold: 0.3, triggerOnce: true });
@@ -28,7 +29,14 @@ export function PremiumCars() {
           <div className="grid gap-6 grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-3 mt-10 pl-14 pr-14 ml-14 mr-14 mb-20">
             {/* Premium Car 1 */}
             <div className="flex flex-col items-center justify-center gap-4 p-6 transition-transform transform hover:scale-105 hover:shadow-lg bg-card hover:bg-gradient-to-r from-blue-500 to-green-500">
-              <img src="https://res.cloudinary.com/dbsxjsktb/image/upload/w_1000,ar_16:9,c_fill,g_auto,e_sharpen/v1732830903/2020-range-rover-sport-1920x565__1_-removebg_f6qehx.png" alt="Range Rover Sport" className="w-[500px] h-[220px] rounded-lg" />
+              <Image
+                src="https://res.cloudinary.com/dbsxjsktb/image/upload/w_1000,ar_16:9,c_fill,g_auto,e_sharpen/v1732830903/2020-range-rover-sport-1920x565__1_-removebg_f6qehx.png"
+                alt="Range Rover Sport"
+                width={500}
+                height={220}
+                className="w-[500px] h-[220px] rounded-lg"
+                priority
+              />
               <div className="text-center mb-0 mt-0">
                 <h3 className="text-4xl font-semibold text-black">Range Rover Sport</h3>
                 <p className="text-black font-semibold">Luxury redefined.</p>
@@ -41,7 +49,13 @@ export function PremiumCars() {
 
             {/* Premium Car 2 */}
             <div className="flex flex-col items-center justify-center gap-4 p-6 transition-transform transform hover:scale-105 hover:shadow-lg bg-card hover:bg-gradient-to-r from-blue-500 to-green-500">
-              <img src="https://res.cloudinary.com/dbsxjsktb/image/upload/w_1000,ar_16:9,c_fill,g_auto,e_sharpen/v1732832958/hero-2018-maserati-granturismo-1920x565-removebg-preview_z2nmmg.png" alt="Maserati GranTurismo" className="w-[500px] h-[220px] rounded-lg" />
+              <Image
+                src="https://res.cloudinary.com/dbsxjsktb/image/upload/w_1000,ar_16:9,c_fill,g_auto,e_sharpen/v1732832958/hero-2018-maserati-granturismo-1920x565-removebg-preview_z2nmmg.png"
+                alt="Maserati GranTurismo"
+                width={500}
+                height={220}
+                className="w-[500px] h-[220px] rounded-lg"
+              />
               <div className="text-center mb-0 mt-0">
                 <h3 className="text-4xl font-semibold text-black">Maserati</h3>
                 <p className="text-black font-semibold">Pure performance.</p>
@@ -53,8 +67,14 @@ export function PremiumCars() {
             </div>
 
             {/* Premium Car 3 */}
-            <div className="flex flex-col items-center justify-center gap-4 p-6 transition-transform transform hover:scale-105 hover:shadow-lg bg-card hover:bg-gradient-to-r from-blue-500 to-green-500" >
-              <img src="https://res.cloudinary.com/dbsxjsktb/image/upload/w_1000,ar_16:9,c_fill,g_auto,e_sharpen/v1732832958/hero-2019-porsche-boxster-1920x565-removebg_hlhjvr.png" className="w-[500px] h-[220px] rounded-lg" />
+            <div className="flex flex-col items-center justify-center gap-4 p-6 transition-transform transform hover:scale-105 hover:shadow-lg bg-card hover:bg-gradient-to-r from-blue-500 to-green-500">
+              <Image
+                src="https://res.cloudinary.com/dbsxjsktb/image/upload/w_1000,ar_16:9,c_fill,g_auto,e_sharpen/v1732832958/hero-2019-porsche-boxster-1920x565-removebg_hlhjvr.png"
+                alt="Porsche Boxster"
+                width={500}
+                height={220}
+                className="w-[500px] h-[220px] rounded-lg"
+              />
               <div className="text-center mb-0 mt-0">
                 <h3 className="text-4xl font-semibold text-black">Porsche Boxster</h3>
                 <p className="text-black font-semibold">Power meets luxury.</p>
@@ -67,7 +87,13 @@ export function PremiumCars() {
 
             {/* Premium Car 4 */}
             <div className="flex flex-col items-center justify-center gap-4 p-6 transition-transform transform hover:scale-105 hover:shadow-lg bg-card hover:bg-gradient-to-r from-blue-500 to-green-500">
-              <img src="https://res.cloudinary.com/dbsxjsktb/image/upload/w_1000,ar_16:9,c_fill,g_auto,e_sharpen/v1732831937/MERCEDES-BENZ_S-CLASS_LE_upscale_balanced_x4-removebg-preview_sxsbaa.png" alt="MERCEDES BENZ S_CLASS_LE" className="w-[500px] h-[220px] rounded-lg" />
+              <Image
+                src="https://res.cloudinary.com/dbsxjsktb/image/upload/w_1000,ar_16:9,c_fill,g_auto,e_sharpen/v1732831937/MERCEDES-BENZ_S-CLASS_LE_upscale_balanced_x4-removebg-preview_sxsbaa.png"
+                alt="MERCEDES BENZ S_CLASS_LE"
+                width={500}
+                height={220}
+                className="w-[500px] h-[220px] rounded-lg"
+              />
               <div className="text-center mb-0 mt-0">
                 <h3 className="text-4xl font-semibold text-black">MERCEDES BENZ S_CLASS_LE</h3>
                 <p className="text-black font-semibold">Ultimate SUV experience.</p>
@@ -80,7 +106,13 @@ export function PremiumCars() {
 
             {/* Premium Car 5 */}
             <div className="flex flex-col items-center justify-center gap-4 p-6 transition-transform transform hover:scale-105 hover:shadow-lg bg-card hover:bg-gradient-to-r from-blue-500 to-green-500">
-              <img src="https://res.cloudinary.com/dbsxjsktb/image/upload/w_1000,ar_16:9,c_fill,g_auto,e_sharpen/v1732833992/BMW_4_Series_LE_upscale_balanced_x4-removebg-preview_pl3neq.png" alt="BMW 4 Series" className="w-[500px] h-[220px] rounded-lg" />
+              <Image
+                src="https://res.cloudinary.com/dbsxjsktb/image/upload/w_1000,ar_16:9,c_fill,g_auto,e_sharpen/v1732833992/BMW_4_Series_LE_upscale_balanced_x4-removebg-preview_pl3neq.png"
+                alt="BMW 4 Series"
+                width={500}
+                height={220}
+                className="w-[500px] h-[220px] rounded-lg"
+              />
               <div className="text-center mb-0 mt-0">
                 <h3 className="text-4xl font-semibold text-black">BMW 4 Series</h3>
                 <p className="text-black font-semibold">Elegant reliability.</p>
@@ -93,7 +125,13 @@ export function PremiumCars() {
 
             {/* Premium Car 6 */}
             <div className="flex flex-col items-center justify-center gap-4 p-6 transition-transform transform hover:scale-105 hover:shadow-lg bg-card hover:bg-gradient-to-r from-blue-500 to-green-500">
-              <img src="https://res.cloudinary.com/dbsxjsktb/image/upload/v1732902424/44f58625f1b602210bb9915901a4374f_ct4lju-removebg-preview_eevibl.png" alt="Mansory Rolls Royce" className="w-[600px] h-[250px] rounded-lg" />
+              <Image
+                src="https://res.cloudinary.com/dbsxjsktb/image/upload/v1732902424/44f58625f1b602210bb9915901a4374f_ct4lju-removebg-preview_eevibl.png"
+                alt="Mansory Rolls Royce"
+                width={600}
+                height={250}
+                className="w-[600px] h-[250px] rounded-lg"
+              />
               <div className="text-center mb-0 mt-0">
                 <h3 className="text-4xl font-semibold text-black">Mansory Rolls Royce</h3>
                 <p className="text-black font-semibold">Group travel in style.</p>

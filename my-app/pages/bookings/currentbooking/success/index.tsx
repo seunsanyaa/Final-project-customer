@@ -47,7 +47,7 @@ export default function PaymentSuccess() {
 
         // 2. Update booking with new paid amount
         await updateBooking({
-          id: paymentSession.bookingId,
+          id: paymentSession.bookingId as Id<"bookings">,
           paidAmount: paymentSession.paidAmount,
           status: 'confirmed'
         });
@@ -61,7 +61,7 @@ export default function PaymentSuccess() {
         // 4. Award reward points only after payment session is marked as completed
         if (paymentSession.status === 'completed') {
           await awardBookingRewardPoints({
-            bookingId: paymentSession.bookingId,
+            bookingId: paymentSession.bookingId as Id<"bookings">,
             customerId: paymentSession.userId
           });
         }

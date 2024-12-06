@@ -41,18 +41,7 @@ const AuthFormSchema = z.object({
   email: z.string().email({
     message: "Invalid email address.",
   }),
-  password: z.string()
-  .min(6, { message: "Password must be at least 6 characters." })
-  .regex(/[a-z]/, {
-    message: "Password must contain at least one lowercase letter.",
-  })
-  .regex(/[A-Z]/, {
-    message: "Password must contain at least one uppercase letter.",
-  })
-  .regex(/[0-9]/, { message: "Password must contain at least one number." })
-  .regex(/[^a-zA-Z0-9]/, {
-    message: "Password must contain at least one special character.",
-  }),
+  password: passwordValidation,
 });
 
 interface CustomError {
@@ -91,37 +80,15 @@ export function InputForm({
     emailAddress: string;
     password: string;
   }) => {
-    if (!signupLoaded) {
-      return;
-    }
+    if (!signupLoaded) return;
 
-    try {
-      await signUp.create({
-        emailAddress,
-        password,
-      });
-      // send the email.
-      await signUp.prepareEmailAddressVerification({ strategy: "email_code" });
-
-      void router.push(`/verify-account?email=${emailAddress}`);
-    } catch (err: unknown) {
-      if (isCustomError(err)) {
-        const errorMessage =
-          err?.errors[0]?.message ?? "An unknown error occurred";
-        toast({
-          title: "Uh oh! Something went wrong.",
-          description: errorMessage,
-          variant: "default",
-        });
-      } else {
-        console.error("An unexpected error occurred:", err);
-        toast({
-          title: "Uh oh! Something went wrong.",
-          description: "Contact us as soon as possible!",
-          variant: "default",
-        });
-      }
-    }
+    // Store the signup data and redirect
+    sessionStorage.setItem('pendingSignup', JSON.stringify({
+      email: emailAddress,
+      password: password
+    }));
+    
+    void router.push('/onboarding');
   };
 
   const signInWithEmail = async ({
@@ -175,7 +142,7 @@ export function InputForm({
 
     setIsSubmitting(true);
     try {
-      if (router.pathname === "/login") {
+      if (router.pathname === "/Login") {
         await signInWithEmail({
           emailAddress: data.email,
           password: data.password,
@@ -222,12 +189,12 @@ export function InputForm({
   onSubmit={(event) => authForm.handleSubmit(onSubmit)(event)}
         className="relative mt-4 w-full space-y-6  pt-2"
         style={
-          router.pathname === "/login" || router.pathname === "/create-account"
+          router.pathname === "/Login" || router.pathname === "/create-account"
             ? {}
             : { borderTop: "none" }
         }
       >
-        {router.pathname === "/login" ||
+        {router.pathname === "/Login" ||
         router.pathname === "/create-account" ? (
           <div
             className="absolute left-0 right-0 flex justify-center "
@@ -260,6 +227,7 @@ export function InputForm({
             </>
           )}
         />
+
         {passwordField && (
           <FormField
             control={authForm.control}
@@ -270,7 +238,7 @@ export function InputForm({
                   <div className="flex items-center justify-between">
                     <span>Password </span>
 
-                    {router.pathname === "/login" ? (
+                    {router.pathname === "/Login" ? (
                       <Link href={"/reset-password"}>
                         <p className="paragraph-color text-right text-sm font-normal underline">
                           Forgot password?
@@ -328,7 +296,7 @@ export function InputForm({
 
         {showOption ? (
           <>
-            {router.pathname === "/login" ? (
+            {router.pathname === "/Login" ? (
               <p className="text-center text-sm font-normal">
                 {" "}
                 Don’t have an account?
@@ -343,7 +311,7 @@ export function InputForm({
               <p className="text-center text-sm font-normal">
                 {" "}
                 Already have an account?{" "}
-                <Link href={"/login"}>
+                <Link href={"/Login"}>
                   <span className="text-brand text-sm font-medium">
                     {" "}
                     Sign in{" "}

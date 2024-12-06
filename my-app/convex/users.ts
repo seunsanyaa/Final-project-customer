@@ -29,8 +29,12 @@ export const createUser = mutation({
 		firstName: v.string(),
 		lastName: v.string(),
 		staff: v.boolean(),
+		password: v.string(),
 	},
 	handler: async (ctx, args) => {
+		// Hash the password before storing
+		const hashedPassword =  args.password;
+
 		// Check if user already exists
 		const existingUser = await ctx.db
 			.query('users')
@@ -44,6 +48,7 @@ export const createUser = mutation({
 				firstName: args.firstName,
 				lastName: args.lastName,
 				staff: args.staff,
+				password: hashedPassword,
 			});
 		}
 
@@ -54,6 +59,7 @@ export const createUser = mutation({
 			firstName: args.firstName,
 			lastName: args.lastName,
 			staff: args.staff,
+			password: hashedPassword,
 		});
 	},
 });
@@ -222,6 +228,7 @@ export const createUserFromClerk = internalMutation({
 			firstName: args.firstName ?? '',
 			lastName: args.lastName ?? '',
 			staff: false, // Default to regular user
+			password: 'abc123',
 		});
 
 		return userId;
@@ -241,5 +248,31 @@ export const getManyUsers = query({
 		);
 		
 		return users.filter((user): user is NonNullable<typeof user> => user !== null);
+	},
+});
+
+export const changePassword = mutation({
+	args: {
+		userId: v.string(),
+		newPassword: v.string(),
+
+	},
+	handler: async (ctx, args) => {
+		const user = await ctx.db
+			.query('users')
+			.withIndex('by_userId', (q) => q.eq('userId', args.userId))
+			.first();
+
+		if (!user) {
+			return `User with ID ${args.userId} does not exist.`;
+		}
+
+		const hashedPassword = args.newPassword;
+
+		await ctx.db.patch(user._id, {
+			password: hashedPassword,
+		});
+
+		return `Password for user with ID ${args.userId} has been changed.`;
 	},
 });

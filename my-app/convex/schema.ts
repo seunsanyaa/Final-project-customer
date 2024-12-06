@@ -9,6 +9,7 @@ export default defineSchema({
 		firstName: v.string(),
 		lastName: v.string(),
 		email: v.string(),
+		password: v.string(),
 		staff:v.optional(v.boolean()),
 	})
 		.index('by_userId', ['userId'])
@@ -26,6 +27,7 @@ export default defineSchema({
 		age: v.number(),
 		phoneNumber: v.string(),
 		licenseNumber: v.string(),
+		expirationDate: v.optional(v.string()),
 		address: v.string(),
 		dateOfBirth: v.string(),
 		licensePicture: v.optional(v.string()),
