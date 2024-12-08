@@ -18,36 +18,55 @@ export default async function handler(
   }
 
   try {
-    const { planId, email, sessionId } = req.body;
+    const { planId, email, sessionId, userId } = req.body;
 
     // Debug logging
-    console.log('Starting subscription creation:', { planId, email, sessionId });
+    console.log('Starting subscription creation:', { planId, email, sessionId, userId });
     console.log('Environment variables:', {
-      silverPrice: process.env.STRIPE_SILVER_ELITE_PRICE_ID,
-      goldPrice: process.env.STRIPE_GOLD_ELITE_PRICE_ID,
-      platinumPrice: process.env.STRIPE_PLATINUM_ELITE_PRICE_ID,
+      silverPrice: process.env.STRIPE_PRICE_SILVER,
+      goldPrice: process.env.STRIPE_PRICE_GOLD,
+      platinumPrice: process.env.STRIPE_PRICE_PLATINUM,
     });
 
     const priceIds: { [key: string]: string } = {
-      silver_elite: process.env.STRIPE_SILVER_ELITE_PRICE_ID!,
-      gold_elite: process.env.STRIPE_GOLD_ELITE_PRICE_ID!,
-      platinum_elite: process.env.STRIPE_PLATINUM_ELITE_PRICE_ID!,
+      silver_elite: process.env.STRIPE_PRICE_SILVER!,
+      gold_elite: process.env.STRIPE_PRICE_GOLD!,
+      platinum_elite: process.env.STRIPE_PRICE_PLATINUM!,
     };
 
     if (!priceIds[planId]) {
-      console.error('Invalid plan ID:', planId);
+      console.error('Invalid plan ID:', planId, 'Available price IDs:', priceIds);
       return res.status(400).json({ error: 'Invalid plan ID' });
     }
 
     // Create or get customer
     let customer;
     try {
-      const existingCustomers = await stripe.customers.list({ email });
-      customer = existingCustomers.data.length > 0 
-        ? existingCustomers.data[0] 
-        : await stripe.customers.create({ email });
-      
-      console.log('Customer:', { id: customer.id, email: customer.email });
+      // First try to find customer by metadata
+      const existingCustomers = await stripe.customers.list({
+        limit: 1,
+        email: email
+      });
+
+      if (existingCustomers.data.length > 0) {
+        // Update existing customer with metadata
+        customer = await stripe.customers.update(existingCustomers.data[0].id, {
+          metadata: { userId: userId }
+        });
+      } else {
+        // Create new customer with metadata
+        customer = await stripe.customers.create({
+          email,
+          metadata: { userId: userId }
+        });
+      }
+
+      console.log('Customer updated/created:', { 
+        id: customer.id, 
+        email: customer.email, 
+        metadata: customer.metadata 
+      });
+
     } catch (error) {
       console.error('Error handling customer:', error);
       return res.status(500).json({ error: 'Failed to process customer' });
@@ -61,7 +80,9 @@ export default async function handler(
         payment_behavior: 'default_incomplete',
         payment_settings: { save_default_payment_method: 'on_subscription' },
         metadata: {
-          sessionId: sessionId,
+          sessionId,
+          userId,
+          planId
         },
         expand: ['latest_invoice.payment_intent'],
       });
