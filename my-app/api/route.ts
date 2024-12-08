@@ -1,62 +1,37 @@
-import { NextResponse } from 'next/server';
-import OpenAI from 'openai';
+import { clerkClient } from "@clerk/nextjs/server";
+import { NextResponse } from "next/server";
+import { auth } from "@clerk/nextjs/server";
 
-const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY
-});
-
-
-export async function POST(req: Request) {
-  if (!process.env.OPENAI_API_KEY) {
-    return NextResponse.json(
-      { error: 'OpenAI API key is not configured' },
-      { status: 500 }
-    );
-  }
-
+export async function POST(request: Request) {
   try {
-    const { query } = await req.json();
+    const { userId } = auth();
+    if (!userId) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    const { firstName, lastName, email } = await request.json();
+
+    // Get current user
+    const user = await clerkClient.users.getUser(userId);
     
-    const completion = await openai.chat.completions.create({
-      messages: [
-        { 
-          role: "system", 
-          content: `You are a friendly and knowledgeable car rental assistant. Your role is to help customers understand our services and policies while maintaining a conversational tone. 
+    // First update user details
+    await clerkClient.users.updateUser(userId, {
+      firstName,
+      lastName,
+    });
 
-          Here are our key policies and information:
-
-          Insurance Coverage:
-          - Basic insurance is included in all rentals (covers third-party liability)
-          - Comprehensive coverage available for additional fee (covers damage to rental vehicle)
-          - CDW (Collision Damage Waiver) available to reduce deductible
-          - Personal accident insurance optional (covers driver and passengers)
-          
-          When discussing insurance:
-          - Explain options clearly and in simple terms
-          - Highlight the benefits of each coverage type
-          - Be transparent about costs and what is/isn't covered
-          - Recommend appropriate coverage based on customer needs
-          
-          Always maintain a helpful, professional tone and offer to clarify any points that might be unclear.`
-        },
-        {
-          role: "user",
-          content: query
-        }
-      ],
-      model: "gpt-3.5-turbo",
-      temperature: 0.7, // Add some personality while keeping responses accurate
-      max_tokens: 500   // Allow for detailed responses
+    // Add the new email address
+    await user.createEmailAddress({ 
+      email: email,
     });
 
     return NextResponse.json({ 
-      response: completion.choices[0].message.content 
+      success: true,
+      message: "Verification email sent. Please check your inbox."
     });
-    
-  } catch (error: any) {
-    return NextResponse.json(
-      { error: error.message },
-      { status: 500 }
-    );
+
+  } catch (error) {
+    console.error('Error updating user:', error);
+    return NextResponse.json({ error: "Failed to update user" }, { status: 500 });
   }
 }
