@@ -297,17 +297,18 @@ function PaymentForm({
                   <CardTitle>Price Breakdown</CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-2">
-                  <div className="flex justify-between">
-                    <span>Base Price:</span>
-                    <span>{formatPrice(total ? (total-total*0.2) : 0)}</span>
+                  <div className="flex items-center justify-between">
+                    <p>Total Price</p>
+                    <p className="font-semibold">{formatPrice(total)}</p>
                   </div>
-                  <div className="flex justify-between">
-                    <span>Taxes & Fees:</span>
-                    <span>{formatPrice(total ? ((total-total*0.2)*0.2) : 0)}</span>
+                  <div className="flex items-center justify-between text-green-600">
+                    <p>Taxes & Fees</p>
+                    <p className="font-semibold">Free</p>
                   </div>
-                  <div className="flex justify-between">
-                    <span>Total Price:</span>
-                    <span className="font-bold">{formatPrice(total)}</span>
+                  <Separator />
+                  <div className="flex items-center justify-between">
+                    <p className="text-lg font-semibold">Final Total</p>
+                    <p className="text-lg font-semibold">{formatPrice(total)}</p>
                   </div>
                 </CardContent>
               </Card>
