@@ -281,10 +281,10 @@ export function User_page() {
                 My Promotions
               </Link>
               <Link
-                href="/User_Account/User_Bookings"
+                href="/User_Account/Golden_Manage"
                 className="text-muted-foreground hover:text-customyello transition-colors"
                 prefetch={false}>
-                Previous Bookings
+                Manage Membership
               </Link>
               
             </div>

@@ -169,13 +169,14 @@ export default defineSchema({
 	subscriptions: defineTable({
 		userId: v.string(),
 		plan: v.string(),
+		amount: v.number(),
+		paymentSessionId: v.id("paymentSessions"),
+		stripeSubscriptionId: v.optional(v.string()),
 		status: v.string(),
 		startDate: v.string(),
 		endDate: v.string(),
 		lastPaymentDate: v.string(),
 		nextPaymentDate: v.string(),
-		paymentSessionId: v.id('paymentSessions'),
-		amount: v.number(),
 	})
 		.index('by_userId', ['userId'])
 		.index('by_status', ['status']),

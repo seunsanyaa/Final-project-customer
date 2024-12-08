@@ -21,7 +21,7 @@ export default function SubscriptionSuccess() {
   const paymentIntentId = searchParams?.get('payment_intent');
 
   const updatePaymentSession = useMutation(api.payment.updatePaymentSessionStatus);
-  const createSubscription = useMutation(api.payment.createSubscription);
+  const createSubscription = useMutation(api.customers.createSubscription);
   const createPayment = useMutation(api.payment.createPayment);
   const upgradeCustomer = useMutation(api.customers.upgradeCustomer);
 
@@ -30,6 +30,10 @@ export default function SubscriptionSuccess() {
       if (!user || !sessionId || !planId) return;
 
       try {
+        if (!paymentIntentId) {
+          throw new Error('Payment intent ID is missing');
+        }
+
         // 1. Update payment session status
         await updatePaymentSession({
           sessionId,
@@ -44,15 +48,31 @@ export default function SubscriptionSuccess() {
         };
         const amount = planPrices[planId as keyof typeof planPrices];
 
-        // Calculate expiration date (1 month from now)
+        // 2. Get Stripe subscription ID
+        const stripeResponse = await fetch('/api/get-stripe-subscription', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            paymentIntentId
+          }),
+        });
+
+        if (!stripeResponse.ok) {
+          const error = await stripeResponse.json();
+          throw new Error(error.error || 'Failed to get Stripe subscription');
+        }
+
+        const { stripeSubscriptionId } = await stripeResponse.json();
         
-        // 2. Create subscription record
+        // 3. Create subscription record
         const { subscriptionId } = await createSubscription({
           userId: user.id,
           plan: planId,
           amount,
           paymentSessionId: sessionId,
+          stripeSubscriptionId: stripeSubscriptionId
         });
+
         await createPayment({
           amount,
           paymentDate: new Date().toISOString(),
@@ -61,20 +81,35 @@ export default function SubscriptionSuccess() {
           isSubscription: true
         });
 
-        // 4. Upgrade customer status with expiration date
+        // 4. Update subscription metadata
+        const metadataResponse = await fetch('/api/update-subscription-metadata', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            subscriptionId: stripeSubscriptionId,
+            userId: user.id,
+            planId
+          }),
+        });
+
+        if (!metadataResponse.ok) {
+          throw new Error('Failed to update subscription metadata');
+        }
+
+        // 5. Upgrade customer status
         await upgradeCustomer({
           userId: user.id,
           subscriptionPlan: planId,
         });
 
-        // 5. Redirect to dashboard after short delay
+        // 6. Redirect to dashboard after short delay
         setTimeout(() => {
-          router.push('/dashboard');
+          router.push('/Golden');
         }, 2000);
 
       } catch (error) {
         console.error('Error processing subscription:', error);
-        setError("Failed to process subscription");
+        setError(error instanceof Error ? error.message : "Failed to process subscription");
       } finally {
         setIsProcessing(false);
       }
