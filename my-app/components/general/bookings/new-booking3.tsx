@@ -45,17 +45,17 @@ const useCurrency = () => {
   const [currency, setCurrency] = useState<string>('USD');
 
   useEffect(() => {
-    // Only run on client-side
+    // Only listen for currency changes, not language
     if (typeof window === 'undefined') return;
 
-    // Set initial currency from localStorage
     const settings = localStorage.getItem('userSettings');
     if (settings) {
       const parsedSettings = JSON.parse(settings);
-      setCurrency(parsedSettings.currency || 'USD');
+      if (parsedSettings.currency) {
+        setCurrency(parsedSettings.currency);
+      }
     }
 
-    // Handle currency changes
     const handleCurrencyChange = (e: Event) => {
       const customEvent = e as CustomEvent;
       setCurrency(customEvent.detail.currency);

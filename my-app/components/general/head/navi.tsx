@@ -9,6 +9,7 @@ import { SignedIn, SignedOut, SignInButton, SignOutButton, useUser } from "@cler
 import { useQuery } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import { Translate } from './translate'
+import { Button } from "@/components/ui/button"
 
 interface NaviProps {
   className?: string
@@ -50,12 +51,12 @@ export const Navi: React.FC<NaviProps> = ({ className }) => {
       const newSettings = {
         darkMode: userSettings.darkMode,
         language: userSettings.language,
-        currency: userSettings.language === 'turkish' ? 'TRY' : 'USD'
+        currency: localSettings.currency
       };
       setLocalSettings(newSettings);
       localStorage.setItem('userSettings', JSON.stringify(newSettings));
     }
-  }, [userSettings, user?.id]);
+  }, [userSettings, user?.id, localSettings.currency]);
 
   useEffect(() => {
     if (localSettings.darkMode) {
@@ -68,20 +69,8 @@ export const Navi: React.FC<NaviProps> = ({ className }) => {
   useEffect(() => {
     if (localSettings.language === 'turkish') {
       initializeGoogleTranslate();
-      const updatedSettings = { ...localSettings, currency: 'TRY' };
-      setLocalSettings(updatedSettings);
-      localStorage.setItem('userSettings', JSON.stringify(updatedSettings));
-      window.dispatchEvent(new CustomEvent('currencyChange', { 
-        detail: { currency: 'TRY' }
-      }));
     } else {
       removeGoogleTranslate();
-      const updatedSettings = { ...localSettings, currency: 'USD' };
-      setLocalSettings(updatedSettings);
-      localStorage.setItem('userSettings', JSON.stringify(updatedSettings));
-      window.dispatchEvent(new CustomEvent('currencyChange', { 
-        detail: { currency: 'USD' }
-      }));
     }
   }, [localSettings.language]);
 
@@ -93,6 +82,10 @@ export const Navi: React.FC<NaviProps> = ({ className }) => {
 
   const handleLanguageChange = (newLanguage: string) => {
     updateSettings({ language: newLanguage });
+  };
+
+  const handleCurrencyChange = (newCurrency: string) => {
+    updateSettings({ currency: newCurrency });
   };
 
   const initializeGoogleTranslate = () => {
@@ -212,6 +205,56 @@ export const Navi: React.FC<NaviProps> = ({ className }) => {
         </nav>
         <div className="flex items-center gap-4">
           <Translate />
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="ghost" className="text-muted-foreground hover:text-primary-foreground transition-colors flex items-center gap-2">
+                Currency
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  width="16"
+                  height="16"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                >
+                  <path d="m6 9 6 6 6-6"/>
+                </svg>
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent>
+              <DropdownMenuItem onClick={() => {
+                // Update localStorage
+                const settings = localStorage.getItem('userSettings') || '{}';
+                const parsedSettings = JSON.parse(settings);
+                const newSettings = { ...parsedSettings, currency: 'USD' };
+                localStorage.setItem('userSettings', JSON.stringify(newSettings));
+                
+                // Dispatch custom event
+                window.dispatchEvent(new CustomEvent('currencyChange', {
+                  detail: { currency: 'USD' }
+                }));
+              }}>
+                $ USD
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => {
+                // Update localStorage
+                const settings = localStorage.getItem('userSettings') || '{}';
+                const parsedSettings = JSON.parse(settings);
+                const newSettings = { ...parsedSettings, currency: 'TRY' };
+                localStorage.setItem('userSettings', JSON.stringify(newSettings));
+                
+                // Dispatch custom event
+                window.dispatchEvent(new CustomEvent('currencyChange', {
+                  detail: { currency: 'TRY' }
+                }));
+              }}>
+                ₺ TRY
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
           <SignedOut>
             <Link href="/Login" className="text-muted-foreground hover:text-primary-foreground transition-colors">
               Sign In

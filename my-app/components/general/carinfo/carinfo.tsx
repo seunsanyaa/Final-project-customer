@@ -19,10 +19,13 @@ const useCurrency = () => {
   const [currency, setCurrency] = useState<string>('USD');
 
   useEffect(() => {
+    // Only listen for currency changes, not language
     const settings = localStorage.getItem('userSettings');
     if (settings) {
       const parsedSettings = JSON.parse(settings);
-      setCurrency(parsedSettings.currency || 'USD');
+      if (parsedSettings.currency) {
+        setCurrency(parsedSettings.currency);
+      }
     }
 
     const handleCurrencyChange = (e: Event) => {
@@ -78,10 +81,16 @@ export function Carinfo() {
 
   const formatPrice = (amount: number) => {
     if (!amount) return '';
-    if (currency === 'TRY') {
-      return `₺${(amount * 34).toFixed(2)}`;
+    const formattedAmount = amount.toFixed(2);
+    const exchangeRate = 34; // Consider moving this to a configuration file
+    
+    switch (currency) {
+      case 'TRY':
+        return `₺${(amount * exchangeRate).toFixed(2)}`;
+      case 'USD':
+      default:
+        return `$${formattedAmount}`;
     }
-    return `$${amount.toFixed(2)}`;
   };
 
   return (

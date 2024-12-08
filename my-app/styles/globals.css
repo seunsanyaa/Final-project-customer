@@ -57,16 +57,14 @@
       --chart-3: 30 90% 65%;
       --chart-4: 280 75% 65%;
       --chart-5: 340 85% 65%;
-      --nav-bg: 224 50% 8%;
-      --nav-fg: 210 40% 98%;
-      --footer-bg: 225 45% 9%;
-      --footer-fg: 210 40% 98%;
+      --nav-bg: 222 47% 5%;     
+      --nav-fg: 210 40% 98%;     
+      --footer-bg: 223 47% 6%;   
+      --footer-fg: 210 40% 95%;  
     }
   }
   
   @layer base {
-    * {
-    }
     body {
       @apply bg-background text-foreground;
     }
