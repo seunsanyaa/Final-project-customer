@@ -24,16 +24,24 @@ import {
 } from "@/components/ui/select";
 import { Navi } from "../head/navi"
 import { Footer } from "../head/footer";
-import { useUser } from "@clerk/nextjs";
+import { useUser, useClerk } from "@clerk/nextjs";
 import { useMutation, useQuery } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import { useEffect, useState } from "react";
 import { clerkClient } from "@clerk/nextjs/server";
+import { useToast } from "@/hooks/use-toast";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { InputOTP, InputOTPGroup, InputOTPSlot } from "@/components/ui/input-otp";
 
 export function Settings2() {
   const { user } = useUser();
+  const clerk = useClerk();
+  const { toast } = useToast();
   const [darkMode, setDarkMode] = useState(false);
   const [language, setLanguage] = useState("english");
+  const [verifyDialog, setVerifyDialog] = useState(false);
+  const [code, setCode] = useState("");
+  const [pendingEmail, setPendingEmail] = useState<any>(null);
 
   const handleLanguageChange = (value: string) => {
     setLanguage(value);
@@ -110,17 +118,74 @@ export function Settings2() {
     if (!user?.id) return;
 
     try {
+      if (user.primaryEmailAddress?.emailAddress !== contactInfo.email) {
+        try {
+          const emailAddress = await clerk.user?.createEmailAddress({
+            email: contactInfo.email,
+          });
+          
+          await emailAddress?.prepareVerification({
+            strategy: "email_code"
+          });
+          
+          setPendingEmail(emailAddress);
+          setVerifyDialog(true);
+          
+          toast({
+            title: "Verification Required",
+            description: "Please enter the verification code sent to your new email.",
+          });
+        } catch (error) {
+          console.error('Error updating email in Clerk:', error);
+          toast({
+            variant: "destructive",
+            title: "Error",
+            description: "Failed to update email. Please try again.",
+          });
+        }
+      } else {
+        await upsertCustomer({
+          userId: user.id,
+          phoneNumber: contactInfo.phone,
+        });
+      }
+    } catch (error) {
+      console.error('Error updating contact info:', error);
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "Failed to update contact information. Please try again.",
+      });
+    }
+  };
+
+  const handleVerifyCode = async () => {
+    try {
+      await pendingEmail?.attemptVerification({ code });
+      await pendingEmail?.setPrimaryEmail();
+      
+      setVerifyDialog(false);
+      toast({
+        title: "Success",
+        description: "Email updated successfully!",
+      });
+
       await editUser({
-        userId: user.id,
+        userId: user!.id,
         email: contactInfo.email,
       });
 
       await upsertCustomer({
-        userId: user.id,
+        userId: user!.id,
         phoneNumber: contactInfo.phone,
       });
     } catch (error) {
-      console.error('Error updating contact info:', error);
+      console.error('Error verifying email:', error);
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "Invalid verification code. Please try again.",
+      });
     }
   };
 
@@ -464,6 +529,27 @@ export function Settings2() {
       </div>
       <Separator />
       <Footer/>
+      
+      <Dialog open={verifyDialog} onOpenChange={setVerifyDialog}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Verify Your Email</DialogTitle>
+          </DialogHeader>
+          <div className="flex flex-col items-center space-y-4">
+            <InputOTP maxLength={6} value={code} onChange={setCode}>
+              <InputOTPGroup>
+                <InputOTPSlot index={0} />
+                <InputOTPSlot index={1} />
+                <InputOTPSlot index={2} />
+                <InputOTPSlot index={3} />
+                <InputOTPSlot index={4} />
+                <InputOTPSlot index={5} />
+              </InputOTPGroup>
+            </InputOTP>
+            <Button onClick={handleVerifyCode}>Verify Email</Button>
+          </div>
+        </DialogContent>
+      </Dialog>
     </>
   );
 }
