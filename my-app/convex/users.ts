@@ -29,7 +29,7 @@ export const createUser = mutation({
 		firstName: v.string(),
 		lastName: v.string(),
 		staff: v.boolean(),
-		password: v.string(),
+		password: v.optional(v.string()),
 	},
 	handler: async (ctx, args) => {
 		// Hash the password before storing

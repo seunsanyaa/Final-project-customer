@@ -9,7 +9,7 @@ export default defineSchema({
 		firstName: v.string(),
 		lastName: v.string(),
 		email: v.string(),
-		password: v.string(),
+		password: v.optional(v.string()),
 		staff:v.optional(v.boolean()),
 	})
 		.index('by_userId', ['userId'])

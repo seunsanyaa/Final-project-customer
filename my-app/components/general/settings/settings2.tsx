@@ -24,16 +24,17 @@ import {
 } from "@/components/ui/select";
 import { Navi } from "../head/navi"
 import { Footer } from "../head/footer";
-import { useUser, useClerk } from "@clerk/nextjs";
+import { useUser, useClerk, useSignIn } from "@clerk/nextjs";
 import { useMutation, useQuery } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import { useEffect, useState } from "react";
 import { clerkClient } from "@clerk/nextjs/server";
 import { useToast } from "@/hooks/use-toast";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { InputOTP, InputOTPGroup, InputOTPSlot } from "@/components/ui/input-otp";
 
 export function Settings2() {
+  const { signIn, isLoaded: isSignInLoaded } = useSignIn();
   const { user } = useUser();
   const clerk = useClerk();
   const { toast } = useToast();
@@ -42,6 +43,8 @@ export function Settings2() {
   const [verifyDialog, setVerifyDialog] = useState(false);
   const [code, setCode] = useState("");
   const [pendingEmail, setPendingEmail] = useState<any>(null);
+  const [showSocialDialog, setShowSocialDialog] = useState(false);
+  const [pendingSocialEmail, setPendingSocialEmail] = useState<string | null>(null);
 
   const handleLanguageChange = (value: string) => {
     setLanguage(value);
@@ -124,17 +127,29 @@ export function Settings2() {
             email: contactInfo.email,
           });
           
-          await emailAddress?.prepareVerification({
-            strategy: "email_code"
-          });
-          
-          setPendingEmail(emailAddress);
-          setVerifyDialog(true);
-          
-          toast({
-            title: "Verification Required",
-            description: "Please enter the verification code sent to your new email.",
-          });
+          if (emailAddress) {
+            await emailAddress.prepareVerification({
+              strategy: "email_code"
+            });
+            
+            setPendingEmail(emailAddress);
+            
+            const emailDomain = contactInfo.email.split('@')[1].toLowerCase();
+            if (emailDomain === 'gmail.com') {
+              setPendingSocialEmail('google');
+              setShowSocialDialog(true);
+            } else if (emailDomain.includes('outlook.com') || emailDomain.includes('hotmail.com') || emailDomain.includes('live.com')) {
+              setPendingSocialEmail('microsoft');
+              setShowSocialDialog(true);
+            } else {
+              setVerifyDialog(true);
+            }
+            
+            toast({
+              title: "Verification Required",
+              description: "Please enter the verification code sent to your new email.",
+            });
+          }
         } catch (error) {
           console.error('Error updating email in Clerk:', error);
           toast({
@@ -147,6 +162,11 @@ export function Settings2() {
         await upsertCustomer({
           userId: user.id,
           phoneNumber: contactInfo.phone,
+        });
+        
+        toast({
+          title: "Success",
+          description: "Phone number updated successfully!",
         });
       }
     } catch (error) {
@@ -161,33 +181,98 @@ export function Settings2() {
 
   const handleVerifyCode = async () => {
     try {
-      await pendingEmail?.attemptVerification({ code });
-      await pendingEmail?.setPrimaryEmail();
+      if (!pendingEmail) {
+        throw new Error("No pending email verification");
+      }
+
+      await pendingEmail.attemptVerification({ code });
+      
+      await clerk.user?.update({
+        primaryEmailAddressId: pendingEmail.id
+      });
       
       setVerifyDialog(false);
+      setPendingEmail(null);
+      
       toast({
         title: "Success",
         description: "Email updated successfully!",
       });
 
-      await editUser({
-        userId: user!.id,
-        email: contactInfo.email,
-      });
+      if (user?.id) {
+        await editUser({
+          userId: user.id,
+          email: contactInfo.email,
+        });
 
-      await upsertCustomer({
-        userId: user!.id,
-        phoneNumber: contactInfo.phone,
-      });
+        await upsertCustomer({
+          userId: user.id,
+          phoneNumber: contactInfo.phone,
+        });
+      }
     } catch (error) {
       console.error('Error verifying email:', error);
       toast({
         variant: "destructive",
         title: "Error",
-        description: "Invalid verification code. Please try again.",
+        description: error instanceof Error ? error.message : "Failed to verify email. Please try again.",
       });
     }
   };
+
+  const handleConnectSocial = async () => {
+    if (!isSignInLoaded) return;
+    
+    try {
+      if (pendingSocialEmail === 'google') {
+        await signIn.authenticateWithRedirect({
+          strategy: "oauth_google",
+          redirectUrl: "/sso-callback",
+          redirectUrlComplete: "/settings",
+        });
+      } else if (pendingSocialEmail === 'microsoft') {
+        await signIn.authenticateWithRedirect({
+          strategy: "oauth_microsoft",
+          redirectUrl: "/sso-callback",
+          redirectUrlComplete: "/settings",
+        });
+      }
+    } catch (error) {
+      console.error('Error connecting social account:', error);
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "Failed to connect social account. Please try again.",
+      });
+      setShowSocialDialog(false);
+      setVerifyDialog(true);
+    }
+  };
+
+  useEffect(() => {
+    if (!user) return;
+
+    const searchParams = new URLSearchParams(window.location.search);
+    const oauthStatus = searchParams.get('oauth_status');
+    const oauthError = searchParams.get('oauth_error');
+    
+    if (oauthStatus === 'complete') {
+      toast({
+        title: "Success",
+        description: "Social account connected successfully!",
+      });
+      setVerifyDialog(true);
+      window.history.replaceState({}, '', '/settings');
+    } else if (oauthError || oauthStatus === 'error') {
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: oauthError || "Failed to connect social account. Please try again.",
+      });
+      setVerifyDialog(true);
+      window.history.replaceState({}, '', '/settings');
+    }
+  }, [toast, user]);
 
   return (
     <>
@@ -547,6 +632,28 @@ export function Settings2() {
               </InputOTPGroup>
             </InputOTP>
             <Button onClick={handleVerifyCode}>Verify Email</Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+      <Dialog open={showSocialDialog} onOpenChange={setShowSocialDialog}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Connect Your Account</DialogTitle>
+            <DialogDescription>
+              We noticed you're using a {pendingSocialEmail === 'google' ? 'Gmail' : 'Microsoft'} email. 
+              Would you like to connect your {pendingSocialEmail === 'google' ? 'Google' : 'Microsoft'} account for easier login?
+            </DialogDescription>
+          </DialogHeader>
+          <div className="flex flex-col space-y-4">
+            <Button onClick={handleConnectSocial}>
+              {pendingSocialEmail === 'google' ? 'Connect Google Account' : 'Connect Microsoft Account'}
+            </Button>
+            <Button variant="outline" onClick={() => {
+              setShowSocialDialog(false);
+              setVerifyDialog(true);
+            }}>
+              Skip for now
+            </Button>
           </div>
         </DialogContent>
       </Dialog>
