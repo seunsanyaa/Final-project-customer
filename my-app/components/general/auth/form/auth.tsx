@@ -41,7 +41,18 @@ const AuthFormSchema = z.object({
   email: z.string().email({
     message: "Invalid email address.",
   }),
-  password: passwordValidation,
+  password: z.string()
+  .min(6, { message: "Password must be at least 6 characters." })
+  .regex(/[a-z]/, {
+    message: "Password must contain at least one lowercase letter.",
+  })
+  .regex(/[A-Z]/, {
+    message: "Password must contain at least one uppercase letter.",
+  })
+  .regex(/[0-9]/, { message: "Password must contain at least one number." })
+  .regex(/[^a-zA-Z0-9]/, {
+    message: "Password must contain at least one special character.",
+  }),
 });
 
 interface CustomError {
@@ -80,15 +91,37 @@ export function InputForm({
     emailAddress: string;
     password: string;
   }) => {
-    if (!signupLoaded) return;
+    if (!signupLoaded) {
+      return;
+    }
 
-    // Store the signup data and redirect
-    sessionStorage.setItem('pendingSignup', JSON.stringify({
-      email: emailAddress,
-      password: password
-    }));
-    
-    void router.push('/onboarding');
+    try {
+      await signUp.create({
+        emailAddress,
+        password,
+      });
+      // send the email.
+      await signUp.prepareEmailAddressVerification({ strategy: "email_code" });
+
+      void router.push(`/verify-account?email=${emailAddress}`);
+    } catch (err: unknown) {
+      if (isCustomError(err)) {
+        const errorMessage =
+          err?.errors[0]?.message ?? "An unknown error occurred";
+        toast({
+          title: "Uh oh! Something went wrong.",
+          description: errorMessage,
+          variant: "default",
+        });
+      } else {
+        console.error("An unexpected error occurred:", err);
+        toast({
+          title: "Uh oh! Something went wrong.",
+          description: "Contact us as soon as possible!",
+          variant: "default",
+        });
+      }
+    }
   };
 
   const signInWithEmail = async ({
@@ -227,7 +260,6 @@ export function InputForm({
             </>
           )}
         />
-
         {passwordField && (
           <FormField
             control={authForm.control}
