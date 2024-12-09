@@ -6,7 +6,7 @@ export default function LoginComponent() {
 
   const renderContent = (pathname: string) => {
     switch (pathname) {
-      case "/Login":
+      case "/login":
         return (
           <>
             <h2 className="paragraph-color pt-8 text-2xl font-semibold">
@@ -74,7 +74,7 @@ export default function LoginComponent() {
 
       {renderContent(router.pathname)}
 
-      {router.pathname === "/Login" || router.pathname === "/create-account" ? (
+      {router.pathname === "/login" || router.pathname === "/create-account" ? (
         <>
           <SignInOAuthButtons />
 

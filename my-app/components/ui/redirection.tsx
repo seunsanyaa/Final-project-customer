@@ -22,7 +22,7 @@ export function Redirection() {
     // Set a timeout for the loading animation
     const timer = setTimeout(() => {
       setIsLoading(false);
-      router.push("/Login");
+      router.push("/login");
     }, 1500); // 1.5 seconds delay
 
     return () => clearTimeout(timer);

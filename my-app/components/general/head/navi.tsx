@@ -256,7 +256,7 @@ export const Navi: React.FC<NaviProps> = ({ className }) => {
             </DropdownMenuContent>
           </DropdownMenu>
           <SignedOut>
-            <Link href="/Login" className="text-muted-foreground hover:text-primary-foreground transition-colors">
+            <Link href="/login" className="text-muted-foreground hover:text-primary-foreground transition-colors">
               Sign In
             </Link>
           </SignedOut>

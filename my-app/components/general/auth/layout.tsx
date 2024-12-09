@@ -16,7 +16,7 @@ export default function AuthLayout() {
   useEffect(() => {
     if (!isLoaded) return; // Wait for auth to load
 
-    if (router.pathname === "/Login" && userId) {
+    if (router.pathname === "/login" && userId) {
       const redirectPath = sessionStorage.getItem('redirectAfterLogin');
       if (redirectPath) {
         sessionStorage.removeItem('redirectAfterLogin'); // Clear the stored path

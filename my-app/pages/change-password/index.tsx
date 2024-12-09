@@ -29,7 +29,7 @@ export const getServerSideProps: GetServerSideProps = async (ctx) => {
   if (!ctx.query.token) {
     return {
       redirect: {
-        destination: "/Login",
+        destination: "/login",
         permanent: false,
       },
     };
