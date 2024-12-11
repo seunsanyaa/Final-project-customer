@@ -1,6 +1,5 @@
 import { v } from "convex/values";
 import { mutation, query } from "./_generated/server";
-import { Doc, Id } from "./_generated/dataModel";
 
 // Define a staff member type
 interface StaffMember {
@@ -12,6 +11,7 @@ interface StaffMember {
 export const getAllStaff = query({
   handler: async (ctx) => {
     return await ctx.db.query("staff").collect();
+    
   },
 });
 

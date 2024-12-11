@@ -1,6 +1,5 @@
 import { v } from 'convex/values';
 import { mutation, query } from './_generated/server';
-import { Id } from './_generated/dataModel';
 
 export const createPayment = mutation({
 	args: {
@@ -13,17 +12,24 @@ export const createPayment = mutation({
 	},
 	handler: async (ctx, args) => {
 		if (args.paymentIntentId) {
-		const existingPayment = await ctx.db
-			.query('payments')
-			.withIndex('by_paymentIntentId', (q) => q.eq('paymentIntentId', args.paymentIntentId as string))
-			.first();
+			const existingPayment = await ctx.db
+				.query('payments')
+				.withIndex('by_paymentIntentId', (q) =>
+					q.eq('paymentIntentId', args.paymentIntentId as string)
+				)
+				.first();
 
-		if (existingPayment) {
-			return { paymentId: existingPayment._id, receiptNumber: existingPayment.receiptNumber };
+			if (existingPayment) {
+				return {
+					paymentId: existingPayment._id,
+					receiptNumber: existingPayment.receiptNumber,
+				};
 			}
 		}
 		const timestamp = Date.now();
-		const randomPart = Math.floor(Math.random() * 10000).toString().padStart(4, '0');
+		const randomPart = Math.floor(Math.random() * 10000)
+			.toString()
+			.padStart(4, '0');
 		const receiptNumber = `REC-${timestamp}-${randomPart}`;
 
 		const paymentId = await ctx.db.insert('payments', {
@@ -52,14 +58,15 @@ export const RefundPayment = mutation({
 			.first();
 
 		if (!existingPayment) {
-			throw new Error(`Payment with receipt number ${args.receiptNumber} does not exist.`);
+			throw new Error(
+				`Payment with receipt number ${args.receiptNumber} does not exist.`
+			);
 		}
-        //{actual refund function goes here}
+		//{actual refund function goes here}
 		await ctx.db.delete(existingPayment._id);
 		return `Payment with receipt number ${args.receiptNumber} has been refunded.`;
 	},
 });
-
 
 export const getPayment = query({
 	args: {
@@ -124,7 +131,7 @@ export const editPayment = mutation({
 	},
 	handler: async (ctx, args) => {
 		const existingPayment = await ctx.db.get(args.paymentId);
-		
+
 		if (!existingPayment) {
 			throw new Error(`Payment with ID ${args.paymentId} does not exist.`);
 		}
@@ -132,9 +139,12 @@ export const editPayment = mutation({
 		// Create an update object with only the fields that were provided
 		const updateFields: any = {};
 		if (args.amount !== undefined) updateFields.amount = args.amount;
-		if (args.paymentDate !== undefined) updateFields.paymentDate = args.paymentDate;
-		if (args.paymentType !== undefined) updateFields.paymentType = args.paymentType;
-		if (args.paymentIntentId !== undefined) updateFields.paymentIntentId = args.paymentIntentId;
+		if (args.paymentDate !== undefined)
+			updateFields.paymentDate = args.paymentDate;
+		if (args.paymentType !== undefined)
+			updateFields.paymentType = args.paymentType;
+		if (args.paymentIntentId !== undefined)
+			updateFields.paymentIntentId = args.paymentIntentId;
 		if (args.bookingId !== undefined) updateFields.bookingId = args.bookingId;
 
 		// Update the payment
@@ -195,25 +205,25 @@ export const getPaymentSession = query({
 	args: { sessionId: v.id('paymentSessions') },
 	handler: async (ctx, args) => {
 		const session = await ctx.db.get(args.sessionId);
-		
+
 		if (!session) {
-			throw new Error("Payment session not found");
+			throw new Error('Payment session not found');
 		}
 
 		// Check if session has expired
 		if (new Date(session.expiresAt) < new Date()) {
-			throw new Error("Payment session has expired");
+			throw new Error('Payment session has expired');
 		}
 
 		// Only fetch booking details if it's not a subscription
 		if (!session.isSubscription && session.bookingId) {
 			const booking = await ctx.db.get(session.bookingId);
 			if (!booking) {
-				throw new Error("Associated booking not found");
+				throw new Error('Associated booking not found');
 			}
 			return {
 				...session,
-				booking
+				booking,
 			};
 		}
 
@@ -230,7 +240,7 @@ export const updatePaymentSessionStatus = mutation({
 	handler: async (ctx, args) => {
 		const session = await ctx.db.get(args.sessionId);
 		if (!session) {
-			throw new Error("Payment session not found");
+			throw new Error('Payment session not found');
 		}
 
 		await ctx.db.patch(args.sessionId, {
@@ -277,7 +287,7 @@ export const createSubscription = mutation({
 		// Update the customer's subscription plan
 		const customer = await ctx.db
 			.query('customers')
-			.withIndex('by_userId', q => q.eq('userId', args.userId))
+			.withIndex('by_userId', (q) => q.eq('userId', args.userId))
 			.first();
 
 		if (customer) {
@@ -312,7 +322,9 @@ export const completeSubscriptionPayment = mutation({
 			startDate: new Date().toISOString(),
 			endDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(), // 30 days
 			lastPaymentDate: new Date().toISOString(),
-			nextPaymentDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
+			nextPaymentDate: new Date(
+				Date.now() + 30 * 24 * 60 * 60 * 1000
+			).toISOString(),
 			paymentSessionId: args.sessionId,
 			amount: args.amount,
 		});
@@ -329,12 +341,61 @@ export const deletePaymentSession = mutation({
 		// Check if the session exists
 		const session = await ctx.db.get(args.sessionId);
 		if (!session) {
-			throw new Error("Payment session not found");
+			throw new Error('Payment session not found');
 		}
 
 		// Delete the session
 		await ctx.db.delete(args.sessionId);
 
 		return { status: 'success' };
+	},
+});
+
+export const getWeeklyPayments = query({
+	args: {
+		startDate: v.string(), // ISO date string
+		endDate: v.string(), // ISO date string
+	},
+	handler: async (ctx, args) => {
+		const payments = await ctx.db
+			.query('payments')
+			.filter((q) =>
+				q.and(
+					q.gte(
+						q.field('paymentDate'),
+						new Date(args.startDate).getTime().toString()
+					),
+					q.lte(
+						q.field('paymentDate'),
+						new Date(args.endDate).getTime().toString()
+					)
+				)
+			)
+			.collect();
+
+		// Group payments by week
+		const weeklyPayments = payments.reduce(
+			(acc, payment) => {
+				const weekStart = new Date(payment.paymentDate);
+				weekStart.setHours(0, 0, 0, 0);
+				weekStart.setDate(weekStart.getDate() - weekStart.getDay()); // Set to start of week (Sunday)
+
+				const weekKey = weekStart.toISOString().split('T')[0];
+
+				if (!acc[weekKey]) {
+					acc[weekKey] = 0;
+				}
+				acc[weekKey] += payment.amount;
+
+				return acc;
+			},
+			{} as Record<string, number>
+		);
+
+		// Convert to array format for easier charting
+		return Object.entries(weeklyPayments).map(([week, total]) => ({
+			week,
+			total,
+		}));
 	},
 });
