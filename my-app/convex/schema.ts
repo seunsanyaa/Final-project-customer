@@ -1,5 +1,7 @@
 import { defineSchema, defineTable } from 'convex/server';
 import { v } from 'convex/values';
+import { Languages } from 'lucide-react';
+import { optional } from 'zod';
 
 export default defineSchema({
 	users: defineTable({
@@ -15,8 +17,9 @@ export default defineSchema({
 
 	staff: defineTable({
 		email: v.string(), //username is used in login
-		role: v.string(),
-	}).index('by_email', ['email']),
+	 	role: v.string(),
+	})
+		.index('by_email', ['email']),
 
 	customers: defineTable({
 		userId: v.string(),
@@ -36,12 +39,13 @@ export default defineSchema({
 	})
 		.index('by_userId', ['userId'])
 		.index('by_licenseNumber', ['licenseNumber']),
-
-	settings: defineTable({
+		
+	settings:defineTable({
 		userId: v.string(),
 		darkMode: v.boolean(),
 		language: v.string(),
-	}).index('by_userId', ['userId']),
+	})
+	.index('by_userId', ['userId']),
 
 	cars: defineTable({
 		model: v.string(),
@@ -76,7 +80,7 @@ export default defineSchema({
 		bodyType: v.string(),
 	})
 		.index('by_registrationNumber', ['registrationNumber'])
-		.index('by_bodyType', ['bodyType']),
+		.index('by_bodyType',['bodyType']),
 
 	bookings: defineTable({
 		customerId: v.string(),
@@ -91,6 +95,7 @@ export default defineSchema({
 		customerInsurancetype: v.string(),
 		customerInsuranceNumber: v.string(),
 		reviewId: v.optional(v.string()),
+		
 	})
 		.index('by_customerId', ['customerId'])
 		.index('by_carId', ['carId']),
@@ -116,7 +121,7 @@ export default defineSchema({
 		.index('by_model', ['model'])
 		.index('by_maker', ['maker']),
 
-	reviews: defineTable({
+	reviews:defineTable({
 		bookingId: v.id('bookings'),
 		rating: v.number(),
 		userId: v.string(),
@@ -128,30 +133,21 @@ export default defineSchema({
 		.index('by_userId', ['userId']),
 
 	promotions: defineTable({
-		promotionTitle: v.string(),
-		promotionDescription: v.string(),
-		promotionImage: v.string(),
-		promotionType: v.union(
-			v.literal('discount'),
-			v.literal('offer'),
-			v.literal('upgrade'),
-			v.literal('permenant')
-		),
-		promotionValue: v.number(),
-		promotionStartDate: v.optional(v.string()),
-		promotionEndDate: v.optional(v.string()),
-		status: v.union(
-			v.literal('active'),
-			v.literal('inactive'),
-			v.literal('expired'),
-			v.literal('scheduled')
-		),
-		goldenMembersOnly: v.boolean(),
-		target: v.union(v.literal('all'), v.literal('specific'), v.literal('none')),
-		specificTarget: v.array(v.string()),
-		minimumRentals: v.optional(v.number()),
-		minimumMoneySpent: v.optional(v.number()),
-	}).index('by_promotionTitle', ['promotionTitle']),
+    promotionTitle: v.string(),
+    promotionDescription: v.string(),
+    promotionImage: v.string(),
+    promotionType: v.union(v.literal('discount'), v.literal('offer'), v.literal('upgrade'), v.literal('permenant')),
+    promotionValue: v.number(),
+    promotionStartDate: v.optional(v.string()),
+    promotionEndDate: v.optional(v.string()),
+    status: v.union(v.literal('active'), v.literal('inactive'), v.literal('expired'), v.literal('scheduled')),
+    goldenMembersOnly: v.boolean(),
+    target: v.union(v.literal('all'), v.literal('specific'), v.literal('none')),
+    specificTarget: v.array(v.string()),
+    minimumRentals: v.optional(v.number()),
+    minimumMoneySpent: v.optional(v.number()),
+  })
+		.index('by_promotionTitle', ['promotionTitle']),
 
 	paymentSessions: defineTable({
 		bookingId: v.optional(v.id('bookings')),
@@ -190,5 +186,7 @@ export default defineSchema({
 		message: v.string(),
 		isAdmin: v.boolean(),
 		timestamp: v.string(),
-	}).index('by_customerId', ['customerId']),
+	})
+		.index('by_customerId', ['customerId']),
 });
+	
