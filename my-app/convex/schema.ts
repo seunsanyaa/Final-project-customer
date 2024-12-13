@@ -97,8 +97,7 @@ export default defineSchema({
 			totalInstallments: v.number(),
 			amountPerInstallment: v.number(),
 			remainingInstallments: v.number(),
-			nextInstallmentDate: v.string(),
-			completed: v.boolean()
+			nextInstallmentDate: v.string()
 		})),
 
 	})
