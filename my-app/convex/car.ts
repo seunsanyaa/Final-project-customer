@@ -88,19 +88,19 @@ export const addSpecification = mutation({
 export const createCar = mutation({
 	args: {
 		model: v.string(),
-		color: v.string(),
-		maker: v.string(),
-		trim: v.string(),
-		lastMaintenanceDate: v.string(),
-		available: v.boolean(),
-		year: v.number(),
-		registrationNumber: v.string(),
-		pictures: v.array(v.string()),
-		pricePerDay: v.number(),
-		averageRating: v.optional(v.number()),
-		categories: 	v.optional(v.array(v.string())),
-		disabled: v.boolean(),
-		golden: v.boolean(),
+    color: v.string(),
+    maker: v.string(),
+    trim: v.string(),
+    lastMaintenanceDate: v.string(),
+    available: v.boolean(),
+    disabled: v.boolean(),
+    golden: v.boolean(),
+    year: v.number(),
+    registrationNumber: v.string(),
+    pictures: v.array(v.string()),
+    pricePerDay: v.number(),
+    averageRating: v.optional(v.number()),
+    categories: v.optional(v.array(v.string())),
 	},
 	handler: async (ctx, args) => {
 		const existingCar = await ctx.db
@@ -116,7 +116,7 @@ export const createCar = mutation({
 
 		const carId = await ctx.db.insert('cars', {
 			...args,
-			disabled: false,
+
 		});
 
 		// Fetch and return the newly created car
@@ -156,10 +156,11 @@ export const updateCar = mutation({
 		trim: v.optional(v.string()),
 		lastMaintenanceDate: v.optional(v.string()),
 		available: v.optional(v.boolean()),
+		disabled: v.optional(v.boolean()),
+		golden: v.optional(v.boolean()),
 		year: v.optional(v.number()),
 		pictures: v.optional(v.array(v.string())),
-		disabled: v.optional(v.boolean()),
-		pricePerDay: v.optional(v.number()), // Add price here
+		pricePerDay: v.optional(v.number()),
 	},
 	handler: async (ctx, args) => {
 		const existingCar = await ctx.db
