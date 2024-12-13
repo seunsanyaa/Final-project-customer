@@ -210,4 +210,15 @@ export default defineSchema({
 		isAdmin: v.boolean(),
 		timestamp: v.string(),
 	}).index('by_customerId', ['customerId']),
+
+	notifications: defineTable({
+		userId: v.string(),
+		bookingId: v.string(),
+		message: v.string(),
+		isRead: v.boolean(),
+		createdAt: v.number(),
+		type: v.string(), // e.g., "new_booking", "payment", etc.
+	})
+		.index("by_userId", ["userId"])
+		.index("by_userId_and_isRead", ["userId", "isRead"]),
 });

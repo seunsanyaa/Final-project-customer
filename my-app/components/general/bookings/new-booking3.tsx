@@ -150,6 +150,7 @@ export function NewBooking3() {
   const createBooking = useMutation(api.bookings.createBooking);
   const createPaymentSession = useMutation(api.payment.createPaymentSession);
   const markPromotionAsUsed = useMutation(api.promotions.markPromotionAsUsed);
+  const createNotification = useMutation(api.notifications.createNotification);
 
   // 7. Early return checks
   // if (!isAuthenticated || !user) {
@@ -232,10 +233,10 @@ export function NewBooking3() {
 
     try {
       // Calculate the total amount based on payment method
-      const totalAmount = calculateFullPrice(); // Get the full price
+      const totalAmount = calculateFullPrice();
       const paidAmount = paymentMethod === 'installment' 
-        ? calculateTotal().amount // Get the installment amount
-        : parseFloat(totalAmount); // Get the full amount
+        ? calculateTotal().amount 
+        : parseFloat(totalAmount);
 
       // Create the booking first
       const bookingId = await createBooking({
@@ -244,20 +245,30 @@ export function NewBooking3() {
         startDate: pickupDateTime,
         endDate: dropoffDateTime,
         totalCost: parseFloat(totalAmount),
-        paidAmount: 0, // Initially 0 as payment hasn't been processed
+        paidAmount: 0,
         status: 'pending',
         pickupLocation,
         dropoffLocation,
         customerInsurancetype: extras.insurance ? 'full' : 'basic',
         customerInsuranceNumber: 'INS123',
         installmentPlan: {
-          frequency: 'monthly', // or 'weekly' based on your logic
-          totalInstallments: 3, // Example value, adjust as needed
-          amountPerInstallment: parseFloat(totalAmount) / 3, // Example calculation
-          remainingInstallments: 2, // Adjust based on your logic
-          nextInstallmentDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(), // Example
+          frequency: 'monthly',
+          totalInstallments: 3,
+          amountPerInstallment: parseFloat(totalAmount) / 3,
+          remainingInstallments: 2,
+          nextInstallmentDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
         },
       });
+
+      // Create notification for the new booking
+      if (typeof carDetails !== 'string') {  // Check if carDetails is not an error message
+        await createNotification({
+          userId: user.id,
+          bookingId: bookingId,
+          message: `${carDetails.make} ${carDetails.model} booking confirmed!`,
+          type: "new_booking"
+        });
+      }
 
       // Create payment session
       const { sessionId } = await createPaymentSession({

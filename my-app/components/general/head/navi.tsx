@@ -6,10 +6,12 @@ import CarIcon from '@/svgs/Caricon'
 import { useState, useEffect } from "react"
 import { Separator } from "@/components/ui/separator"
 import { SignedIn, SignedOut, SignInButton, SignOutButton, useUser } from "@clerk/nextjs"
-import { useQuery } from "convex/react";
+import { useQuery, useMutation } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import { Translate } from './translate'
 import { Button } from "@/components/ui/button"
+import { Bell } from "lucide-react"
+import { useRouter } from 'next/navigation'
 
 interface NaviProps {
   className?: string
@@ -143,6 +145,12 @@ export const Navi: React.FC<NaviProps> = ({ className }) => {
     }
   };
 
+  const router = useRouter();
+  const unreadNotifications = useQuery(api.notifications.getUnreadNotifications, { 
+    userId: user?.id ?? "skip" 
+  });
+  const markAsRead = useMutation(api.notifications.markNotificationsAsRead);
+
   return (
     <>
       <header
@@ -262,21 +270,61 @@ export const Navi: React.FC<NaviProps> = ({ className }) => {
           </SignedOut>
           <SignedIn>
             <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Avatar className="h-9 w-9 rounded-full cursor-pointer">
-                {user?.imageUrl ? (
-                  <AvatarImage
-                  src={user.imageUrl}
-                  alt="User Avatar"
-                  className="h-9 w-9"
-                  style={{ borderRadius: '9999px' }}
-                />
+              <DropdownMenuTrigger asChild>
+                <Button variant="ghost" className="relative p-2">
+                  <Bell className="h-5 w-5" />
+                  {unreadNotifications && unreadNotifications.length > 0 && (
+                    <span className="absolute -top-1 -right-1 flex h-5 w-5 items-center justify-center">
+                      <span className="absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75 animate-ping"></span>
+                      <span className="relative inline-flex rounded-full h-5 w-5 bg-red-500 text-white text-xs items-center justify-center">
+                        {unreadNotifications.length}
+                      </span>
+                    </span>
+                  )}
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="w-[300px]">
+                {unreadNotifications && unreadNotifications.length > 0 ? (
+                  unreadNotifications.map((notification) => (
+                    <DropdownMenuItem 
+                      key={notification._id}
+                      onClick={() => {
+                        markAsRead({ userId: user?.id ?? "" });
+                        router.push('/bookings');
+                      }}
+                    >
+                      <div className="flex flex-col gap-1">
+                        <p className="font-medium">{notification.message}</p>
+                        <p className="text-sm text-muted-foreground">Click to view details</p>
+                      </div>
+                    </DropdownMenuItem>
+                  ))
                 ) : (
-                  <AvatarFallback className="rounded-full">U</AvatarFallback>
+                  <DropdownMenuItem>
+                    <div className="flex flex-col gap-1">
+                      <p className="text-sm text-muted-foreground">No new notifications</p>
+                    </div>
+                  </DropdownMenuItem>
                 )}
-                <span className="sr-only">Toggle user menu</span>
-              </Avatar>
-            </DropdownMenuTrigger>
+              </DropdownMenuContent>
+            </DropdownMenu>
+            
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Avatar className="h-9 w-9 rounded-full cursor-pointer">
+                  {user?.imageUrl ? (
+                    <AvatarImage
+                    src={user.imageUrl}
+                    alt="User Avatar"
+                    className="h-9 w-9"
+                    style={{ borderRadius: '9999px' }}
+                  />
+                  ) : (
+                    <AvatarFallback className="rounded-full">U</AvatarFallback>
+                  )}
+                  <span className="sr-only">Toggle user menu</span>
+                </Avatar>
+              </DropdownMenuTrigger>
               <DropdownMenuContent className="custom-user-menu" align="end">
                 {/* Custom Menu Items */}
                 <DropdownMenuItem>
