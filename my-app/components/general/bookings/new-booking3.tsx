@@ -338,6 +338,41 @@ export function NewBooking3() {
     const total = calculateTotal();
     const basePrice = parseFloat(pricePerDay ?? '0') * totalDays;
 
+    // New helper function to format payment schedule
+    const formatPaymentSchedule = () => {
+      if (paymentMethod !== 'installment') return null;
+
+      if (totalDays > 60) { // More than 2 months
+        const monthlyRate = (parseFloat(calculateFullPrice()) / Math.ceil(totalDays / 30));
+        const months = Math.ceil(totalDays / 30);
+        return {
+          rate: monthlyRate,
+          unit: 'month',
+          periods: months,
+          text: `${formatPrice(monthlyRate)}/month for ${months} months`
+        };
+      } else if (totalDays > 14) { // More than 14 days
+        const weeklyRate = (parseFloat(calculateFullPrice()) / Math.ceil(totalDays / 7));
+        const weeks = Math.ceil(totalDays / 7);
+        return {
+          rate: weeklyRate,
+          unit: 'week',
+          periods: weeks,
+          text: `${formatPrice(weeklyRate)}/week for ${weeks} weeks`
+        };
+      } else {
+        const dailyRate = parseFloat(calculateFullPrice()) / totalDays;
+        return {
+          rate: dailyRate,
+          unit: 'day',
+          periods: totalDays,
+          text: `${formatPrice(dailyRate)}/day for ${totalDays} days`
+        };
+      }
+    };
+
+    const paymentSchedule = formatPaymentSchedule();
+
     return (
       <div className="space-y-1">
         <div className="flex flex-row space-x-60 gap-x-10">
@@ -399,7 +434,14 @@ export function NewBooking3() {
         <div className="flex items-center justify-between">
           <p className="text-lg font-semibold">Total</p>
           <p className="text-lg font-semibold">
-            {formatPrice(parseFloat(total.amount.toString()))}
+            {paymentMethod === 'installment' ? (
+              <span className="flex flex-col items-end">
+                <span className="text-sm text-muted-foreground">Total: {formatPrice(parseFloat(calculateFullPrice()))}</span>
+                <span>{paymentSchedule?.text}</span>
+              </span>
+            ) : (
+              formatPrice(parseFloat(total.amount.toString()))
+            )}
           </p>
         </div>
         {paymentMethod && (
@@ -474,7 +516,6 @@ export function NewBooking3() {
               <li>Save time with one single payment</li>
               <li>Get a 5% discount on any future bookings</li>
               <li>Priority support for future bookings and changes</li>
-              <li>Exclusive offers and rewards for full payment customers</li>
             </ul>
             <Button 
               className="w-fit px-6 py-3 text-lg font-semibold text-white bg-blue-600 hover:bg-blue-500 rounded-lg transition-colors hover:bg-muted shadow-2xl" 

@@ -20,7 +20,7 @@ export default async function handler(
   }
 
   try {
-    const { amount, sessionId, type, planId, email } = req.body;
+    const { amount, sessionId, email, installmentPlan } = req.body;
 
     if (!email) {
       return res.status(400).json({ error: 'Email is required' });
@@ -48,20 +48,50 @@ export default async function handler(
       return res.status(500).json({ error: 'Failed to manage customer' });
     }
 
-    // Create payment intent with the customer
-    const paymentIntent = await stripe.paymentIntents.create({
-      amount: Math.round(amount * 100),
-      currency: 'usd',
-      customer: customer.id,
-      metadata: { sessionId },
-      automatic_payment_methods: {
-        enabled: true,
-      },
-    });
+    if (installmentPlan) {
+      // Create a subscription for installment payments
+      const subscription = await stripe.subscriptions.create({
+        customer: customer.id,
+        items: [{
+          price_data: {
+            currency: 'usd',
+            unit_amount: Math.round(installmentPlan.amountPerInstallment * 100),
+            recurring: {
+              interval: installmentPlan.frequency,
+              interval_count: 1
+            },
+            product: `Car Rental Installment Payment - ${sessionId}`,
+          },
+        }],
+        metadata: { sessionId, isInstallment: 'true' },
+        payment_behavior: 'default_incomplete',
+        payment_settings: { save_default_payment_method: 'on_subscription' },
+        expand: ['latest_invoice.payment_intent'],
+      });
 
-    return res.status(200).json({
-      clientSecret: paymentIntent.client_secret,
-    });
+      const invoice = subscription.latest_invoice as Stripe.Invoice;
+      const payment_intent = invoice.payment_intent as Stripe.PaymentIntent;
+
+      return res.status(200).json({
+        clientSecret: payment_intent.client_secret,
+        subscriptionId: subscription.id
+      });
+    } else {
+      // Regular one-time payment
+      const paymentIntent = await stripe.paymentIntents.create({
+        amount: Math.round(amount * 100),
+        currency: 'usd',
+        customer: customer.id,
+        metadata: { sessionId },
+        automatic_payment_methods: {
+          enabled: true,
+        },
+      });
+
+      return res.status(200).json({
+        clientSecret: paymentIntent.client_secret,
+      });
+    }
 
   } catch (error) {
     console.error('Payment intent creation error:', error);
