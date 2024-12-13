@@ -36,6 +36,10 @@ import { InputOTP, InputOTPGroup, InputOTPSlot } from "@/components/ui/input-otp
 export function Settings2() {
   const { signIn, isLoaded: isSignInLoaded } = useSignIn();
   const { user } = useUser();
+  const saveSettings = useMutation(api.settings.saveSettings);
+  const userSettings = useQuery(api.settings.fetchSettings, { 
+    userId: user?.id ?? "" 
+  });
   const clerk = useClerk();
   const { toast } = useToast();
   const [darkMode, setDarkMode] = useState(false);
@@ -46,14 +50,36 @@ export function Settings2() {
   const [showSocialDialog, setShowSocialDialog] = useState(false);
   const [pendingSocialEmail, setPendingSocialEmail] = useState<string | null>(null);
 
-  const handleLanguageChange = (value: string) => {
-    setLanguage(value);
-  };
-
-  const handleDarkModeToggle = (checked: boolean) => {
+  useEffect(() => {
+    if (userSettings) {
+      setDarkMode(userSettings.darkMode);
+      setLanguage(userSettings.language);
+    }
+  }, [userSettings]); 
+  const handleDarkModeToggle = async (checked: boolean) => {
+    const newSettings = { darkMode: checked, language: language };
+    localStorage.setItem('userSettings', JSON.stringify(newSettings));
     setDarkMode(checked);
-  };
-
+  if (user?.id) {
+    await saveSettings({
+      userId: user.id,
+      darkMode: checked,
+      language: language
+    });
+  }
+}
+const handleLanguageChange = async (newLanguage: string) => {
+  const newSettings = { darkMode: darkMode, language: newLanguage };
+  localStorage.setItem('userSettings', JSON.stringify(newSettings));
+  setLanguage(newLanguage);
+  if (user?.id) {
+    await saveSettings({
+      userId: user.id,
+      darkMode: darkMode,
+      language: newLanguage
+    });
+  }
+};
   const userData = useQuery(api.users.getFullUser, { userId: user?.id ?? "" });
   const customerData = useQuery(api.customers.getCustomerByUserId, { userId: user?.id ?? "" });
   const upsertCustomer = useMutation(api.customers.upsertCustomer);
