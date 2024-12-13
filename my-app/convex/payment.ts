@@ -181,8 +181,8 @@ export const createPaymentSession = mutation({
 
 			if (args.isSubscription) {
 				// Fields specific to subscriptions
-				sessionData.subscriptionPlan = args.subscriptionPlan;
 				sessionData.isSubscription = true;
+				sessionData.subscriptionPlan = args.subscriptionPlan;
 			} else {
 				// Fields specific to rentals
 				sessionData.bookingId = args.bookingId;

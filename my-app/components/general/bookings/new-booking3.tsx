@@ -251,13 +251,6 @@ export function NewBooking3() {
         dropoffLocation,
         customerInsurancetype: extras.insurance ? 'full' : 'basic',
         customerInsuranceNumber: 'INS123',
-        installmentPlan: {
-          frequency: 'monthly',
-          totalInstallments: 3,
-          amountPerInstallment: parseFloat(totalAmount) / 3,
-          remainingInstallments: 2,
-          nextInstallmentDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
-        },
       });
 
       // Create notification for the new booking
@@ -265,7 +258,7 @@ export function NewBooking3() {
         await createNotification({
           userId: user.id,
           bookingId: bookingId,
-          message: `${carDetails.make} ${carDetails.model} booking confirmed!`,
+          message: `${carDetails.maker} ${carDetails.model} booking confirmed!`,
           type: "new_booking"
         });
       }
