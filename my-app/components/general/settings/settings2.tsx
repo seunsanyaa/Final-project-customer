@@ -147,54 +147,15 @@ const handleLanguageChange = async (newLanguage: string) => {
     if (!user?.id) return;
 
     try {
-      if (user.primaryEmailAddress?.emailAddress !== contactInfo.email) {
-        try {
-          const emailAddress = await clerk.user?.createEmailAddress({
-            email: contactInfo.email,
-          });
-          
-          if (emailAddress) {
-            await emailAddress.prepareVerification({
-              strategy: "email_code"
-            });
-            
-            setPendingEmail(emailAddress);
-            
-            const emailDomain = contactInfo.email.split('@')[1].toLowerCase();
-            if (emailDomain === 'gmail.com') {
-              setPendingSocialEmail('google');
-              setShowSocialDialog(true);
-            } else if (emailDomain.includes('outlook.com') || emailDomain.includes('hotmail.com') || emailDomain.includes('live.com')) {
-              setPendingSocialEmail('microsoft');
-              setShowSocialDialog(true);
-            } else {
-              setVerifyDialog(true);
-            }
-            
-            toast({
-              title: "Verification Required",
-              description: "Please enter the verification code sent to your new email.",
-            });
-          }
-        } catch (error) {
-          console.error('Error updating email in Clerk:', error);
-          toast({
-            variant: "destructive",
-            title: "Error",
-            description: "Failed to update email. Please try again.",
-          });
-        }
-      } else {
-        await upsertCustomer({
-          userId: user.id,
-          phoneNumber: contactInfo.phone,
-        });
-        
-        toast({
-          title: "Success",
-          description: "Phone number updated successfully!",
-        });
-      }
+      await upsertCustomer({
+        userId: user.id,
+        phoneNumber: contactInfo.phone,
+      });
+      
+      toast({
+        title: "Success",
+        description: "Phone number updated successfully!",
+      });
     } catch (error) {
       console.error('Error updating contact info:', error);
       toast({
@@ -379,15 +340,6 @@ const handleLanguageChange = async (newLanguage: string) => {
             <CardContent>
               <form className="grid gap-4">
                 <div className="grid gap-2">
-                  <Label htmlFor="email">Email</Label>
-                  <Input 
-                    id="email" 
-                    type="email"
-                    value={contactInfo.email}
-                    onChange={(e) => setContactInfo(prev => ({ ...prev, email: e.target.value }))}
-                  />
-                </div>
-                <div className="grid gap-2">
                   <Label htmlFor="phone">Phone Number</Label>
                   <Input 
                     id="phone"
@@ -400,38 +352,6 @@ const handleLanguageChange = async (newLanguage: string) => {
             <CardFooter className="flex justify-end gap-2">
               <Button variant="outline">Cancel</Button>
               <Button onClick={handleContactInfoSave}>Save Changes</Button>
-            </CardFooter>
-          </Card>
-          <Card className="w-full mx-auto mt-1 rounded-lg p-1 bg-white shadow-xl" style={{ border: "none" }}>
-            <CardHeader>
-              <CardTitle>Password</CardTitle>
-              <CardDescription>Change your password.</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <form className="grid gap-4">
-                <div className="grid gap-2">
-                  <Label htmlFor="current-password">Current Password</Label>
-                  <Input
-                    id="current-password"
-                    type="password"
-                    placeholder="Enter your current password" />
-                </div>
-                <div className="grid gap-2">
-                  <Label htmlFor="new-password">New Password</Label>
-                  <Input id="new-password" type="password" placeholder="Enter your new password" />
-                </div>
-                <div className="grid gap-2">
-                  <Label htmlFor="confirm-password">Confirm Password</Label>
-                  <Input
-                    id="confirm-password"
-                    type="password"
-                    placeholder="Confirm your new password" />
-                </div>
-              </form>
-            </CardContent>
-            <CardFooter className="flex justify-end gap-2">
-              <Button variant="outline">Cancel</Button>
-              <Button>Change Password</Button>
             </CardFooter>
           </Card>
           <Card className="w-full mx-auto mt-1 rounded-lg p-1 bg-white shadow-xl" style={{ border: "none" }}>
@@ -485,43 +405,6 @@ const handleLanguageChange = async (newLanguage: string) => {
                   <SelectItem value="turkish">Turkish</SelectItem>
                 </SelectContent>
               </Select>
-            </CardContent>
-            <CardFooter className="flex justify-end gap-2">
-              <Button variant="outline">Cancel</Button>
-              <Button>Save Changes</Button>
-            </CardFooter>
-          </Card>
-          <Card className="w-full mx-auto mt-1 rounded-lg p-1 bg-white shadow-xl" style={{ border: "none" }}>
-            <CardHeader>
-              <CardTitle>Accessibility</CardTitle>
-              <CardDescription>Customize your accessibility settings.</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="grid gap-4">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <div className="font-medium">High Contrast Mode</div>
-                    <div className="text-muted-foreground text-sm">Increase the contrast for better visibility.</div>
-                  </div>
-                  <Switch id="high-contrast-mode" />
-                </div>
-                <div className="flex items-center justify-between">
-                  <div>
-                    <div className="font-medium">Screen Reader Support</div>
-                    <div className="text-muted-foreground text-sm">
-                      Enable screen reader support for better accessibility.
-                    </div>
-                  </div>
-                  <Switch id="screen-reader-support" defaultChecked />
-                </div>
-                <div className="flex items-center justify-between">
-                  <div>
-                    <div className="font-medium">Keyboard Navigation</div>
-                    <div className="text-muted-foreground text-sm">Allow keyboard-only navigation through the app.</div>
-                  </div>
-                  <Switch id="keyboard-navigation" />
-                </div>
-              </div>
             </CardContent>
             <CardFooter className="flex justify-end gap-2">
               <Button variant="outline">Cancel</Button>
