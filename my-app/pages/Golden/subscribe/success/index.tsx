@@ -103,15 +103,12 @@ export default function SubscriptionSuccess() {
         });
 
         // 6. Redirect to dashboard after short delay
-        setTimeout(() => {
-          router.push('/Golden');
-        }, 2000);
-
       } catch (error) {
         console.error('Error processing subscription:', error);
         setError(error instanceof Error ? error.message : "Failed to process subscription");
       } finally {
         setIsProcessing(false);
+        router.push('/Golden/subscribe/goldenAnimation');
       }
     };
 
