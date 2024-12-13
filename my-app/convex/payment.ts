@@ -169,6 +169,7 @@ export const createPaymentSession = mutation({
 			amountPerInstallment: v.number()
 		})),
 		isSubscription: v.optional(v.boolean()),
+		subscriptionPlan:v.optional(v.string())
 	},
 	handler: async (ctx, args) => {
 		console.log('Creating payment session with args:', args);
@@ -193,7 +194,7 @@ export const createPaymentSession = mutation({
 			}
 
 			if (args.isSubscription) {
-				// Fields specific to subscriptions
+				sessionData.subscriptionPlan=args.subscriptionPlan;
 				sessionData.isSubscription = true;
 			} else {
 				// Fields specific to rentals
@@ -410,4 +411,18 @@ export const getWeeklyPayments = query({
 			total,
 		}));
 	},
+});
+
+export const completePaymentSession = mutation({
+	args: {
+		sessionId: v.id("paymentSessions"),
+		paymentIntentId: v.string()
+	},
+	handler: async (ctx, args) => {
+		await ctx.db.patch(args.sessionId, {
+			status: 'completed',
+			updatedAt: new Date().toISOString(),
+			paymentIntentId: args.paymentIntentId
+		});
+	}
 });

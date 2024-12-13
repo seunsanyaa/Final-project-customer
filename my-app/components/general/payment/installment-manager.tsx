@@ -1,8 +1,8 @@
 import { useState } from 'react';
 import { Button } from "@/components/ui/button";
 import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "@/components/ui/select";
-import { useMutation } from 'convex/react';
-import { api } from '@/convex/_generated/api';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Elements, PaymentElement, useStripe, useElements } from "@stripe/react-stripe-js";
 import { loadStripe } from '@stripe/stripe-js';
 import { Id } from '../../../convex/_generated/dataModel';
 
@@ -14,46 +14,30 @@ interface InstallmentManagerProps {
   nextInstallmentDate: string;
   nextInstallmentAmount: number;
   currency: string;
+  email: string;
 }
 
-export function InstallmentManager({ 
-  bookingId, 
-  remainingAmount, 
-  nextInstallmentDate,
-  nextInstallmentAmount,
-  currency
-}: InstallmentManagerProps) {
-  const [action, setAction] = useState<string>('');
+const PaymentForm = ({ amount, bookingId, onClose }: { amount: number; bookingId: Id<"bookings">; onClose: () => void }) => {
+  const stripe = useStripe();
+  const elements = useElements();
   const [isProcessing, setIsProcessing] = useState(false);
 
-  const handlePayment = async () => {
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!stripe || !elements) return;
+
     setIsProcessing(true);
+
     try {
-      const response = await fetch('/api/create-payment-intent', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          amount: action === 'next' ? nextInstallmentAmount : remainingAmount,
-          bookingId,
-          paymentType: action === 'next' ? 'installment' : 'full',
-        }),
+      const result = await stripe.confirmPayment({
+        elements,
+        confirmParams: {
+          return_url: `${window.location.origin}/bookings/currentbooking/success?bookingId=${bookingId}`,
+        },
       });
 
-      const { clientSecret } = await response.json();
-      const stripe = await stripePromise;
-
-      if (stripe) {
-        const { error } = await stripe.confirmPayment({
-          elements: undefined,
-          clientSecret,
-          confirmParams: {
-            return_url: `${window.location.origin}/bookings/success`,
-          },
-        });
-
-        if (error) {
-          console.error('Payment error:', error);
-        }
+      if (result.error) {
+        console.error('Payment error:', result.error);
       }
     } catch (error) {
       console.error('Payment processing error:', error);
@@ -63,27 +47,107 @@ export function InstallmentManager({
   };
 
   return (
-    <div className="flex items-center gap-2">
-      <Select value={action} onValueChange={setAction}>
-        <SelectTrigger>
-          <SelectValue placeholder="Payment options" />
-        </SelectTrigger>
-        <SelectContent>
-          <SelectItem value="next">
-            Pay next installment ({formatPrice(nextInstallmentAmount, currency)})
-          </SelectItem>
-          <SelectItem value="remaining">
-            Pay remaining amount ({formatPrice(remainingAmount, currency)})
-          </SelectItem>
-        </SelectContent>
-      </Select>
-      <Button 
-        onClick={handlePayment} 
-        disabled={!action || isProcessing}
-      >
-        {isProcessing ? "Processing..." : "Pay Now"}
-      </Button>
-    </div>
+    <form onSubmit={handleSubmit} className="space-y-4 bg-background">
+      <PaymentElement />
+      <div className="flex justify-end gap-2">
+        <Button type="button" variant="outline" onClick={onClose}>
+          Cancel
+        </Button>
+        <Button type="submit" disabled={!stripe || isProcessing}>
+          {isProcessing ? "Processing..." : `Pay ${formatPrice(amount, 'USD')}`}
+        </Button>
+      </div>
+    </form>
+  );
+};
+
+export function InstallmentManager({ 
+  bookingId, 
+  remainingAmount, 
+  nextInstallmentDate,
+  nextInstallmentAmount,
+  currency,
+  email
+}: InstallmentManagerProps) {
+  const [action, setAction] = useState<string>('');
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [clientSecret, setClientSecret] = useState<string | null>(null);
+
+  const handlePaymentClick = async () => {
+    const amount = action === 'next' ? nextInstallmentAmount : remainingAmount;
+    
+    try {
+      const response = await fetch('/api/create-payment-intent', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          amount,
+          bookingId,
+          email,
+          paymentType: action === 'next' ? 'installment' : 'full',
+          installmentPlan: action === 'next' ? { /* Add relevant installment plan details */ } : undefined,
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to create payment intent');
+      }
+
+      const { clientSecret } = await response.json();
+      setClientSecret(clientSecret);
+      setIsModalOpen(true);
+    } catch (error) {
+      console.error('Error creating payment intent:', error);
+    }
+  };
+
+  return (
+    <>
+      <div className="flex items-center gap-2 bg-background">
+        <Select value={action} onValueChange={setAction} >
+          <SelectTrigger>
+            <SelectValue placeholder="Payment options" />
+          </SelectTrigger>
+          <SelectContent className="bg-background">
+            <SelectItem value="next">
+              Pay next installment ({formatPrice(nextInstallmentAmount, currency)})
+            </SelectItem>
+            <SelectItem value="remaining">
+              Pay remaining amount ({formatPrice(remainingAmount, currency)})
+            </SelectItem>
+          </SelectContent>
+        </Select>
+        <Button 
+          onClick={handlePaymentClick} 
+          disabled={!action}
+        >
+          Pay Now
+        </Button>
+      </div>
+
+      <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
+        <DialogContent className="sm:max-w-[425px] bg-background">
+          <DialogHeader>
+            <DialogTitle>Complete Payment</DialogTitle>
+          </DialogHeader>
+          {clientSecret && (
+            <Elements 
+              stripe={stripePromise} 
+              options={{
+                clientSecret,
+                appearance: { theme: 'stripe' },
+              }}
+            >
+              <PaymentForm 
+                amount={action === 'next' ? nextInstallmentAmount : remainingAmount}
+                bookingId={bookingId}
+                onClose={() => setIsModalOpen(false)}
+              />
+            </Elements>
+          )}
+        </DialogContent>
+      </Dialog>
+    </>
   );
 }
 

@@ -250,6 +250,13 @@ export function NewBooking3() {
         dropoffLocation,
         customerInsurancetype: extras.insurance ? 'full' : 'basic',
         customerInsuranceNumber: 'INS123',
+        installmentPlan: {
+          frequency: 'monthly', // or 'weekly' based on your logic
+          totalInstallments: 3, // Example value, adjust as needed
+          amountPerInstallment: parseFloat(totalAmount) / 3, // Example calculation
+          remainingInstallments: 2, // Adjust based on your logic
+          nextInstallmentDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(), // Example
+        },
       });
 
       // Create payment session
