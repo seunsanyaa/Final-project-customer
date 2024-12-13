@@ -265,7 +265,7 @@ export function NewBooking3() {
         await createNotification({
           userId: user.id,
           bookingId: bookingId,
-          message: `${carDetails.make} ${carDetails.model} booking confirmed!`,
+          message: `${carDetails.maker} ${carDetails.model} booking confirmed!`,
           type: "new_booking"
         });
       }
