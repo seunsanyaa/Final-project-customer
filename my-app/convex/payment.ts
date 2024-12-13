@@ -163,13 +163,8 @@ export const createPaymentSession = mutation({
 		paidAmount: v.number(),
 		paymentType: v.string(),
 		userId: v.string(),
-		installmentPlan: v.optional(v.object({
-			frequency: v.string(), // 'weekly' or 'monthly'
-			totalInstallments: v.number(),
-			amountPerInstallment: v.number()
-		})),
+		subscriptionPlan: v.optional(v.string()),
 		isSubscription: v.optional(v.boolean()),
-		subscriptionPlan:v.optional(v.string())
 	},
 	handler: async (ctx, args) => {
 		console.log('Creating payment session with args:', args);
@@ -182,19 +177,11 @@ export const createPaymentSession = mutation({
 				status: 'pending',
 				createdAt: new Date().toISOString(),
 				expiresAt: new Date(Date.now() + 30 * 60 * 1000).toISOString(),
-
 			};
 
-			if (args.installmentPlan) {
-				sessionData.installmentPlan = args.installmentPlan;
-				sessionData.remainingInstallments = args.installmentPlan.totalInstallments - 1;
-				sessionData.nextInstallmentDate = new Date(
-					Date.now() + (args.installmentPlan.frequency === 'weekly' ? 7 : 30) * 24 * 60 * 60 * 1000
-				).toISOString();
-			}
-
 			if (args.isSubscription) {
-				sessionData.subscriptionPlan=args.subscriptionPlan;
+				// Fields specific to subscriptions
+				sessionData.subscriptionPlan = args.subscriptionPlan;
 				sessionData.isSubscription = true;
 			} else {
 				// Fields specific to rentals
@@ -411,18 +398,4 @@ export const getWeeklyPayments = query({
 			total,
 		}));
 	},
-});
-
-export const completePaymentSession = mutation({
-	args: {
-		sessionId: v.id("paymentSessions"),
-		paymentIntentId: v.string()
-	},
-	handler: async (ctx, args) => {
-		await ctx.db.patch(args.sessionId, {
-			status: 'completed',
-			updatedAt: new Date().toISOString(),
-			paymentIntentId: args.paymentIntentId
-		});
-	}
 });

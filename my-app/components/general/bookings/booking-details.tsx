@@ -15,9 +15,6 @@ import { Card } from '@/components/ui/card';
 import { Redirection } from "@/components/ui/redirection";
 // import { useReactToPrint, PrintContextConsumer } from 'react-to-print';
 // import { PrinterIcon } from '@heroicons/react/24/outline';
-import { InstallmentManager } from '../payment/installment-manager';
-
-const stripePromise = loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY!);
 
 // Add this custom hook near the top of the file
 const useCurrency = () => {
@@ -243,14 +240,9 @@ export default function BookingDetails() {
                       Print
                     </Button> */}
                     {bookingDetails.totalCost > bookingDetails.paidAmount && (
-                      <InstallmentManager
-                        bookingId={bookingDetails._id}
-                        remainingAmount={bookingDetails.totalCost - bookingDetails.paidAmount}
-                        nextInstallmentDate={bookingDetails.installmentPlan?.nextInstallmentDate ?? ''}
-                        nextInstallmentAmount={bookingDetails.installmentPlan?.amountPerInstallment ?? 0}
-                        currency={currency}
-                        email={user.emailAddresses[0].emailAddress}
-                      />
+                      <Button variant="outline" size="sm" className='hover:bg-muted' onClick={() => handlePaymentClick(true)}>
+                        Pay Next Installment
+                      </Button>
                     )}
                     <Button  size="sm" className="px-6 py-3 text-lg font-semibold text-white bg-blue-600 hover:bg-blue-500 rounded-lg transition-colors hover:bg-black shadow-2xl" onClick={handleModifyClick}>
                       Modify Booking
@@ -409,8 +401,6 @@ export default function BookingDetails() {
           )}
         </DialogContent>
       </Dialog>
-
-    
     </div>
   );
 }

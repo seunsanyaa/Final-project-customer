@@ -91,16 +91,6 @@ export default defineSchema({
 		customerInsurancetype: v.string(),
 		customerInsuranceNumber: v.string(),
 		reviewId: v.optional(v.string()),
-		paymentType: v.optional(v.string()), // 'full' or 'installment'
-		installmentPlan: v.optional(v.object({
-			frequency: v.string(),
-			totalInstallments: v.number(),
-			amountPerInstallment: v.number(),
-			remainingInstallments: v.number(),
-			nextInstallmentDate: v.string(),
-			completed: v.boolean()
-		})),
-
 	})
 		.index('by_customerId', ['customerId'])
 		.index('by_carId', ['carId']),
@@ -113,7 +103,6 @@ export default defineSchema({
 		paymentType: v.string(),
 		paymentIntentId: v.optional(v.string()),
 		isSubscription: v.optional(v.boolean()),
-		
 	})
 		.index('by_receiptNumber', ['receiptNumber'])
 		.index('by_bookingId', ['bookingId'])
@@ -176,14 +165,6 @@ export default defineSchema({
 		expiresAt: v.string(),
 		updatedAt: v.optional(v.string()),
 		isSubscription: v.optional(v.boolean()),
-		installmentPlan: v.optional(v.object({
-			frequency: v.string(),
-			totalInstallments: v.number(),
-			amountPerInstallment: v.number(),
-			remainingInstallments: v.number(),
-			nextInstallmentDate: v.string()
-		})),
-		stripeSubscriptionId: v.optional(v.string()),
 	})
 		.index('by_userId', ['userId'])
 		.index('by_bookingId', ['bookingId'])

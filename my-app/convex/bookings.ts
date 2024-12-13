@@ -377,27 +377,3 @@ export const awardBookingRewardPoints = mutation({
 		};
 	},
 });
-
-export const updateInstallmentPlan = mutation({
-	args: {
-		bookingId: v.id("bookings"),
-		remainingInstallments: v.number(),
-		nextInstallmentDate: v.string(),
-		completed: v.boolean()
-	},
-	handler: async (ctx, args) => {
-		const booking = await ctx.db.get(args.bookingId);
-		if (!booking || !booking.installmentPlan) {
-			throw new Error("Booking or installment plan not found");
-		}
-
-		await ctx.db.patch(args.bookingId, {
-			installmentPlan: {
-				...booking.installmentPlan,
-				remainingInstallments: args.remainingInstallments,
-				nextInstallmentDate: args.nextInstallmentDate,
-				completed: args.completed
-			}
-		});
-	}
-});
