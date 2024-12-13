@@ -107,6 +107,7 @@ export const GoldenSubscribe = () => {
       }
 
       router.push(`/Golden/subscribe/payment?plan=${planId}&sessionId=${sessionId}&clientSecret=${clientSecret}`);
+      router.push('/Golden/subscribe/success');
     } catch (error: any) {
       console.error('Subscription initialization failed:', error);
       // Consider adding error state and displaying to user
