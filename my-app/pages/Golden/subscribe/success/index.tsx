@@ -7,8 +7,7 @@ import { Id } from "@/convex/_generated/dataModel";
 import { useUser } from "@clerk/nextjs";
 import { Navi } from "@/components/general/head/navi";
 import { Footer } from "@/components/general/head/footer";
-import Lottie from 'lottie-react';
-import goldenAnimation from '@/public/animations/golden.json';
+import { CheckCircleIcon } from "@heroicons/react/outline";
 
 export default function SubscriptionSuccess() {
   const router = useRouter();
@@ -16,7 +15,6 @@ export default function SubscriptionSuccess() {
   const { user } = useUser();
   const [isProcessing, setIsProcessing] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [showAnimation, setShowAnimation] = useState(false);
 
   const sessionId = searchParams?.get('session_id') as Id<"paymentSessions">;
   const planId = searchParams?.get('plan');
@@ -104,14 +102,10 @@ export default function SubscriptionSuccess() {
           subscriptionPlan: planId,
         });
 
-        // After successful processing
-        setIsProcessing(false);
-        setShowAnimation(true); // Show animation when processing is complete
-
-        // Delay redirect to allow animation to play
+        // 6. Redirect to dashboard after short delay
         setTimeout(() => {
           router.push('/Golden');
-        }, 5000); // 5 seconds delay
+        }, 2000);
 
       } catch (error) {
         console.error('Error processing subscription:', error);
@@ -124,8 +118,18 @@ export default function SubscriptionSuccess() {
     if (sessionId && planId && user && isProcessing) {
       processSubscription();
     }
-  }, [sessionId, planId, user, isProcessing, createPayment, createSubscription, 
-      paymentIntentId, router, updatePaymentSession, upgradeCustomer]);
+  }, [
+    sessionId, 
+    planId, 
+    user, 
+    isProcessing, 
+    createPayment,
+    createSubscription,
+    paymentIntentId,
+    router,
+    updatePaymentSession,
+    upgradeCustomer
+  ]);
 
   if (error) {
     return (
@@ -143,32 +147,16 @@ export default function SubscriptionSuccess() {
     <>
       <Navi />
       <div className="flex flex-col items-center justify-center min-h-screen p-6 text-center">
-        {isProcessing ? (
-          <>
-            <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-primary"></div>
-            <h1 className="text-3xl font-bold mt-6">Processing Subscription</h1>
-            <p className="text-lg text-muted-foreground mt-4">
-              Please wait while we activate your subscription...
-            </p>
-          </>
-        ) : (
-          <div className="w-full max-w-[600px]">
-            <Lottie
-              animationData={goldenAnimation}
-              loop={false}
-              className="w-full h-[400px]"
-              onComplete={() => {
-                // Optional: Add any actions after animation completes
-              }}
-            />
-            <h1 className="text-3xl font-bold mt-6">
-              Subscription Activated Successfully!
-            </h1>
-            <p className="text-lg text-muted-foreground mt-4">
-              Welcome to our Elite Membership. Redirecting to dashboard...
-            </p>
-          </div>
-        )}
+        <CheckCircleIcon className="w-16 h-16 text-green-600" />
+        <h1 className="text-3xl font-bold mt-6">
+          {isProcessing ? "Processing Subscription" : "Subscription Activated"}
+        </h1>
+        <p className="text-lg text-muted-foreground mt-4">
+          {isProcessing 
+            ? "Please wait while we activate your subscription..."
+            : "Your subscription has been activated successfully. Redirecting..."
+          }
+        </p>
       </div>
       <Footer />
     </>
