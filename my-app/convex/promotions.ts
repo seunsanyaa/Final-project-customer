@@ -40,6 +40,24 @@ export const createPromotion = mutation({
     }
     
     const promotionId = await ctx.db.insert('promotions', args);
+
+    // Get all customers
+    const customers = await ctx.db.query('customers').collect();
+
+    // Create notifications for all customers
+    await Promise.all(
+      customers.map(async (customer) => {
+        await ctx.db.insert('notifications', {
+          userId: customer.userId,
+          message: `New promotion available: ${args.promotionTitle}`,
+          type: 'promotion',
+          isRead: false,
+          createdAt: Date.now(),
+          promotionId: promotionId, // Store the promotion ID in the notification
+        });
+      })
+    );
+
     return promotionId;
   },
 });

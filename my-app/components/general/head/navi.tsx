@@ -290,12 +290,22 @@ export const Navi: React.FC<NaviProps> = ({ className }) => {
                       key={notification._id}
                       onClick={() => {
                         markAsRead({ userId: user?.id ?? "" });
-                        router.push('/bookings');
+                        // Check notification type and redirect accordingly
+                        if (notification.type === 'promotion') {
+                          router.push('/promotions');
+                        } else {
+                          router.push('/bookings');
+                        }
                       }}
                     >
                       <div className="flex flex-col gap-1">
                         <p className="font-medium">{notification.message}</p>
-                        <p className="text-sm text-muted-foreground">Click to view details</p>
+                        <p className="text-sm text-muted-foreground">
+                          {notification.type === 'promotion' 
+                            ? 'Click to view promotion'
+                            : 'Click to view details'
+                          }
+                        </p>
                       </div>
                     </DropdownMenuItem>
                   ))

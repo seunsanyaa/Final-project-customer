@@ -203,11 +203,12 @@ export default defineSchema({
 
 	notifications: defineTable({
 		userId: v.string(),
-		bookingId: v.string(),
+		bookingId: v.optional(v.string()),  // Made optional
 		message: v.string(),
+		type: v.string(), // e.g., "new_booking", "payment", etc.
 		isRead: v.boolean(),
 		createdAt: v.number(),
-		type: v.string(), // e.g., "new_booking", "payment", etc.
+		promotionId: v.optional(v.id('promotions')), // Add this field
 	})
 		.index("by_userId", ["userId"])
 		.index("by_userId_and_isRead", ["userId", "isRead"]),
