@@ -8,7 +8,7 @@ export default defineSchema({
 		lastName: v.string(),
 		email: v.string(),
 		password: v.optional(v.string()),
-		staff:v.optional(v.boolean()),
+		staff: v.optional(v.boolean()),
 	})
 		.index('by_userId', ['userId'])
 		.index('by_email', ['email']),
@@ -16,6 +16,7 @@ export default defineSchema({
 	staff: defineTable({
 		email: v.string(), //username is used in login
 		role: v.string(),
+		token: v.optional(v.string()),
 	}).index('by_email', ['email']),
 
 	customers: defineTable({
@@ -92,14 +93,15 @@ export default defineSchema({
 		customerInsuranceNumber: v.string(),
 		reviewId: v.optional(v.string()),
 		paymentType: v.optional(v.string()), // 'full' or 'installment'
-		installmentPlan: v.optional(v.object({
-			frequency: v.string(),
-			totalInstallments: v.number(),
-			amountPerInstallment: v.number(),
-			remainingInstallments: v.number(),
-			nextInstallmentDate: v.string()
-		})),
-
+		installmentPlan: v.optional(
+			v.object({
+				frequency: v.string(),
+				totalInstallments: v.number(),
+				amountPerInstallment: v.number(),
+				remainingInstallments: v.number(),
+				nextInstallmentDate: v.string(),
+			})
+		),
 	})
 		.index('by_customerId', ['customerId'])
 		.index('by_carId', ['carId']),
@@ -183,7 +185,7 @@ export default defineSchema({
 		userId: v.string(),
 		plan: v.string(),
 		amount: v.number(),
-		paymentSessionId: v.id("paymentSessions"),
+		paymentSessionId: v.id('paymentSessions'),
 		stripeSubscriptionId: v.optional(v.string()),
 		status: v.string(),
 		startDate: v.string(),
@@ -210,6 +212,6 @@ export default defineSchema({
 		createdAt: v.number(),
 		promotionId: v.optional(v.id('promotions')), // Add this field
 	})
-		.index("by_userId", ["userId"])
-		.index("by_userId_and_isRead", ["userId", "isRead"]),
+		.index('by_userId', ['userId'])
+		.index('by_userId_and_isRead', ['userId', 'isRead']),
 });

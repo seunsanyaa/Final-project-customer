@@ -28,6 +28,7 @@ import type * as settings from "../settings.js";
 import type * as staff from "../staff.js";
 import type * as users from "../users.js";
 import type * as util from "../util.js";
+import type * as verify from "../verify.js";
 
 /**
  * A utility for referencing Convex functions in your app's API.
@@ -53,6 +54,7 @@ declare const fullApi: ApiFromModules<{
   staff: typeof staff;
   users: typeof users;
   util: typeof util;
+  verify: typeof verify;
 }>;
 export declare const api: FilterApi<
   typeof fullApi,
