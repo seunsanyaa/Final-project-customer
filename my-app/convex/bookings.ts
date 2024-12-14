@@ -382,44 +382,26 @@ export const awardBookingRewardPoints = mutation({
 export const getDailyBookingStats = query({
 	handler: async (ctx) => {
 		const bookings = await ctx.db.query('bookings').collect();
-		const today = new Date();
-		today.setHours(0, 0, 0, 0);
 
-		const stats = {
-			totalBookings: bookings.length,
-			activeBookings: 0,
-			completedBookings: 0,
-			pendingBookings: 0,
-			cancelledBookings: 0,
-			todayBookings: 0,
-			revenue: {
-				total: 0,
-				collected: 0,
-				pending: 0,
-			},
-		};
+		// Create a map to store booking counts by day
+		const dailyStats = new Map<string, number>();
 
 		bookings.forEach((booking) => {
-			// Count by status
-			if (booking.status === 'active') stats.activeBookings++;
-			else if (booking.status === 'completed') stats.completedBookings++;
-			else if (booking.status === 'pending') stats.pendingBookings++;
-			else if (booking.status === 'cancelled') stats.cancelledBookings++;
-
-			// Check if booking starts today
-			const bookingDate = new Date(booking.startDate);
-			bookingDate.setHours(0, 0, 0, 0);
-			if (bookingDate.getTime() === today.getTime()) {
-				stats.todayBookings++;
-			}
-
-			// Calculate revenue
-			stats.revenue.total += booking.totalCost;
-			stats.revenue.collected += booking.paidAmount;
-			stats.revenue.pending += booking.totalCost - booking.paidAmount;
+			const date = new Date(booking.startDate);
+			const dayKey = date.toISOString().split('T')[0];
+			// Count bookings per day
+			dailyStats.set(dayKey, (dailyStats.get(dayKey) || 0) + 1);
 		});
 
-		return stats;
+		// Convert to format needed for ResponsiveLine
+		const data = Array.from(dailyStats.entries())
+			.sort(([dateA], [dateB]) => dateA.localeCompare(dateB))
+			.map(([x, y]) => ({
+				x,
+				y,
+			}));
+
+		return data;
 	},
 });
 
