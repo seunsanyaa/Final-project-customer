@@ -500,3 +500,13 @@ export const getCarsByCategory = query({
 		);
 	},
 });
+
+export const getNumberOfCars = query({
+	handler: async (ctx): Promise<number> => {
+		const cars = await ctx.db
+			.query('cars')
+			.filter((q) => q.eq(q.field('disabled'), false))
+			.collect();
+		return cars.length;
+	},
+});

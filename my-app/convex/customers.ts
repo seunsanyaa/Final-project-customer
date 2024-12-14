@@ -413,4 +413,14 @@ export const cancelSubscription = mutation({
 	}
 });
 
+export const getCustomerCount = query({
+	handler: async (ctx) => {
+		const customers = await ctx.db
+			.query('customers')
+			.collect();
+		
+		return customers.length;
+	},
+});
+
 
