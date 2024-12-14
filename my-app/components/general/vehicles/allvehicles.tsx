@@ -95,53 +95,53 @@ export default function AllVehicles() {
 
   // Add new state variables for AI chat
   const [customerQuery, setCustomerQuery] = useState("");
-  const [aiResponse, setAiResponse] = useState("");
+  // const [aiResponse, setAiResponse] = useState("");
   const [isLoading, setIsLoading] = useState(false);
 
   // Add AI query handler
-  const handleAiQuery = async () => {
-    if (!customerQuery.trim()) return;
+  // const handleAiQuery = async () => {
+  //   if (!customerQuery.trim()) return;
     
-    setIsLoading(true);
-    try {
-      const response = await fetch('/api/chat', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Accept': 'application/json',
-        },
-        body: JSON.stringify({
-          query: customerQuery
-        })
-      });
+  //   setIsLoading(true);
+  //   try {
+  //     const response = await fetch('/api/chat', {
+  //       method: 'POST',
+  //       headers: {
+  //         'Content-Type': 'application/json',
+  //         'Accept': 'application/json',
+  //       },
+  //       body: JSON.stringify({
+  //         query: customerQuery
+  //       })
+  //     });
       
-      // Check if the response is JSON
-      const contentType = response.headers.get("content-type");
-      if (!contentType || !contentType.includes("application/json")) {
-        throw new Error("Response is not JSON");
-      }
+  //     // Check if the response is JSON
+  //     const contentType = response.headers.get("content-type");
+  //     if (!contentType || !contentType.includes("application/json")) {
+  //       throw new Error("Response is not JSON");
+  //     }
 
-      const data = await response.json();
-      console.log('Received response data:', data);
+  //     const data = await response.json();
+  //     console.log('Received response data:', data);
 
-      if (data.error) {
-        throw new Error(data.error);
-      }
+  //     if (data.error) {
+  //       throw new Error(data.error);
+  //     }
 
-      setAiResponse(data.response || 'No response received');
-    } catch (error: any) {
-      console.error('Detailed error:', error);
-      try {
-        const responseText = await response?.text();
-        console.error('Raw response:', responseText);
-      } catch (e) {
-        console.error('Could not get response text:', e);
-      }
-      setAiResponse("I apologize, but I'm having trouble connecting right now. Please try again in a moment.");
-    } finally {
-      setIsLoading(false);
-    }
-  };
+  //     setAiResponse(data.response || 'No response received');
+  //   } catch (error: any) {
+  //     console.error('Detailed error:', error);
+  //     try {
+  //       const responseText = await response?.text();
+  //       console.error('Raw response:', responseText);
+  //     } catch (e) {
+  //       console.error('Could not get response text:', e);
+  //     }
+  //     setAiResponse("I apologize, but I'm having trouble connecting right now. Please try again in a moment.");
+  //   } finally {
+  //     setIsLoading(false);
+  //   }
+  // };
 
   if (!cars) {
     return (
@@ -318,7 +318,7 @@ export default function AllVehicles() {
                 <h2 className="text-2xl font-bold">Chat with our Car Assistant</h2>
                 
                 {/* Chat history display */}
-                {aiResponse && (
+                {/* {aiResponse && (
                   <div className="bg-muted rounded-lg p-4 max-h-48 overflow-y-auto">
                     <div className="space-y-2">
                       <div className="bg-primary/10 rounded p-2">
@@ -331,10 +331,10 @@ export default function AllVehicles() {
                       </div>
                     </div>
                   </div>
-                )}
+                )} */}
 
                 {/* Input area */}
-                <div className="flex gap-2">
+                {/* <div className="flex gap-2">
                   <Input
                     placeholder="Ask me anything about cars..."
                     value={customerQuery}
@@ -356,7 +356,7 @@ export default function AllVehicles() {
                       "Ask AI"
                     )}
                   </Button>
-                </div>
+                </div> */}
               </div>
             </div>
           </div>

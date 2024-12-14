@@ -211,19 +211,19 @@ export default function UserPromotions() {
 
                 {/* Active Benefits Section */}
                 {userRedeemedPromotions?.filter(promotion => promotion !== null).map((promotion) => (
-                  <Card key={promotion._id} className="bg-gray-50">
+                  <Card key={promotion!._id} className="bg-gray-50">
                     <CardContent className="p-4">
                       <div className="flex justify-between items-start">
                         <div>
-                          <h4 className="font-semibold">{promotion.promotionTitle}</h4>
-                          <p className="text-sm text-muted-foreground">{promotion.promotionDescription}</p>
+                          <h4 className="font-semibold">{promotion!.promotionTitle}</h4>
+                          <p className="text-sm text-muted-foreground">{promotion!.promotionDescription}</p>
                           <Badge className="mt-2">Active</Badge>
                         </div>
                         <Button
                           variant="outline"
                           size="sm"
                           className="text-red-500 hover:text-red-700"
-                          onClick={() => handleDeactivate(promotion._id)}
+                          onClick={() => handleDeactivate(promotion!._id)}
                         >
                           Deactivate
                         </Button>

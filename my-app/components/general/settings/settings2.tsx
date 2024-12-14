@@ -549,7 +549,7 @@ const handleLanguageChange = async (newLanguage: string) => {
           <DialogHeader>
             <DialogTitle>Connect Your Account</DialogTitle>
             <DialogDescription>
-              We noticed you're using a {pendingSocialEmail === 'google' ? 'Gmail' : 'Microsoft'} email. 
+              We noticed you&apos;re using a {pendingSocialEmail === 'google' ? 'Gmail' : 'Microsoft'} email. 
               Would you like to connect your {pendingSocialEmail === 'google' ? 'Google' : 'Microsoft'} account for easier login?
             </DialogDescription>
           </DialogHeader>

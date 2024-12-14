@@ -16,6 +16,8 @@ import { Redirection } from "@/components/ui/redirection";
 // import { useReactToPrint, PrintContextConsumer } from 'react-to-print';
 // import { PrinterIcon } from '@heroicons/react/24/outline';
 
+const stripePromise = loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY!);
+
 // Add this custom hook near the top of the file
 const useCurrency = () => {
   const [currency, setCurrency] = useState<string>('USD');
