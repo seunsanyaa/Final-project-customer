@@ -444,14 +444,14 @@ export const getDailyPaymentStats = query({
 	handler: async (ctx) => {
 		const payments = await ctx.db.query('payments').collect();
 
-		// Create a map to store counts by day
+		// Create a map to store total amounts by day
 		const dailyStats = new Map<string, number>();
 
 		payments.forEach((payment) => {
 			const date = new Date(payment.paymentDate);
-			// Create a key in format "YYYY-MM-DD"
 			const dayKey = date.toISOString().split('T')[0];
-			dailyStats.set(dayKey, (dailyStats.get(dayKey) || 0) + 1);
+			// Sum up the amounts instead of counting
+			dailyStats.set(dayKey, (dailyStats.get(dayKey) || 0) + payment.amount);
 		});
 
 		// Convert to format needed for ResponsiveLine
