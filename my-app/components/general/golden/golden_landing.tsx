@@ -174,7 +174,7 @@ export function GoldenLanding() {
               Enjoy unmatched comfort with the Rolls-Royce Ghost and Mercedes-Maybach, exclusive for Gold members.              
               </p>
               {isGoldenMember && (
-                <Link href="/PremiumCars">
+                <Link href="/PremiumPackages">
                   <Button className="bg-customyello text-primary-foreground border-2 border-black p-4 shadow-md hover:bg-orange-500 transition">
                     Learn More
                   </Button>
