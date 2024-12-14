@@ -1,5 +1,20 @@
 import { v } from 'convex/values';
+import * as jose from 'jose';
 import { mutation } from './_generated/server';
+
+// Helper function to verify tokens
+async function verifyToken(token: string): Promise<boolean> {
+	try {
+		const secret = new TextEncoder().encode(
+			(process.env.JWT_SECRET as string) ?? 'my_secret_key_here'
+		);
+		
+		await jose.jwtVerify(token, secret);
+		return true;
+	} catch (error) {
+		return false;
+	}
+}
 
 // Define the verification mutation
 export const verifyStaffToken = mutation({
@@ -10,44 +25,27 @@ export const verifyStaffToken = mutation({
 		try {
 			// Find the staff member with this token
 			const staffMember = await ctx.db
-				.query("staff")
-				.filter((q) => q.eq(q.field("token"), token))
-				.first();
+				.query('staff')
+				.filter((q) => q.eq(q.field('token'), token))
+				.unique();
 
 			if (!staffMember) {
-				throw new Error('Invalid token');
+				return {
+					success: false,
+					error: 'Invalid token',
+				};
 			}
 
-			// You might want to store your API base URL in environment variables
-			const API_BASE_URL =
-				process.env.API_BASE_URL || 'https://your-api-base-url';
-
-			// Make the verification request to your backend
-			const response = await fetch(`${API_BASE_URL}/verifyToken`, {
-				method: 'POST',
-				headers: {
-					'Content-Type': 'application/json',
-				},
-				body: JSON.stringify({ token }),
-			});
-
-			if (!response.ok) {
+			// Verify the token using our helper function
+			const isValid = await verifyToken(token);
+			if (!isValid) {
 				throw new Error('Token verification failed');
 			}
 
-			const data = await response.json();
-
 			// Update the staff member's record
-			await ctx.db.patch(staffMember._id, {
-				// Clear the token after verification if needed
-				token: undefined,
-				// Add any additional fields you want to update
-				// verifiedAt: new Date().toISOString(),
-			});
 
 			return {
 				success: true,
-				data,
 				staffMember,
 			};
 		} catch (error) {
@@ -56,5 +54,47 @@ export const verifyStaffToken = mutation({
 				error: error instanceof Error ? error.message : 'Verification failed',
 			};
 		}
+	},
+});
+
+export const generateStaffToken = mutation({
+	args: {
+		email: v.string(),
+	},
+	handler: async (ctx, args) => {
+		const { email } = args;
+
+		const staffMember = await ctx.db
+			.query('staff')
+			.filter((q) => q.eq(q.field('email'), email))
+			.unique();
+
+		if (!staffMember) {
+			return {
+				success: false,
+				error: 'Staff member not found',
+			};
+		}
+
+		// Generate token using jose
+		const secret = new TextEncoder().encode(
+			(process.env.JWT_SECRET as string) ?? 'my_secret_key_here'
+		);
+		
+		const token = await new jose.SignJWT({
+			email,
+			staffId: staffMember._id,
+		})
+			.setProtectedHeader({ alg: 'HS256' })
+			.setExpirationTime('24h')
+			.sign(secret);
+
+		// Update staff member with new token
+		await ctx.db.patch(staffMember._id, { token });
+
+		return {
+			success: true,
+			token,
+		};
 	},
 });
