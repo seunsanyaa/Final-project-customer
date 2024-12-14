@@ -150,7 +150,6 @@ export function NewBooking3() {
   const createBooking = useMutation(api.bookings.createBooking);
   const createPaymentSession = useMutation(api.payment.createPaymentSession);
   const markPromotionAsUsed = useMutation(api.promotions.markPromotionAsUsed);
-  const createNotification = useMutation(api.notifications.createNotification);
 
   // 7. Early return checks
   // if (!isAuthenticated || !user) {
@@ -252,16 +251,6 @@ export function NewBooking3() {
         customerInsurancetype: extras.insurance ? 'full' : 'basic',
         customerInsuranceNumber: 'INS123',
       });
-
-      // Create notification for the new booking
-      if (typeof carDetails !== 'string') {  // Check if carDetails is not an error message
-        await createNotification({
-          userId: user.id,
-          bookingId: bookingId,
-          message: `${carDetails.maker} ${carDetails.model} booking confirmed!`,
-          type: "new_booking"
-        });
-      }
 
       // Create payment session
       const { sessionId } = await createPaymentSession({

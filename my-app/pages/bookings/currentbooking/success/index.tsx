@@ -2,7 +2,7 @@
 import { Navi } from "@/components/general/head/navi";
 import { Footer } from "@/components/general/head/footer";
 import { CheckCircleIcon } from "@heroicons/react/outline";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useMutation, useQuery } from 'convex/react';
 import { api } from '../../../../convex/_generated/api';
@@ -13,6 +13,7 @@ export default function PaymentSuccess() {
   const searchParams = useSearchParams();
   const [error, setError] = useState<string | null>(null);
   const [isProcessing, setIsProcessing] = useState(true);
+  const hasProcessed = useRef(false);
 
   // Get the session ID from URL params
   const sessionId = searchParams?.get('session_id') as Id<"paymentSessions">;
@@ -22,6 +23,7 @@ export default function PaymentSuccess() {
   const updateBooking = useMutation(api.bookings.updateBooking);
   const updatePaymentSession = useMutation(api.payment.updatePaymentSessionStatus);
   const awardBookingRewardPoints = useMutation(api.bookings.awardBookingRewardPoints);
+  const createNotification = useMutation(api.notifications.createNotification);
 
   // Get payment session details
   const paymentSession = useQuery(api.payment.getPaymentSession, 
@@ -30,12 +32,21 @@ export default function PaymentSuccess() {
 
   useEffect(() => {
     const processPayment = async () => {
+      if (hasProcessed.current) return;
+      
       if (!sessionId || !paymentSession) {
         setError("Invalid payment session");
         return;
       }
 
+      if (paymentSession.status === 'completed') {
+        setIsProcessing(false);
+        return;
+      }
+
       try {
+        hasProcessed.current = true;
+        
         // 1. Create payment record
         const { paymentId } = await createPayment({
           bookingId: paymentSession.bookingId,
@@ -58,7 +69,15 @@ export default function PaymentSuccess() {
           status: 'completed',
         });
 
-        // 4. Award reward points only after payment session is marked as completed
+        // 4. Create notification for successful payment
+        await createNotification({
+          userId: paymentSession.userId,
+          bookingId: paymentSession.bookingId as Id<"bookings">,
+          message: `Payment successful for booking #${paymentSession.bookingId}`,
+          type: "payment_success"
+        });
+
+        // 5. Award reward points only after payment session is marked as completed
         if (paymentSession.status === 'completed') {
           await awardBookingRewardPoints({
             bookingId: paymentSession.bookingId as Id<"bookings">,
@@ -66,7 +85,7 @@ export default function PaymentSuccess() {
           });
         }
 
-        // 5. Redirect to booking details
+        // 6. Redirect to booking details
         setTimeout(() => {
           router.push(`/bookings`);
         }, 2000);
@@ -74,6 +93,7 @@ export default function PaymentSuccess() {
       } catch (error) {
         console.error('Error processing payment:', error);
         setError("Failed to process payment");
+        hasProcessed.current = false;
       } finally {
         setIsProcessing(false);
       }
@@ -82,7 +102,7 @@ export default function PaymentSuccess() {
     if (sessionId && paymentSession && isProcessing) {
       processPayment();
     }
-  }, [sessionId, paymentSession, createPayment, updateBooking, updatePaymentSession, awardBookingRewardPoints, router, searchParams, isProcessing]);
+  }, [sessionId, paymentSession, createPayment, updateBooking, updatePaymentSession, awardBookingRewardPoints, router, searchParams, isProcessing, createNotification]);
 
   if (error) {
     return (
