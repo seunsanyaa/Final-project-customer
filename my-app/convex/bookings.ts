@@ -377,3 +377,95 @@ export const awardBookingRewardPoints = mutation({
 		};
 	},
 });
+
+// Add this new query for daily booking statistics
+export const getDailyBookingStats = query({
+	handler: async (ctx) => {
+		const bookings = await ctx.db.query('bookings').collect();
+		const today = new Date();
+		today.setHours(0, 0, 0, 0);
+
+		const stats = {
+			totalBookings: bookings.length,
+			activeBookings: 0,
+			completedBookings: 0,
+			pendingBookings: 0,
+			cancelledBookings: 0,
+			todayBookings: 0,
+			revenue: {
+				total: 0,
+				collected: 0,
+				pending: 0,
+			},
+		};
+
+		bookings.forEach((booking) => {
+			// Count by status
+			if (booking.status === 'active') stats.activeBookings++;
+			else if (booking.status === 'completed') stats.completedBookings++;
+			else if (booking.status === 'pending') stats.pendingBookings++;
+			else if (booking.status === 'cancelled') stats.cancelledBookings++;
+
+			// Check if booking starts today
+			const bookingDate = new Date(booking.startDate);
+			bookingDate.setHours(0, 0, 0, 0);
+			if (bookingDate.getTime() === today.getTime()) {
+				stats.todayBookings++;
+			}
+
+			// Calculate revenue
+			stats.revenue.total += booking.totalCost;
+			stats.revenue.collected += booking.paidAmount;
+			stats.revenue.pending += booking.totalCost - booking.paidAmount;
+		});
+
+		return stats;
+	},
+});
+
+// Add this new query for booking growth statistics
+export const getBookingGrowthStats = query({
+	handler: async (ctx) => {
+		const bookings = await ctx.db.query('bookings').collect();
+		
+		// Create a map to store bookings by date
+		const bookingsByDate = new Map();
+		
+		bookings.forEach((booking) => {
+			// Convert to YYYY-MM-DD format for consistent grouping
+			const bookingDate = new Date(booking.startDate).toISOString().split('T')[0];
+			
+			if (!bookingsByDate.has(bookingDate)) {
+				bookingsByDate.set(bookingDate, {
+					date: bookingDate,
+					count: 0,
+					revenue: 0
+				});
+			}
+			
+			const dateStats = bookingsByDate.get(bookingDate);
+			dateStats.count++;
+			dateStats.revenue += booking.totalCost;
+		});
+		
+		// Convert map to array and sort by date
+		const growthData = Array.from(bookingsByDate.values())
+			.sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+		
+		// Calculate cumulative totals
+		let cumulativeCount = 0;
+		let cumulativeRevenue = 0;
+		
+		const statsWithCumulative = growthData.map(stat => {
+			cumulativeCount += stat.count;
+			cumulativeRevenue += stat.revenue;
+			return {
+				...stat,
+				cumulativeCount,
+				cumulativeRevenue
+			};
+		});
+
+		return statsWithCumulative;
+	},
+});

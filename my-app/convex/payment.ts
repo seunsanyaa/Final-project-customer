@@ -399,3 +399,69 @@ export const getWeeklyPayments = query({
 		}));
 	},
 });
+
+export const getWeeklyPaymentStats = query({
+	handler: async (ctx) => {
+		const payments = await ctx.db.query('payments').collect();
+
+		// Create a map to store counts by week
+		const weeklyStats = new Map<string, number>();
+
+		payments.forEach((payment) => {
+			const date = new Date(payment.paymentDate);
+			// Get the week number (1-52)
+			const weekNumber = getWeekNumber(date);
+			// Create a key in format "YYYY-WW"
+			const weekKey = `${date.getFullYear()}-W${weekNumber.toString().padStart(2, '0')}`;
+			weeklyStats.set(weekKey, (weeklyStats.get(weekKey) || 0) + 1);
+		});
+
+		// Convert to format needed for ResponsiveLine
+		const data = [
+			{
+				id: 'weekly-payment-counts',
+				data: Array.from(weeklyStats.entries())
+					.sort(([weekA], [weekB]) => weekA.localeCompare(weekB))
+					.map(([x, y]) => ({
+						x,
+						y,
+					})),
+			},
+		];
+
+		return data;
+	},
+});
+
+// Helper function to get week number
+function getWeekNumber(date: Date): number {
+	const firstDayOfYear = new Date(date.getFullYear(), 0, 1);
+	const pastDaysOfYear = (date.getTime() - firstDayOfYear.getTime()) / 86400000;
+	return Math.ceil((pastDaysOfYear + firstDayOfYear.getDay() + 1) / 7);
+}
+
+export const getDailyPaymentStats = query({
+	handler: async (ctx) => {
+		const payments = await ctx.db.query('payments').collect();
+
+		// Create a map to store counts by day
+		const dailyStats = new Map<string, number>();
+
+		payments.forEach((payment) => {
+			const date = new Date(payment.paymentDate);
+			// Create a key in format "YYYY-MM-DD"
+			const dayKey = date.toISOString().split('T')[0];
+			dailyStats.set(dayKey, (dailyStats.get(dayKey) || 0) + 1);
+		});
+
+		// Convert to format needed for ResponsiveLine
+		const data = Array.from(dailyStats.entries())
+			.sort(([dateA], [dateB]) => dateA.localeCompare(dateB))
+			.map(([x, y]) => ({
+				x,
+				y,
+			}));
+
+		return data;
+	},
+});

@@ -70,3 +70,11 @@ export const getStaffByEmail = query({
     return staff;
   },
 });
+
+// Query to get total number of staff members
+export const getStaffCount = query({
+  handler: async (ctx) => {
+    const staffMembers = await ctx.db.query("staff").collect();
+    return staffMembers.length;
+  },
+});
