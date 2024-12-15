@@ -21,7 +21,7 @@ export default function SSOCallback() {
   }
 
   return <AuthenticateWithRedirectCallback 
-            afterSignInUrl={redirectUrl} 
-            afterSignUpUrl="/onboarding" 
+    afterSignInUrl={redirectUrl}
+    afterSignUpUrl={ staffMember?.email? redirectUrl :"/onboarding"}
          />;
 }
