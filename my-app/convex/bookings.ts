@@ -465,3 +465,26 @@ export const getBookingGrowthStats = query({
 		return statsWithCumulative;
 	},
 });
+
+// Get total active/upcoming bookings
+export const getActiveBookingsCount = query({
+	handler: async (ctx) => {
+		const bookings = await ctx.db.query('bookings').collect();
+		
+		// Get current date and set time to start of day for consistent comparison
+		const today = new Date();
+		today.setHours(0, 0, 0, 0);
+		
+		// Filter bookings where end date is in the future or today
+		const activeBookings = bookings.filter(booking => {
+			const endDate = new Date(booking.endDate);
+			endDate.setHours(0, 0, 0, 0);
+			return endDate >= today;
+		});
+		
+		return {
+			total: activeBookings.length,
+			bookings: activeBookings
+		};
+	},
+});
