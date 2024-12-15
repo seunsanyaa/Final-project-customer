@@ -270,8 +270,6 @@ export const getFilteredCars = query({
 		drive: v.optional(v.string()),
 		doors: v.optional(v.string()),
 		engineHorsepower: v.optional(v.string()),
-		golden: v.optional(v.boolean()),
-		disabled: v.optional(v.boolean()),
 	},
 	handler: async (ctx, args) => {
 		const cars = await ctx.db
