@@ -13,8 +13,9 @@ import { loadStripe } from "@stripe/stripe-js";
 import { useUser } from "@clerk/nextjs";
 import { Card } from '@/components/ui/card';
 import { Redirection } from "@/components/ui/redirection";
-// import { useReactToPrint, PrintContextConsumer } from 'react-to-print';
-// import { PrinterIcon } from '@heroicons/react/24/outline';
+import jsPDF from 'jspdf';
+import html2canvas from 'html2canvas';
+import { Printer } from 'lucide-react';
 
 const stripePromise = loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY!);
 
@@ -95,6 +96,33 @@ export default function BookingDetails() {
       return `₺${(amount * 34).toFixed(2)}`;
     }
     return `$${amount.toFixed(2)}`;
+  };
+
+  const handleDownloadPDF = async () => {
+    const element = printRef.current; // Reference to the booking details section
+    if (!element) return;
+
+    const canvas = await html2canvas(element);
+    const imgData = canvas.toDataURL('image/png');
+    const pdf = new jsPDF();
+    const imgWidth = 190; // Adjust width as needed
+    const pageHeight = pdf.internal.pageSize.height;
+    const imgHeight = (canvas.height * imgWidth) / canvas.width;
+    let heightLeft = imgHeight;
+
+    let position = 0;
+
+    pdf.addImage(imgData, 'PNG', 10, position, imgWidth, imgHeight);
+    heightLeft -= pageHeight;
+
+    while (heightLeft >= 0) {
+      position = heightLeft - imgHeight;
+      pdf.addPage();
+      pdf.addImage(imgData, 'PNG', 10, position, imgWidth, imgHeight);
+      heightLeft -= pageHeight;
+    }
+
+    pdf.save('booking-details.pdf');
   };
 
   if (!user) {
@@ -232,21 +260,19 @@ export default function BookingDetails() {
                 <div className="flex items-center justify-between">
                   <h1 className="text-2xl font-semibold">Booking Details</h1>
                   <div className="flex gap-2">
-                    {/* <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => handlePrint()}
-                      className="flex items-center gap-2"
+                    <Button 
+                      size="sm" 
+                      className="flex items-center gap-2 px-6 py-3 text-lg font-semibold text-white bg-blue-600 hover:bg-blue-500 rounded-lg transition-colors hover:bg-black shadow-2xl" 
+                      onClick={handleDownloadPDF}
                     >
-                      <PrinterIcon className="h-4 w-4" />
-                      Print
-                    </Button> */}
+                      <Printer className="h-5 w-5" />
+                    </Button>
                     {bookingDetails.totalCost > bookingDetails.paidAmount && (
-                      <Button variant="outline" size="sm" className='hover:bg-muted' onClick={() => handlePaymentClick(true)}>
+                      <Button size="sm" className="px-6 py-3 text-lg font-semibold text-white bg-blue-600 hover:bg-blue-500 rounded-lg transition-colors hover:bg-black shadow-2xl" onClick={() => handlePaymentClick(true)}>
                         Pay Next Installment
                       </Button>
                     )}
-                    <Button  size="sm" className="px-6 py-3 text-lg font-semibold text-white bg-blue-600 hover:bg-blue-500 rounded-lg transition-colors hover:bg-black shadow-2xl" onClick={handleModifyClick}>
+                    <Button size="sm" className="px-6 py-3 text-lg font-semibold text-white bg-blue-600 hover:bg-blue-500 rounded-lg transition-colors hover:bg-black shadow-2xl" onClick={handleModifyClick}>
                       Modify Booking
                     </Button>
                   </div>
