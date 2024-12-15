@@ -1,6 +1,6 @@
 import { v } from 'convex/values';
 import * as jose from 'jose';
-import { mutation } from './_generated/server';
+import { mutation, query } from './_generated/server';
 
 // Helper function to verify tokens
 async function verifyToken(token: string): Promise<boolean> {
@@ -17,7 +17,7 @@ async function verifyToken(token: string): Promise<boolean> {
 }
 
 // Define the verification mutation
-export const verifyStaffToken = mutation({
+export const verifyStaffToken = query({
 	args: { token: v.string() },
 	handler: async (ctx, args) => {
 		const { token } = args;
