@@ -383,23 +383,37 @@ export const getDailyBookingStats = query({
 	handler: async (ctx) => {
 		const bookings = await ctx.db.query('bookings').collect();
 
+		// Get date 7 days ago
+		const sevenDaysAgo = new Date();
+		sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 6); // -6 to include today
+		sevenDaysAgo.setHours(0, 0, 0, 0);
+
 		// Create a map to store booking counts by day
 		const dailyStats = new Map<string, number>();
 
+		// Initialize all 7 days with 0 bookings
+		for (let i = 0; i < 7; i++) {
+			const date = new Date(sevenDaysAgo);
+			date.setDate(date.getDate() + i);
+			const dayOfWeek = date.toLocaleDateString('en-US', { weekday: 'short' });
+			dailyStats.set(dayOfWeek, 0);
+		}
+
+		// Count bookings for the last 7 days
 		bookings.forEach((booking) => {
-			const date = new Date(booking.startDate);
-			const dayKey = date.toISOString().split('T')[0];
-			// Count bookings per day
-			dailyStats.set(dayKey, (dailyStats.get(dayKey) || 0) + 1);
+			const bookingDate = new Date(booking.startDate);
+			// Only count bookings from the last 7 days
+			if (bookingDate >= sevenDaysAgo) {
+				const dayOfWeek = bookingDate.toLocaleDateString('en-US', { weekday: 'short' });
+				dailyStats.set(dayOfWeek, (dailyStats.get(dayOfWeek) || 0) + 1);
+			}
 		});
 
 		// Convert to format needed for ResponsiveLine
-		const data = Array.from(dailyStats.entries())
-			.sort(([dateA], [dateB]) => dateA.localeCompare(dateB))
-			.map(([x, y]) => ({
-				x,
-				y,
-			}));
+		const data = Array.from(dailyStats.entries()).map(([x, y]) => ({
+			x,
+			y,
+		}));
 
 		return data;
 	},
