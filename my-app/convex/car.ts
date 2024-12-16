@@ -274,10 +274,25 @@ export const getFilteredCars = query({
 		disabled: v.optional(v.boolean()),
 	},
 	handler: async (ctx, args) => {
+		// First get all non-disabled cars
 		const cars = await ctx.db
 			.query("cars")
-			.filter((q) => q.eq(q.field('disabled'), false))
+			.filter((q) => {
+				// Start with the disabled check
+				let filter = q.eq(q.field('disabled'), false);
+				
+				// If golden filter is provided, add it to the query
+				if (args.golden !== undefined) {
+					filter = q.and(
+						filter,
+						q.eq(q.field('golden'), args.golden)
+					);
+				}
+				
+				return filter;
+			})
 			.collect();
+
 		const specs = await ctx.db.query("specifications").collect();
 
 		const specsMap = specs.reduce((acc, spec) => {
@@ -288,13 +303,13 @@ export const getFilteredCars = query({
 		return cars.filter((car) => {
 			const carSpecs = specsMap[car.registrationNumber];
 			
-			// Basic car filters
+			// Apply other filters
 			if (args.maker && !car.maker.toLowerCase().includes(args.maker.toLowerCase())) return false;
 			if (args.model && !car.model.toLowerCase().includes(args.model.toLowerCase())) return false;
 			if (args.year && car.year !== args.year) return false;
 
-			// Specification filters - only apply if specs exist and filter is provided
-			if (!carSpecs) return true; // Show cars without specs unless specifically filtering for specs
+			// Specification filters
+			if (!carSpecs) return true;
 
 			if (args.engineType && !carSpecs.engineType.toLowerCase().includes(args.engineType.toLowerCase())) return false;
 			if (args.engineCylinders && !carSpecs.engineCylinders.toLowerCase().includes(args.engineCylinders.toLowerCase())) return false;
@@ -303,6 +318,7 @@ export const getFilteredCars = query({
 			if (args.drive && !carSpecs.drive.toLowerCase().includes(args.drive.toLowerCase())) return false;
 			if (args.doors && !carSpecs.doors.toLowerCase().includes(args.doors.toLowerCase())) return false;
 			if (args.engineHorsepower && !carSpecs.engineHorsepower.toLowerCase().includes(args.engineHorsepower.toLowerCase())) return false;
+			
 			return true;
 		});
 	},

@@ -1,7 +1,6 @@
 'use client'
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
-import { useInView } from 'react-intersection-observer';
 import { Navi } from "../head/navi"
 import { Footer } from "../head/footer"
 import Image from "next/image";
@@ -10,12 +9,23 @@ import { useQuery } from "convex/react";
 import { Separator } from "@/components/ui/separator";
 import { api } from "@/convex/_generated/api";
 
-export default function PremiumCars() {
+const PremiumCars = () => {
   // Fetch cars with golden field set to true
   const cars = useQuery(api.car.getFilteredCars, { golden: true });
 
   if (!cars) {
-    return <div>Loading...</div>; // Handle loading state
+    return (
+      <>
+        <Navi />
+        <Separator />
+        <main className="flex flex-col items-center justify-center min-h-screen">
+          <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-gray-900"></div>
+          <p className="mt-4 text-lg">Loading premium cars...</p>
+        </main>
+        <Separator />
+        <Footer />
+      </>
+    );
   }
 
   return (
@@ -68,3 +78,6 @@ export default function PremiumCars() {
     </>
   );
 }
+
+export { PremiumCars };
+export default PremiumCars;
