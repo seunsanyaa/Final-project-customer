@@ -223,31 +223,52 @@ export const getCurrentBooking = query({
     today.setHours(0, 0, 0, 0);
     const todayISO = today.toISOString();
 
-    // Get tomorrow's date (end of today)
-    const tomorrow = new Date(today);
-    tomorrow.setDate(tomorrow.getDate() + 1);
-    const tomorrowISO = tomorrow.toISOString();
+    // Get date 7 days from now
+    const nextWeek = new Date(today);
+    nextWeek.setDate(nextWeek.getDate() + 7);
+    const nextWeekISO = nextWeek.toISOString();
     
-    // Get bookings where today falls between start and end date (inclusive)
-    const currentBookings = await ctx.db
+    // Get bookings that are either:
+    // 1. Current (today falls between start and end date)
+    // 2. Starting within the next week
+    const relevantBookings = await ctx.db
       .query('bookings')
       .withIndex('by_customerId', (q) => q.eq('customerId', args.customerId))
       .filter((q) => 
-        q.and(
-          q.lt(q.field('startDate'), tomorrowISO), // booking starts before tomorrow
-          q.gt(q.field('endDate'), todayISO)       // booking ends after today
+        q.or(
+          // Current bookings
+          q.and(
+            q.lte(q.field('startDate'), todayISO),
+            q.gte(q.field('endDate'), todayISO)
+          ),
+          // Upcoming bookings within a week
+          q.and(
+            q.gt(q.field('startDate'), todayISO),
+            q.lt(q.field('startDate'), nextWeekISO)
+          )
         )
       )
       .collect();
 
-    // If no current bookings, return null
-    if (currentBookings.length === 0) {
+    // If no relevant bookings, return null
+    if (relevantBookings.length === 0) {
       return null;
     }
 
+    // Sort bookings to prioritize current bookings over upcoming ones
+    relevantBookings.sort((a, b) => {
+      const aIsCurrent = new Date(a.startDate) <= today && new Date(a.endDate) >= today;
+      const bIsCurrent = new Date(b.startDate) <= today && new Date(b.endDate) >= today;
+      
+      if (aIsCurrent && !bIsCurrent) return -1;
+      if (!aIsCurrent && bIsCurrent) return 1;
+      
+      return new Date(a.startDate).getTime() - new Date(b.startDate).getTime();
+    });
+
     // Get car details for the booking
     const bookingsWithDetails = await Promise.all(
-      currentBookings.map(async (booking) => {
+      relevantBookings.map(async (booking) => {
         const car = await ctx.db
           .query('cars')
           .withIndex('by_registrationNumber', (q) => 
@@ -255,17 +276,51 @@ export const getCurrentBooking = query({
           )
           .first();
 
-        // Calculate days remaining using Date objects
+        // Calculate days remaining or days until start
+        const startDate = new Date(booking.startDate);
         const endDate = new Date(booking.endDate);
-        endDate.setHours(23, 59, 59, 999); // Set to end of day
         
-        const daysRemaining = Math.ceil(
-          (endDate.getTime() - today.getTime()) / 
-          (1000 * 60 * 60 * 24)
-        );
+        // Format dates for display
+        const formattedStartDate = startDate.toLocaleDateString('en-US', {
+          year: 'numeric',
+          month: '2-digit',
+          day: '2-digit'
+        });
+        const formattedEndDate = endDate.toLocaleDateString('en-US', {
+          year: 'numeric',
+          month: '2-digit',
+          day: '2-digit'
+        });
+
+        // Calculate days difference
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+        startDate.setHours(0, 0, 0, 0);
+        endDate.setHours(23, 59, 59, 999);
+
+        let daysRemaining;
+        const msPerDay = 1000 * 60 * 60 * 24;
+        
+        if (startDate <= today && today <= endDate) {
+          // Current booking - calculate days remaining until end
+          daysRemaining = Math.max(0, Math.ceil(
+            (endDate.getTime() - today.getTime()) / msPerDay
+          ));
+        } else {
+          // Upcoming booking - calculate days until start
+          daysRemaining = Math.max(0, Math.ceil(
+            (startDate.getTime() - today.getTime()) / msPerDay
+          ));
+        }
+
+        // Calculate if the booking is current or upcoming
+        const isCurrentBooking = (startDate <= today && today <= endDate) || (startDate <= today || today <= endDate);
+        const status = isCurrentBooking ? 'Current' : 'Upcoming';
 
         return {
           ...booking,
+          startDate: formattedStartDate,
+          endDate: formattedEndDate,
           carDetails: car ? {
             maker: car.maker,
             model: car.model,
@@ -274,12 +329,13 @@ export const getCurrentBooking = query({
             trim: car.trim,
             registrationNumber: car.registrationNumber
           } : null,
-          daysRemaining
+          daysRemaining,
+          status
         };
       })
     );
 
-    // Return the first current booking (in case there are multiple)
+    // Return the most relevant booking (current or soonest upcoming)
     return bookingsWithDetails[0];
   }
 });

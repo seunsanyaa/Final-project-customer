@@ -79,7 +79,12 @@ export function Mybookings() {
 
   const customerId = user?.id || "";
   
-  // Always call useQuery, but pass "skip" if customerId is empty
+  // Get current booking using getCurrentBooking
+  const currentBooking = useQuery(api.analytics.getCurrentBooking, {
+    customerId: user?.id ?? "skip"
+  });
+
+  // Get all bookings for the customer
   const bookings = useQuery(api.bookings.getBookingsByCustomer, 
     customerId ? { customerId } : "skip"
   );
@@ -178,7 +183,6 @@ export function Mybookings() {
     return <Redirection />;
   }
 
-  const currentBooking = bookings && bookings.length > 0 ? bookings[0] : null;
   const pastBookings = bookings?.filter(booking => new Date(booking.startDate) < new Date());
 
   // Add these helper functions at the top of your component
@@ -213,8 +217,8 @@ export function Mybookings() {
       <div className="max-w-6xl mx-auto px-4 py-8 sm:px-6 md:py-12">
         <h1 className="text-3xl font-bold mb-8">Your Car Bookings</h1>
          
-        {/* Current Booking Section */}
-        {bookings?.filter(booking => isBookingCurrent(booking.startDate, booking.endDate))[0] && (
+        {/* Current/Upcoming Booking Section */}
+        {currentBooking && (
           <Link 
             href={`/bookings/currentbooking`} 
             className='hover:cursor-pointer mb-8 block'
@@ -222,36 +226,40 @@ export function Mybookings() {
             <div className="w-full mx-auto mt-1 rounded-lg p-6 bg-white shadow-2xl" style={{ border: "none" }}>
               <div className="flex items-center justify-between">
                 <div>
-                  <h2 className="text-2xl font-semibold">Current Booking</h2>
-                  <p className="text-muted-foreground">Rental Dates: {currentBooking?.startDate} - {currentBooking?.endDate}</p>
+                  <h2 className="text-2xl font-semibold">{currentBooking.status} Booking</h2>
+                  <p className="text-muted-foreground">Rental Dates: {currentBooking.startDate} - {currentBooking.endDate}</p>
                 </div>
                 <div className="text-right">
-            <h3 className="text-3xl font-bold">{formatPrice(currentBooking ? currentBooking.totalCost : 0)}</h3>
-            <p className="text-muted-foreground">Total Cost</p>
-          </div>
-        </div>
-        <Separator className="my-6" />
-        <div className="grid sm:grid-cols-2 gap-4">
-          <div>
-            <h3 className="text-lg font-semibold">Car Model</h3>
-            <p>{carDetails ? `${carDetails.maker} ${carDetails.model}` : 'N/A'}</p>
-          </div>
-          <div>
-            <h3 className="text-lg font-semibold">Trim</h3>
-            <p>{carDetails ? carDetails.trim : 'N/A'}</p>
-          </div>
-          <div>
-            <h3 className="text-lg font-semibold">Pickup Location</h3>
-            <p>{currentBooking ? currentBooking.pickupLocation : 'N/A'}</p>
-          </div>
-          <div>
-            <h3 className="text-lg font-semibold">Return Location</h3>
-            <p>{currentBooking ? currentBooking.dropoffLocation : 'N/A'}</p>
-          </div>
-        </div>
-        </div>
-        </Link>
-                )}
+                  <h3 className="text-3xl font-bold">{formatPrice(currentBooking.totalCost)}</h3>
+                  <p className="text-muted-foreground">Total Cost</p>
+                </div>
+              </div>
+              <Separator className="my-6" />
+              <div className="grid sm:grid-cols-2 gap-4">
+                <div>
+                  <h3 className="text-lg font-semibold">Car Model</h3>
+                  <p>{currentBooking.carDetails ? `${currentBooking.carDetails.maker} ${currentBooking.carDetails.model}` : 'N/A'}</p>
+                </div>
+                <div>
+                  <h3 className="text-lg font-semibold">Trim</h3>
+                  <p>{currentBooking.carDetails ? currentBooking.carDetails.trim : 'N/A'}</p>
+                </div>
+                <div>
+                  <h3 className="text-lg font-semibold">Pickup Location</h3>
+                  <p>{currentBooking.pickupLocation}</p>
+                </div>
+                <div>
+                  <h3 className="text-lg font-semibold">Return Location</h3>
+                  <p>{currentBooking.dropoffLocation}</p>
+                </div>
+                <div>
+                  <h3 className="text-lg font-semibold">{currentBooking.status === 'Current' ? 'Days Remaining' : 'Days Until Start'}</h3>
+                  <p>{currentBooking.daysRemaining} days</p>
+                </div>
+              </div>
+            </div>
+          </Link>
+        )}
 
         <Separator className="my-8" />
 

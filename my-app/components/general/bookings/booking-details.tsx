@@ -16,6 +16,7 @@ import { Redirection } from "@/components/ui/redirection";
 import jsPDF from 'jspdf';
 import html2canvas from 'html2canvas';
 import { Printer } from 'lucide-react';
+import { InstallmentManager } from '../payment/installment-manager';
 
 const stripePromise = loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY!);
 
@@ -64,7 +65,7 @@ export default function BookingDetails() {
   const [paymentAmount, setPaymentAmount] = useState<number>(0);
   const [clientSecret, setClientSecret] = useState<string | null>(null);
 
-  // Get current booking using the new function
+  // Get current booking using the getCurrentBooking function
   const bookingDetails = useQuery(api.analytics.getCurrentBooking, {
     customerId: user?.id ?? "skip"
   });
@@ -253,26 +254,39 @@ export default function BookingDetails() {
     <div>
       <Navi/>
       <Separator />
-        <div className="max-w-4xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
+        <div className="max-w-6xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
           <div className="grid gap-8">
             <div className="bg-background rounded-lg shadow-2xl overflow-hidden">
               <div className="px-6 py-5 bg-muted">
-                <div className="flex items-center justify-between">
-                  <h1 className="text-2xl font-semibold">Booking Details</h1>
-                  <div className="flex gap-2">
+                <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 sm:gap-0">
+                  <div className="flex flex-wrap items-center gap-4">
+                    <h1 className="text-2xl font-semibold">Booking Details</h1>
                     <Button 
                       size="sm" 
-                      className="flex items-center gap-2 px-6 py-3 text-lg font-semibold text-white bg-blue-600 hover:bg-blue-500 rounded-lg transition-colors hover:bg-black shadow-2xl" 
+                      className="flex items-center gap-2 text-lg font-semibold text-white bg-blue-600 hover:bg-blue-500 rounded-lg transition-colors hover:bg-black shadow-2xl" 
                       onClick={handleDownloadPDF}
                     >
                       <Printer className="h-5 w-5" />
                     </Button>
-                    {bookingDetails.totalCost > bookingDetails.paidAmount && (
-                      <Button size="sm" className="px-6 py-3 text-lg font-semibold text-white bg-blue-600 hover:bg-blue-500 rounded-lg transition-colors hover:bg-black shadow-2xl" onClick={() => handlePaymentClick(true)}>
-                        Pay Next Installment
-                      </Button>
+                    <div className="text-sm text-muted-foreground flex items-center gap-2">
+                      <span>{bookingDetails?.startDate}</span>
+                      <span>-</span>
+                      <span>{bookingDetails?.endDate}</span>
+                    </div>
+                  </div>
+                  <div className="flex flex-wrap gap-2 w-full sm:w-auto">
+                    {bookingDetails && bookingDetails.totalCost > bookingDetails.paidAmount && (
+                      <InstallmentManager
+                        onPayFull={() => handlePaymentClick(true)}
+                        onPayInstallment={() => handlePaymentClick(false)}
+                        remainingAmount={bookingDetails.totalCost - bookingDetails.paidAmount}
+                      />
                     )}
-                    <Button size="sm" className="px-6 py-3 text-lg font-semibold text-white bg-blue-600 hover:bg-blue-500 rounded-lg transition-colors hover:bg-black shadow-2xl" onClick={handleModifyClick}>
+                    <Button 
+                      size="sm" 
+                      className="w-full sm:w-auto px-6 py-3 text-lg font-semibold text-white bg-blue-600 hover:bg-blue-500 rounded-lg transition-colors hover:bg-black shadow-2xl" 
+                      onClick={handleModifyClick}
+                    >
                       Modify Booking
                     </Button>
                   </div>
@@ -280,29 +294,27 @@ export default function BookingDetails() {
               </div>
               <div ref={printRef}>
                 <div className="px-6 py-5 grid gap-6 bg-card">
-                  <div className="grid grid-cols-2 gap-4">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div>
                       <div className="text-sm font-medium text-muted-foreground">
-                        Booking ID
+                        Booking Status
                       </div>
-                      <div className="text-base font-semibold">{bookingDetails._id}</div>
+                      <div className="text-base font-semibold">{bookingDetails?.status}</div>
                     </div>
                     <div>
                       <div className="text-sm font-medium text-muted-foreground">
-                        Rental Dates
+                        {bookingDetails?.status === 'Current' ? 'Days Remaining' : 'Days Until Start'}
                       </div>
-                      <div className="text-base font-semibold">
-                        {bookingDetails.startDate} - {bookingDetails.endDate}
-                      </div>
+                      <div className="text-base font-semibold">{bookingDetails?.daysRemaining} days</div>
                     </div>
                   </div>
-                  <div className="grid grid-cols-2 gap-4">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div>
                       <div className="text-sm font-medium text-muted-foreground">
                         Original Booking Cost
                       </div>
                       <div className="text-base font-semibold">
-                        {formatPrice(bookingDetails.totalCost)}
+                        {formatPrice(bookingDetails?.totalCost ?? 0)}
                       </div>
                     </div>
                     <div>
@@ -310,55 +322,46 @@ export default function BookingDetails() {
                         Paid Amount
                       </div>
                       <div className="text-base font-semibold text-green-500">
-                        {formatPrice(bookingDetails.paidAmount)}
+                        {formatPrice(bookingDetails?.paidAmount ?? 0)}
                       </div>
                     </div>
                   </div>
-                  <div className="grid grid-cols-2 gap-4">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div>
                       <div className="text-sm font-medium text-muted-foreground">
                         Remaining Cost
                       </div>
                       <div className="text-base font-semibold">
-                        {formatPrice(bookingDetails.totalCost - bookingDetails.paidAmount)}
+                        {formatPrice((bookingDetails?.totalCost ?? 0) - (bookingDetails?.paidAmount ?? 0))}
                       </div>
                     </div>
                     <div>
                       <div className="text-sm font-medium text-muted-foreground">
-                        Potential Rewards Points
+                         Rewards Points
                       </div>
                       <div className="text-base font-semibold">
                         {calculateRewardPoints()} points
                       </div>
                     </div>
                   </div>
-                  <div className="grid grid-cols-2 gap-4">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div>
                       <div className="text-sm font-medium text-muted-foreground">
                         Car Details
                       </div>
-                      <div className="text-base font-semibold">{bookingDetails.carDetails?.maker} {bookingDetails.carDetails?.model} {bookingDetails.carDetails?.year} {bookingDetails.carDetails?.trim} </div>
+                      <div className="text-base font-semibold">
+                        {bookingDetails?.carDetails ? 
+                          `${bookingDetails.carDetails.maker} ${bookingDetails.carDetails.model} ${bookingDetails.carDetails.year} ${bookingDetails.carDetails.trim}` 
+                          : 'N/A'}
+                      </div>
                     </div>
                     <div>
                       <div className="text-sm font-medium text-muted-foreground">
                         Pickup & Dropoff Location
                       </div>
-                      <div className="text-base font-semibold">{bookingDetails.pickupLocation} - {bookingDetails.dropoffLocation}</div>
-                    </div>
-                  </div>
-                  <Separator />
-                  <div className="grid grid-cols-2 gap-4">
-                    <div>
-                      <div className="text-sm font-medium text-muted-foreground">
-                        Booking Status
+                      <div className="text-base font-semibold">
+                        {bookingDetails?.pickupLocation} <br/>- {bookingDetails?.dropoffLocation}
                       </div>
-                      <div className="text-base font-semibold text-yellow-500">{bookingDetails.status}</div>
-                    </div>
-                    <div>
-                      <div className="text-sm font-medium text-muted-foreground">
-                        Days Remaining
-                      </div>
-                      <div className="text-base font-semibold">{bookingDetails.daysRemaining} days remaining</div>
                     </div>
                   </div>
                 </div>
@@ -371,28 +374,35 @@ export default function BookingDetails() {
       <Footer/>
       {/* Dialog for modifying booking */}
       <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
-        <DialogContent className="sm:max-w-[425px]" style={{ opacity: 1, backgroundColor: '#ffffff', zIndex: 50 }}>
-          <div className="flex flex-col gap-6">
-            <div>
-              <label>Pickup Date:</label>
-              <Input type="date" value={pickupDate} onChange={(e) => setPickupDate(e.target.value)} />
+        <DialogContent className="sm:max-w-[600px]" style={{ opacity: 1, backgroundColor: '#ffffff', zIndex: 50 }}>
+          <DialogHeader>
+            <DialogTitle>Modify Booking</DialogTitle>
+          </DialogHeader>
+          <div className="grid gap-6 py-4">
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <label className="text-sm font-medium">Pickup Date:</label>
+                <Input type="date" value={pickupDate} onChange={(e) => setPickupDate(e.target.value)} className="mt-1" />
+              </div>
+              <div>
+                <label className="text-sm font-medium">Dropoff Date:</label>
+                <Input type="date" value={dropoffDate} onChange={(e) => setDropoffDate(e.target.value)} className="mt-1" />
+              </div>
             </div>
-            <div>
-              <label>Dropoff Date:</label>
-              <Input type="date" value={dropoffDate} onChange={(e) => setDropoffDate(e.target.value)} />
-            </div>
-            <div>
-              <label>Pickup Location:</label>
-              <Input type="text" value={pickupLocation} onChange={(e) => setPickupLocation(e.target.value)} />
-            </div>
-            <div>
-              <label>Dropoff Location:</label>
-              <Input type="text" value={dropoffLocation} onChange={(e) => setDropoffLocation(e.target.value)} />
+            <div className="grid grid-cols-1 gap-4">
+              <div>
+                <label className="text-sm font-medium">Pickup Location:</label>
+                <Input type="text" value={pickupLocation} onChange={(e) => setPickupLocation(e.target.value)} className="mt-1" />
+              </div>
+              <div>
+                <label className="text-sm font-medium">Dropoff Location:</label>
+                <Input type="text" value={dropoffLocation} onChange={(e) => setDropoffLocation(e.target.value)} className="mt-1" />
+              </div>
             </div>
           </div>
           <DialogFooter>
-            <Button variant="outline" onClick={handleConfirm}>Confirm</Button>
             <Button variant="outline" onClick={() => setIsModalOpen(false)}>Cancel</Button>
+            <Button variant="outline" onClick={handleConfirm}>Confirm</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
