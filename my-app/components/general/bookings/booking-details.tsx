@@ -17,6 +17,7 @@ import jsPDF from 'jspdf';
 import html2canvas from 'html2canvas';
 import { Printer } from 'lucide-react';
 import { InstallmentManager } from '../payment/installment-manager';
+import { useRouter } from 'next/navigation';
 
 const stripePromise = loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY!);
 
@@ -49,6 +50,7 @@ const useCurrency = () => {
 
 export default function BookingDetails() {
   const { user } = useUser();
+  const router = useRouter();
   const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
   const [pickupDate, setPickupDate] = useState('');
   const [dropoffDate, setDropoffDate] = useState('');
@@ -71,6 +73,7 @@ export default function BookingDetails() {
   });
 
   const updateBooking = useMutation(api.bookings.updateBooking);
+  const createPaymentSession = useMutation(api.payment.createPaymentSession);
 
   const printRef = useRef<HTMLDivElement>(null);
   
@@ -172,77 +175,31 @@ export default function BookingDetails() {
     setIsModalOpen(false);
   };
 
-  const handlePaymentClick = async (fullAmount: boolean) => {
-    if (!bookingDetails) return;
-    
-    const amountToPay = fullAmount 
-      ? bookingDetails.totalCost - bookingDetails.paidAmount
-      : Math.ceil((bookingDetails.totalCost - bookingDetails.paidAmount) / 2);
-    
-    setPaymentAmount(amountToPay);
+  const handlePaymentClick = async (isFullPayment: boolean) => {
+    if (!bookingDetails || !user) return;
     
     try {
-      const response = await fetch("/api/create-payment-intent", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ amount: Math.round(amountToPay * 100) }), // Convert to cents
-      });
-      
-      if (!response.ok) {
-        throw new Error('Failed to create payment intent');
-      }
+      const amountToPay = isFullPayment 
+        ? bookingDetails.totalCost - bookingDetails.paidAmount
+        : bookingDetails.installmentPlan?.amountPerInstallment || 0;
 
-      const { clientSecret } = await response.json();
-      setClientSecret(clientSecret);
-      setIsPaymentModalOpen(true);
+      // Create a new payment session
+      const { sessionId } = await createPaymentSession({
+        bookingId: bookingDetails._id,
+        totalAmount: bookingDetails.totalCost,
+        paidAmount: amountToPay,
+        userId: user.id,
+        status: 'pending',
+        isSubscription: false
+      });
+
+      router.push(`/Newbooking/payment/${sessionId}?email=${encodeURIComponent(user.emailAddresses[0].emailAddress)}`);
     } catch (error) {
-      console.error('Payment error:', error);
+      console.error('Error creating payment session:', error);
     }
   };
 
-  const PaymentForm = () => {
-    const stripe = useStripe();
-    const elements = useElements();
-    const [isProcessing, setIsProcessing] = useState(false);
 
-    const handleSubmit = async (e: React.FormEvent) => {
-      e.preventDefault();
-      if (!stripe || !elements || !bookingDetails) return;
-
-      setIsProcessing(true);
-
-      try {
-        const result = await stripe.confirmPayment({
-          elements,
-          confirmParams: {
-            return_url: `${window.location.origin}/bookings/currentbooking/success?bookingId=${bookingDetails._id}`,
-          },
-        });
-
-        if (result.error) {
-          throw result.error;
-        }
-      } catch (error) {
-        console.error('Payment confirmation error:', error);
-        // Handle error (show toast/alert)
-      } finally {
-        setIsProcessing(false);
-      }
-    };
-
-    return (
-      <form onSubmit={handleSubmit} className="space-y-4 bg-background">
-        <PaymentElement className="bg-background" />
-        <Button 
-          type="submit" 
-          disabled={!stripe || isProcessing} 
-          className="w-full"
-        >
-          {isProcessing ? "Processing..." : `Pay $${paymentAmount.toFixed(2)}`}
-        </Button>
-      </form>
-    );
-  };
 
   const calculateRewardPoints = () => {
     if (!bookingDetails) return 0;
@@ -280,6 +237,9 @@ export default function BookingDetails() {
                         onPayFull={() => handlePaymentClick(true)}
                         onPayInstallment={() => handlePaymentClick(false)}
                         remainingAmount={bookingDetails.totalCost - bookingDetails.paidAmount}
+                        nextInstallmentAmount={
+                          bookingDetails.installmentPlan?.amountPerInstallment
+                        }
                       />
                     )}
                     <Button 
@@ -416,29 +376,8 @@ export default function BookingDetails() {
           <p>End Date: {bookingDetailsState.endDate}</p>
         </div>
       )}
-      {/* Dialog for payment */}
-      <Dialog open={isPaymentModalOpen} onOpenChange={setIsPaymentModalOpen}>
-        <DialogContent className="sm:max-w-[425px] bg-background">
-          <DialogHeader>
-            <DialogTitle>Complete Payment</DialogTitle>
-          </DialogHeader>
-          {clientSecret ? (
-            <Elements 
-              stripe={stripePromise} 
-              options={{
-                clientSecret,
-                appearance: { theme: 'stripe' },
-              }}
-            >
-              <PaymentForm  />
-            </Elements>
-          ) : (
-            <div className="flex justify-center p-4">
-              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" />
-            </div>
-          )}
-        </DialogContent>
-      </Dialog>
+
+  
     </div>
   );
 }

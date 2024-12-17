@@ -11,9 +11,17 @@ interface InstallmentManagerProps {
   onPayFull: () => void;
   onPayInstallment: () => void;
   remainingAmount: number;
+  nextInstallmentAmount?: number;
 }
 
-export function InstallmentManager({ onPayFull, onPayInstallment, remainingAmount }: InstallmentManagerProps) {
+export function InstallmentManager({ 
+  onPayFull, 
+  onPayInstallment, 
+  remainingAmount,
+  nextInstallmentAmount 
+}: InstallmentManagerProps) {
+  const formatAmount = (amount: number) => `$${amount.toFixed(2)}`;
+
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
@@ -25,13 +33,21 @@ export function InstallmentManager({ onPayFull, onPayInstallment, remainingAmoun
           <ChevronDown className="h-4 w-4" />
         </Button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent align="end" className="w-48">
-        <DropdownMenuItem onClick={onPayFull}>
-          Pay Remaining in Full
+      <DropdownMenuContent align="end" className="w-[200px]">
+        <DropdownMenuItem onClick={onPayFull} className="flex justify-between">
+          <span>Pay Remaining in Full</span>
+          <span className="text-green-600 font-semibold">
+            {formatAmount(remainingAmount)}
+          </span>
         </DropdownMenuItem>
-        <DropdownMenuItem onClick={onPayInstallment}>
-          Pay Next Installment
-        </DropdownMenuItem>
+        {nextInstallmentAmount && (
+          <DropdownMenuItem onClick={onPayInstallment} className="flex justify-between">
+            <span>Pay Next Installment</span>
+            <span className="text-green-600 font-semibold">
+              {formatAmount(nextInstallmentAmount)}
+            </span>
+          </DropdownMenuItem>
+        )}
       </DropdownMenuContent>
     </DropdownMenu>
   );

@@ -13,8 +13,26 @@ export const createBooking = mutation({
 		status: v.string(),
 		pickupLocation: v.string(),
 		dropoffLocation: v.string(),
-		customerInsurancetype: v.string(),
-		customerInsuranceNumber: v.string(),
+		paymentType: v.optional(v.string()),
+		installmentPlan: v.optional(
+			v.object({
+				frequency: v.string(),
+				totalInstallments: v.number(),
+				amountPerInstallment: v.number(),
+				remainingInstallments: v.number(),
+				nextInstallmentDate: v.string(),
+			})
+		),
+		extras: v.optional(
+			v.object({
+				insurance: v.boolean(),
+				insuranceCost: v.number(),
+				gps: v.boolean(),
+				childSeat: v.boolean(),
+				chauffer: v.boolean(),
+				travelKit: v.boolean()
+			})
+		)
 	},
 	handler: async (ctx, args) => {
 		const bookingId = await ctx.db.insert('bookings', args);
@@ -41,8 +59,8 @@ export const getAllBookings = query({
 export const updateBooking = mutation({
 	args: {
 		id: v.id('bookings'),
-		customerId: v.optional(v.id('customers')),
-		carId: v.optional(v.id('cars')),
+		customerId: v.optional(v.string()),
+		carId: v.optional(v.string()),
 		startDate: v.optional(v.string()),
 		endDate: v.optional(v.string()),
 		totalCost: v.optional(v.number()),
@@ -50,8 +68,26 @@ export const updateBooking = mutation({
 		status: v.optional(v.string()),
 		pickupLocation: v.optional(v.string()),
 		dropoffLocation: v.optional(v.string()),
-		customerInsurancetype: v.optional(v.string()),
-		customerInsuranceNumber: v.optional(v.string()),
+		paymentType: v.optional(v.string()),
+		installmentPlan: v.optional(
+			v.object({
+				frequency: v.string(),
+				totalInstallments: v.number(),
+				amountPerInstallment: v.number(),
+				remainingInstallments: v.number(),
+				nextInstallmentDate: v.string(),
+			})
+		),
+		extras: v.optional(
+			v.object({
+				insurance: v.boolean(),
+				insuranceCost: v.number(),
+				gps: v.boolean(),
+				childSeat: v.boolean(),
+				chauffer: v.boolean(),
+				travelKit: v.boolean()
+			})
+		)
 	},
 	handler: async (ctx, args) => {
 		const { id, ...updates } = args;
@@ -356,7 +392,7 @@ export const awardBookingRewardPoints = mutation({
 		}
 
 		// Calculate points (10% of total cost)
-		const pointsToAward = Math.floor(booking.totalCost * 0.1);
+		const pointsToAward = Math.floor(paymentSession.paidAmount * 0.1);
 
 		// Award points to customer
 		const customer = await ctx.db

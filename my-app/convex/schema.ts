@@ -57,7 +57,6 @@ export default defineSchema({
 		pictures: v.array(v.string()), // Array of picture URLs
 		pricePerDay: v.number(),
 		averageRating: v.optional(v.number()),
-		WAFdescription: v.optional(v.string()),
 		categories: v.optional(v.array(v.string())),
 		golden: v.optional(v.boolean()),
 	})
@@ -89,8 +88,6 @@ export default defineSchema({
 		status: v.string(),
 		pickupLocation: v.string(),
 		dropoffLocation: v.string(),
-		customerInsurancetype: v.string(),
-		customerInsuranceNumber: v.string(),
 		reviewId: v.optional(v.string()),
 		paymentType: v.optional(v.string()), // 'full' or 'installment'
 		installmentPlan: v.optional(
@@ -102,6 +99,15 @@ export default defineSchema({
 				nextInstallmentDate: v.string(),
 			})
 		),
+		extras: v.optional(
+			v.object({
+			insurance: v.boolean(),
+			insuranceCost: v.number(),
+			gps: v.boolean(),
+			childSeat: v.boolean(),
+			chauffer: v.boolean(),
+			travelKit: v.boolean()
+		}))
 	})
 		.index('by_customerId', ['customerId'])
 		.index('by_carId', ['carId']),
@@ -167,14 +173,11 @@ export default defineSchema({
 	paymentSessions: defineTable({
 		bookingId: v.optional(v.id('bookings')),
 		subscriptionPlan: v.optional(v.string()),
-		totalAmount: v.optional(v.number()),
 		paidAmount: v.number(),
-		paymentType: v.string(),
 		userId: v.string(),
 		status: v.string(),
 		createdAt: v.string(),
 		expiresAt: v.string(),
-		updatedAt: v.optional(v.string()),
 		isSubscription: v.optional(v.boolean()),
 	})
 		.index('by_userId', ['userId'])

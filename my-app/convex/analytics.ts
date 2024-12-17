@@ -169,6 +169,7 @@ export const calculateInstallmentDetails = query({
     totalDays: v.number(),
     extras: v.object({
       insurance: v.boolean(),
+      insuranceCost: v.number(),
       gps: v.boolean(),
       childSeat: v.boolean(),
       chauffer: v.boolean(),
@@ -180,34 +181,29 @@ export const calculateInstallmentDetails = query({
     const { basePrice, totalDays, extras, promotionValue } = args;
     
     // Calculate extras costs
-    const insurancePrice = extras.insurance ? 10 : 0;
-    const gpsPrice = extras.gps ? 5 : 0;
-    const childSeatPrice = extras.childSeat ? 8 : 0;
-    const chaufferPrice = extras.chauffer ? 100 : 0;
-    const travelKitPrice = extras.travelKit ? 0 : 0;
-    let totalsum = basePrice + insurancePrice + gpsPrice + childSeatPrice + chaufferPrice + travelKitPrice;
+    const extrasCost = (
+      (extras.insurance ? extras.insuranceCost : 0) +
+      (extras.gps ? 5 : 0) +
+      (extras.childSeat ? 8 : 0) +
+      (extras.chauffer ? 100 : 0)
+    );
+    
+    let totalPrice = (basePrice + extrasCost) * totalDays;
     
     // Apply promotion if available
     if (promotionValue) {
-      totalsum = totalsum * (1 - promotionValue / 100);
+      totalPrice = totalPrice * (1 - promotionValue / 100);
     }
 
-    // Calculate total price
-    const totalprice = Math.ceil(totalsum * totalDays * 100) / 100;
-    
-    // Calculate installment amount
-    const installmentAmount = totalDays < 7 
-      ? totalsum 
-      : (totalsum * totalDays) / Math.floor(totalDays / 7);
-    
-    // Round installment to 2 decimal places
-    const roundedInstallmentAmount = Math.ceil(installmentAmount * 100) / 100;
+    // Calculate installment details
+    const numberOfInstallments = totalDays < 7 ? totalDays : Math.floor(totalDays / 7);
+    const installmentAmount = totalPrice / numberOfInstallments;
 
     return {
-      totalPrice: totalprice,
-      installmentAmount: roundedInstallmentAmount,
-      numberOfInstallments: totalDays < 7 ? totalDays : Math.floor(totalDays / 7),
-      pricePerDay: totalsum
+      totalPrice,
+      installmentAmount: Math.ceil(installmentAmount * 100) / 100,
+      numberOfInstallments,
+      pricePerDay: basePrice + extrasCost
     };
   }
 });

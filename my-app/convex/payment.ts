@@ -34,6 +34,7 @@ export const createPayment = mutation({
 
 		const paymentId = await ctx.db.insert('payments', {
 			receiptNumber,
+			bookingId: args.bookingId,
 			amount: args.amount,
 			paymentDate: args.paymentDate,
 			paymentType: args.paymentType,
@@ -161,42 +162,25 @@ export const createPaymentSession = mutation({
 		bookingId: v.optional(v.id('bookings')),
 		totalAmount: v.optional(v.number()),
 		paidAmount: v.number(),
-		paymentType: v.string(),
 		userId: v.string(),
+		status: v.string(),
 		subscriptionPlan: v.optional(v.string()),
 		isSubscription: v.optional(v.boolean()),
 	},
 	handler: async (ctx, args) => {
-		console.log('Creating payment session with args:', args);
+		const sessionData = {
+			bookingId: args.bookingId,
+			paidAmount: args.paidAmount,
+			userId: args.userId,
+			status: 'pending',
+			createdAt: new Date().toISOString(),
+			expiresAt: new Date(Date.now() + 30 * 60 * 1000).toISOString(),
+			isSubscription: args.isSubscription || false,
+			subscriptionPlan: args.subscriptionPlan,
+		};
 
-		try {
-			const sessionData: any = {
-				paidAmount: args.paidAmount,
-				paymentType: args.paymentType,
-				userId: args.userId,
-				status: 'pending',
-				createdAt: new Date().toISOString(),
-				expiresAt: new Date(Date.now() + 30 * 60 * 1000).toISOString(),
-			};
-
-			if (args.isSubscription) {
-				// Fields specific to subscriptions
-				sessionData.isSubscription = true;
-				sessionData.subscriptionPlan = args.subscriptionPlan;
-			} else {
-				// Fields specific to rentals
-				sessionData.bookingId = args.bookingId;
-				sessionData.totalAmount = args.totalAmount;
-			}
-
-			const id = await ctx.db.insert('paymentSessions', sessionData);
-
-			console.log('Successfully created session with ID:', id);
-			return { sessionId: id };
-		} catch (error) {
-			console.error('Error creating payment session:', error);
-			throw error;
-		}
+		const id = await ctx.db.insert('paymentSessions', sessionData);
+		return { sessionId: id };
 	},
 });
 
@@ -245,7 +229,6 @@ export const updatePaymentSessionStatus = mutation({
 
 		await ctx.db.patch(args.sessionId, {
 			status: args.status,
-			updatedAt: new Date().toISOString(),
 		});
 
 		return await ctx.db.get(args.sessionId);
@@ -311,7 +294,6 @@ export const completeSubscriptionPayment = mutation({
 		// Update payment session status
 		await ctx.db.patch(args.sessionId, {
 			status: 'completed',
-			updatedAt: new Date().toISOString(),
 		});
 
 		// Create subscription

@@ -21,6 +21,8 @@ const config = {
         },
       },animation: {
         fadeInUp: 'fadeInUp 1s ease-out forwards',
+        'accordion-down': 'accordion-down 0.2s ease-out',
+        'accordion-up': 'accordion-up 0.2s ease-out',
       },
     },
       colors: {

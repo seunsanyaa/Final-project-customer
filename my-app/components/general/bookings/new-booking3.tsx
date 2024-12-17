@@ -19,6 +19,20 @@ import { useConvexAuth } from "convex/react";
 // import { Redirection } from "@/components/ui/redirection";
 import dynamic from 'next/dynamic';
 import { MapPin } from 'lucide-react'; // Import the map icon
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from "@/components/ui/accordion";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "../../../components/ui/select";
+import { ChevronDown } from 'lucide-react'; // Import the chevron icon
 
 // Dynamically import the MapComponent with ssr disabled
 const MapComponent = dynamic(
@@ -79,8 +93,10 @@ export function NewBooking3() {
   
   // 2. All state hooks
   const [paymentMethod, setPaymentMethod] = useState<string | null>(null);
+  const [insuranceType, setInsuranceType] = useState<string>('basic');
   const [extras, setExtras] = useState({
     insurance: false,
+    insuranceCost: 0, // Default cost
     gps: false,
     childSeat: false,
     chauffer: false,
@@ -176,7 +192,25 @@ export function NewBooking3() {
   };
 
   const handleExtraChange = (extra: keyof typeof extras) => {
-    setExtras(prev => ({ ...prev, [extra]: !prev[extra] }));
+    if (extra === 'insurance') {
+      setExtras(prev => ({
+        ...prev,
+        [extra]: !prev[extra],
+        insuranceCost: !prev[extra] ? insuranceOptions[insuranceType as keyof typeof insuranceOptions].price : 0
+      }));
+    } else {
+      setExtras(prev => ({ ...prev, [extra]: !prev[extra] }));
+    }
+  };
+
+  const handleInsuranceTypeChange = (value: string) => {
+    setInsuranceType(value);
+    if (extras.insurance) {
+      setExtras(prev => ({
+        ...prev,
+        insuranceCost: insuranceOptions[value as keyof typeof insuranceOptions].price
+      }));
+    }
   };
 
   const calculateTotal = () => {
@@ -187,7 +221,7 @@ export function NewBooking3() {
 
     // Add extras
     const extrasCost = (
-      (extras.insurance ? 10 : 0) +
+      (extras.insurance ? extras.insuranceCost : 0) +
       (extras.gps ? 5 : 0) +
       (extras.childSeat ? 8 : 0) +
       (extras.chauffer ? 100 : 0)
@@ -248,17 +282,33 @@ export function NewBooking3() {
         status: 'pending',
         pickupLocation,
         dropoffLocation,
-        customerInsurancetype: extras.insurance ? 'full' : 'basic',
-        customerInsuranceNumber: 'INS123',
+        paymentType: paymentMethod,
+        installmentPlan: paymentMethod === 'installment' ? {
+          frequency: 'weekly',
+          totalInstallments: totalDays < 7 ? totalDays : Math.floor(totalDays / 7),
+          amountPerInstallment: calculateTotal().amount,
+          remainingInstallments: totalDays < 7 ? totalDays : Math.floor(totalDays / 7),
+          nextInstallmentDate: new Date().toISOString(),
+        } : undefined,
+        extras: {
+          insurance: extras.insurance,
+          insuranceCost: extras.insuranceCost,
+          gps: extras.gps,
+          childSeat: extras.childSeat,
+          chauffer: extras.chauffer,
+          travelKit: extras.travelKit
+        }
       });
 
       // Create payment session
       const { sessionId } = await createPaymentSession({
         bookingId,
-        userId: user.id,
-        paymentType: paymentMethod,
-        paidAmount: paidAmount,
         totalAmount: parseFloat(totalAmount),
+        paidAmount: paidAmount,
+        userId: user.id,
+        status: 'pending',
+        isSubscription: false,
+        subscriptionPlan: undefined // optional field from schema
       });
 
       // If promotion is selected, mark it as used
@@ -359,8 +409,8 @@ export function NewBooking3() {
         </div>
         {extras.insurance && (
           <div className="flex items-center justify-between">
-            <p>Insurance ({formatPrice(10)}/day × {totalDays} days)</p>
-            <p className="font-semibold">{formatPrice(10 * totalDays)}</p>
+            <p>Insurance ({formatPrice(extras.insuranceCost)}/day × {totalDays} days)</p>
+            <p className="font-semibold">{formatPrice(extras.insuranceCost * totalDays)}</p>
           </div>
         )}
         {extras.gps && (
@@ -398,9 +448,18 @@ export function NewBooking3() {
         <Separator />
         <div className="flex items-center justify-between">
           <p className="text-lg font-semibold">Total</p>
-          <p className="text-lg font-semibold">
-            {formatPrice(parseFloat(total.amount.toString()))}
-          </p>
+          <div className="text-right">
+            <p className="text-lg font-semibold">
+              {formatPrice(parseFloat(total.amount.toString()))}
+            </p>
+            {paymentMethod === 'installment' && (
+              <p className="text-sm text-muted-foreground">
+                {totalDays >= 7 
+                  ? `Divided into ${Math.floor(totalDays / 7)} weekly payments`
+                  : `Divided into ${totalDays} daily payments`}
+              </p>
+            )}
+          </div>
         </div>
         {paymentMethod && (
           <div className="flex items-center justify-between">
@@ -422,7 +481,7 @@ export function NewBooking3() {
 
     // Add extras
     const extrasCost = (
-      (extras.insurance ? 10 : 0) +
+      (extras.insurance ? extras.insuranceCost : 0) +
       (extras.gps ? 5 : 0) +
       (extras.childSeat ? 8 : 0) +
       (extras.chauffer ? 100 : 0)
@@ -521,6 +580,13 @@ export function NewBooking3() {
       .catch(error => console.error('Error:', error));
   };
 
+  // Add insurance type options
+  const insuranceOptions = {
+    basic: { price: 10, coverage: 'Basic coverage for accidents and theft' },
+    premium: { price: 20, coverage: 'Premium coverage including natural disasters and third-party damage' },
+    comprehensive: { price: 30, coverage: 'Full coverage with zero deductible and roadside assistance' }
+  };
+
   return (
     <>
       <Navi/>
@@ -617,19 +683,51 @@ export function NewBooking3() {
               <div className="grid gap-4">
                 <Card className={`w-full mx-auto mt-1 rounded-lg p-1 bg-white shadow-lg ${extras.insurance ? 'bg-muted' : ''}`} style={{ border: "none" }}>
                   <CardContent>
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <h3 className="text-lg font-semibold">Insurance</h3>
-                        <p className="text-muted-foreground">Protect your rental with our comprehensive coverage.</p>
-                      </div>
-                      <div className="text-right">
-                        <p className="font-semibold">$10/day</p>
-                        <Checkbox 
-                          checked={extras.insurance}
-                          onCheckedChange={() => handleExtraChange('insurance')}
-                        />
-                      </div>
-                    </div>
+                    <Accordion type="single" collapsible className="w-full">
+                      <AccordionItem value="insurance" className="border-none">
+                        <AccordionTrigger className="hover:no-underline p-0 group">
+                          <div className="flex items-center justify-between w-full">
+                            <div>
+                              <div className="flex items-center gap-2">
+                                <h3 className="text-lg font-semibold">Insurance</h3>
+                                <ChevronDown className="h-4 w-4 shrink-0 transition-transform duration-200 group-data-[state=open]:rotate-180" />
+                              </div>
+                              <p className="text-muted-foreground">Protect your rental with our comprehensive coverage.</p>
+                            </div>
+                            <div className="text-right">
+                              <p className="font-semibold">${extras.insuranceCost}/day</p>
+                              <div onClick={(e) => e.stopPropagation()}>
+                                <Checkbox 
+                                  checked={extras.insurance}
+                                  onCheckedChange={() => handleExtraChange('insurance')}
+                                />
+                              </div>
+                            </div>
+                          </div>
+                        </AccordionTrigger>
+                        <AccordionContent>
+                          <div className="pt-4">
+                            <Select
+                              value={insuranceType}
+                              onValueChange={handleInsuranceTypeChange}
+                              disabled={!extras.insurance}
+                            >
+                              <SelectTrigger className="w-full bg-background">
+                                <SelectValue placeholder="Select insurance type" />
+                              </SelectTrigger>
+                              <SelectContent className="bg-background">
+                                <SelectItem value="basic">Basic Insurance (${insuranceOptions.basic.price}/day)</SelectItem>
+                                <SelectItem value="premium">Premium Insurance (${insuranceOptions.premium.price}/day)</SelectItem>
+                                <SelectItem value="comprehensive">Comprehensive Insurance (${insuranceOptions.comprehensive.price}/day)</SelectItem>
+                              </SelectContent>
+                            </Select>
+                            <p className="mt-2 text-sm text-muted-foreground">
+                              {insuranceOptions[insuranceType as keyof typeof insuranceOptions].coverage}
+                            </p>
+                          </div>
+                        </AccordionContent>
+                      </AccordionItem>
+                    </Accordion>
                   </CardContent>
                 </Card>
                 <Card className={`w-full mx-auto mt-1 rounded-lg p-1 bg-white shadow-lg ${extras.gps ? 'bg-muted' : ''}`} style={{ border: "none" }}>
