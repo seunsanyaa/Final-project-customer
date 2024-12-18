@@ -66,7 +66,7 @@ export default async function handler(
           bookingId: session.bookingId,
           amount: session.paidAmount,
           paymentDate: new Date().toISOString(),
-          paymentType: session.paymentType,
+          paymentType: 'ionknow',
           paymentIntentId: paymentIntent.id,
         });
 

@@ -20,7 +20,7 @@ export default async function handler(
   }
 
   try {
-    const { amount, sessionId, type, planId, email } = req.body;
+    const { amount, sessionId, type, planId, email, userId } = req.body;
 
     if (!email) {
       return res.status(400).json({ error: 'Email is required' });
@@ -39,6 +39,7 @@ export default async function handler(
         // Create new customer if none exists
         customer = await stripe.customers.create({
           email: email,
+          metadata: { clerkUserId: userId }
         });
       } else {
         customer = customers.data[0];

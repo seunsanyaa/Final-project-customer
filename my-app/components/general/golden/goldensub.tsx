@@ -73,8 +73,8 @@ export const GoldenSubscribe = () => {
       // Create payment session
       const result = await initializePaymentSession({
         paidAmount: 0,
-        paymentType: 'stripe',
         userId: user.id,
+        status: 'pending',
         totalAmount: selectedPlanDetails.price,
         isSubscription: true,
         subscriptionPlan: planId

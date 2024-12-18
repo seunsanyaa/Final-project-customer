@@ -73,11 +73,11 @@ export default function GoldenManage() {
       
       const result = await initializePaymentSession({
         paidAmount: 0,
-        paymentType: 'stripe',
         userId: user.id,
         totalAmount: selectedPlanDetails.price,
         isSubscription: true,
-        subscriptionPlan: newPlan
+        subscriptionPlan: newPlan,
+        status: 'pending'
       });
 
       if (!result?.sessionId) {
@@ -111,20 +111,33 @@ export default function GoldenManage() {
   const handleCancel = async () => {
     try {
       setIsLoading(true);
+      
+      if (!user?.id) {
+        throw new Error('User not found');
+      }
 
       // Get the subscription ID from your subscriptions table
-      const subscription = await fetch('/api/get-subscription', {
+      const subscriptionResponse = await fetch('/api/get-subscription', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          userId: user?.id,
+          userId: user.id,
         }),
       });
 
-      const { subscriptionId } = await subscription.json();
+      if (!subscriptionResponse.ok) {
+        const error = await subscriptionResponse.json();
+        throw new Error(error.error || 'Failed to fetch subscription');
+      }
+
+      const { subscriptionId } = await subscriptionResponse.json();
+
+      if (!subscriptionId) {
+        throw new Error('No active subscription found');
+      }
 
       // Cancel the subscription in Stripe
-      const response = await fetch('/api/subscription-cancellation', {
+      const cancelResponse = await fetch('/api/subscription-cancellation', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -132,23 +145,26 @@ export default function GoldenManage() {
         }),
       });
 
-      if (!response.ok) {
-        throw new Error('Failed to cancel subscription');
+      if (!cancelResponse.ok) {
+        const error = await cancelResponse.json();
+        throw new Error(error.error || 'Failed to cancel subscription');
       }
 
       // Update the customer status in your database
-      await cancelCustomerSubscription({ userId: user?.id ?? "" });
+      await cancelCustomerSubscription({ userId: user.id });
 
       toast({
-        title: "Subscription cancelled successfully",
+        title: "Success",
         description: "Your subscription has been cancelled successfully",
       });
+      
       router.refresh();
     } catch (error) {
       console.error('Cancellation failed:', error);
       toast({
-        title: "Failed to cancel subscription",
-        description: "An error occurred while cancelling your subscription",
+        variant: "destructive",
+        title: "Error",
+        description: error instanceof Error ? error.message : "Failed to cancel subscription",
       });
     } finally {
       setIsLoading(false);

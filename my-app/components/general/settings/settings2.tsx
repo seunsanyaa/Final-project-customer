@@ -32,6 +32,17 @@ import { clerkClient } from "@clerk/nextjs/server";
 import { useToast } from "@/hooks/use-toast";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { InputOTP, InputOTPGroup, InputOTPSlot } from "@/components/ui/input-otp";
+import { Loader2 } from "lucide-react";
+
+type PaymentMethod = {
+  id: string;
+  card: {
+    brand: string;
+    last4: string;
+    exp_month: number;
+    exp_year: number;
+  };
+};
 
 export function Settings2() {
   const { signIn, isLoaded: isSignInLoaded } = useSignIn();
@@ -49,6 +60,9 @@ export function Settings2() {
   const [pendingEmail, setPendingEmail] = useState<any>(null);
   const [showSocialDialog, setShowSocialDialog] = useState(false);
   const [pendingSocialEmail, setPendingSocialEmail] = useState<string | null>(null);
+  const [paymentMethods, setPaymentMethods] = useState<PaymentMethod[]>([]);
+  const [isLoadingPaymentMethods, setIsLoadingPaymentMethods] = useState(true);
+  const [isDeletingPaymentMethod, setIsDeletingPaymentMethod] = useState<string | null>(null);
 
   useEffect(() => {
     if (userSettings) {
@@ -261,6 +275,64 @@ const handleLanguageChange = async (newLanguage: string) => {
     }
   }, [toast, user]);
 
+  const fetchPaymentMethods = async () => {
+    try {
+      const response = await fetch(`/api/payment-methods?userId=${user?.id}`);
+      const data = await response.json();
+      
+      if (response.ok) {
+        setPaymentMethods(data.paymentMethods);
+      } else {
+        console.error('Error fetching payment methods:', data.error);
+      }
+    } catch (error) {
+      console.error('Error fetching payment methods:', error);
+    } finally {
+      setIsLoadingPaymentMethods(false);
+    }
+  };
+
+  const removePaymentMethod = async (paymentMethodId: string) => {
+    try {
+      setIsDeletingPaymentMethod(paymentMethodId);
+      const response = await fetch('/api/payment-methods', {
+        method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          userId: user?.id,
+          paymentMethodId,
+        }),
+      });
+
+      if (response.ok) {
+        setPaymentMethods(prev => prev.filter(pm => pm.id !== paymentMethodId));
+        toast({
+          title: "Success",
+          description: "Payment method removed successfully",
+        });
+      } else {
+        throw new Error('Failed to remove payment method');
+      }
+    } catch (error) {
+      console.error('Error removing payment method:', error);
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "Failed to remove payment method",
+      });
+    } finally {
+      setIsDeletingPaymentMethod(null);
+    }
+  };
+
+  useEffect(() => {
+    if (user?.id) {
+      fetchPaymentMethods();
+    }
+  }, [user?.id]);
+
   return (
     <>
       <Navi/>
@@ -371,7 +443,7 @@ const handleLanguageChange = async (newLanguage: string) => {
                 <div className="flex items-center justify-between">
                   <div>
                     <div className="font-medium">Reservation Updates</div>
-                    <div className="text-muted-foreground text-sm">Get notified about changes to your reservations.</div>
+                    <div className="text-muted-foreground text-sm">Get notified regarding your reservations.</div>
                   </div>
                   <Switch id="reservation-updates" defaultChecked />
                 </div>
@@ -439,34 +511,7 @@ const handleLanguageChange = async (newLanguage: string) => {
               <Button>Save Changes</Button>
             </CardFooter>
           </Card>
-          <Card className="w-full mx-auto mt-1 rounded-lg p-1 bg-white shadow-xl" style={{ border: "none" }}>
-            <CardHeader>
-              <CardTitle>Privacy Settings</CardTitle>
-              <CardDescription>Manage your privacy preferences.</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="grid gap-4">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <div className="font-medium">Profile Visibility</div>
-                    <div className="text-muted-foreground text-sm">Control who can see your profile.</div>
-                  </div>
-                  <Switch id="profile-visibility" />
-                </div>
-                <div className="flex items-center justify-between">
-                  <div>
-                    <div className="font-medium">Activity Status</div>
-                    <div className="text-muted-foreground text-sm">Show when you are online.</div>
-                  </div>
-                  <Switch id="activity-status" />
-                </div>
-              </div>
-            </CardContent>
-            <CardFooter className="flex justify-end gap-2">
-              <Button variant="outline">Cancel</Button>
-              <Button>Save Changes</Button>
-            </CardFooter>
-          </Card>
+
           <Card className="w-full mx-auto mt-1 rounded-lg p-1 bg-white shadow-xl" style={{ border: "none" }} >
             <CardHeader>
               <CardTitle>Account Management</CardTitle>
@@ -486,14 +531,42 @@ const handleLanguageChange = async (newLanguage: string) => {
             </CardHeader>
             <CardContent>
               <div className="grid gap-4">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <div className="font-medium">Credit Card</div>
-                    <div className="text-muted-foreground text-sm">Visa ending in 1234</div>
+                {isLoadingPaymentMethods ? (
+                  <div className="flex items-center justify-center py-4">
+                    <Loader2 className="h-6 w-6 animate-spin" />
                   </div>
-                  <Button variant="outline">Remove</Button>
-                </div>
-                <Button variant="outline">Add New Payment Method</Button>
+                ) : paymentMethods.length > 0 ? (
+                  paymentMethods.map((method) => (
+                    <div key={method.id} className="flex items-center justify-between">
+                      <div>
+                        <div className="font-medium capitalize">
+                          {method.card.brand} •••• {method.card.last4}
+                        </div>
+                        <div className="text-muted-foreground text-sm">
+                          Expires {method.card.exp_month}/{method.card.exp_year}
+                        </div>
+                      </div>
+                      <Button 
+                        variant="outline" 
+                        onClick={() => removePaymentMethod(method.id)}
+                        disabled={isDeletingPaymentMethod === method.id}
+                      >
+                        {isDeletingPaymentMethod === method.id ? (
+                          <Loader2 className="h-4 w-4 animate-spin" />
+                        ) : (
+                          'Remove'
+                        )}
+                      </Button>
+                    </div>
+                  ))
+                ) : (
+                  <p className="text-muted-foreground text-sm">No payment methods saved.</p>
+                )}
+                <Link href="/User_Account/add-payment-method">
+                  <Button variant="outline" className="w-full">
+                    Add New Payment Method
+                  </Button>
+                </Link>
               </div>
             </CardContent>
           </Card>

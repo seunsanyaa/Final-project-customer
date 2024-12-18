@@ -186,32 +186,60 @@ export const updateCar = mutation({
 });
 
 export const getCar = query({
-	args: {
-		registrationNumber: v.string(),
-	},
+	args: { registrationNumber: v.string() },
 	handler: async (ctx, args) => {
 		const car = await ctx.db
-			.query('cars')
-			.withIndex('by_registrationNumber', (q) =>
-				q.eq('registrationNumber', args.registrationNumber)
+			.query("cars")
+			.withIndex("by_registrationNumber", (q) => 
+				q.eq("registrationNumber", args.registrationNumber)
 			)
 			.first();
 
 		if (!car) {
-			return `Car with registration number ${args.registrationNumber} does not exist.`;
+			throw new Error(`Car with registration number ${args.registrationNumber} not found`);
 		}
 
 		return car;
-	},
+	}
 });
 
 export const getAllCars = query({
-	handler: async (ctx) => {
-		const cars = await ctx.db
-			.query('cars')
-			.filter((q) => q.eq(q.field('disabled'), false))
+	args: {
+		golden: v.optional(v.boolean()),
+		disabled: v.optional(v.boolean()),
+		onlyAvailable: v.optional(v.boolean()),
+	},
+	handler: async (ctx, args) => {
+		// If no filters are provided, return all cars
+		if (args.disabled === undefined && args.golden === undefined && args.onlyAvailable === undefined) {
+			return await ctx.db.query("cars").collect();
+		}
+
+		// If any filter is provided, build the filter condition
+		return await ctx.db
+			.query("cars")
+			.filter((q) => {
+				let filter = q.eq(q.field('disabled'), args.disabled ?? false); // Start with a base condition
+
+				// Only add golden filter if it's provided
+				if (args.golden !== undefined) {
+					filter = q.and(
+						filter,
+						q.eq(q.field('golden'), args.golden)
+					);
+				}
+
+				// Only add available filter if it's provided
+				if (args.onlyAvailable !== undefined) {
+					filter = q.and(
+						filter,
+						q.eq(q.field('available'), args.onlyAvailable)
+					);
+				}
+
+				return filter;
+			})
 			.collect();
-		return cars;
 	},
 });
 
@@ -279,7 +307,11 @@ export const getFilteredCars = query({
 			.query("cars")
 			.filter((q) => {
 				// Start with the disabled check
-				let filter = q.eq(q.field('disabled'), false);
+				let filter = q.eq(q.field('disabled'), args.disabled ?? false);
+				filter = q.and(
+					filter,
+					q.eq(q.field('available'), true)
+				);
 				
 				// If golden filter is provided, add it to the query
 				if (args.golden !== undefined) {
@@ -484,6 +516,7 @@ export const getSimilarCars = query({
 			.filter(q => 
 				q.and(
 					q.neq(q.field("registrationNumber"), args.excludeId),
+					q.eq(q.field('available'), true),
 					q.or(
 						q.eq(q.field("maker"), args.maker),
 						q.eq(q.field("model"), args.model)
@@ -498,18 +531,29 @@ export const getSimilarCars = query({
 export const getCarsByCategory = query({
 	args: {
 		category: v.optional(v.string()),
+		disabled: v.optional(v.boolean()),
 	},
 	handler: async (ctx, args) => {
 		if (!args.category || args.category === "all") {
 			return ctx.db
 				.query("cars")
-				.filter((q) => q.eq(q.field('disabled'), false))
+				.filter((q) => 
+					q.and(
+						q.eq(q.field('disabled'), args.disabled ?? false),
+						q.eq(q.field('available'), true)
+					)
+				)
 				.collect();
 		}
 
 		const cars = await ctx.db
 			.query("cars")
-			.filter((q) => q.eq(q.field('disabled'), false))
+			.filter((q) => 
+				q.and(
+					q.eq(q.field('disabled'), args.disabled ?? false),
+					q.eq(q.field('available'), true)
+				)
+			)
 			.collect();
 
 		// Filter cars that have the category in their categories array
@@ -523,7 +567,6 @@ export const getNumberOfCars = query({
 	handler: async (ctx): Promise<number> => {
 		const cars = await ctx.db
 			.query('cars')
-			.filter((q) => q.eq(q.field('disabled'), false))
 			.collect();
 		return cars.length;
 	},

@@ -43,25 +43,21 @@ export default async function handler(
     let customer;
     try {
       // First try to find customer by metadata
-      const existingCustomers = await stripe.customers.list({
-        limit: 1,
-        email: email
+      const existingCustomers = await stripe.customers.search({
+        query: `email:'${email}' AND metadata['clerkUserId']:'${userId}'`,
+        limit: 1
       });
 
-      if (existingCustomers.data.length > 0) {
-        // Update existing customer with metadata
-        customer = await stripe.customers.update(existingCustomers.data[0].id, {
-          metadata: { userId: userId }
-        });
-      } else {
-        // Create new customer with metadata
+      if (!existingCustomers) {
         customer = await stripe.customers.create({
           email,
-          metadata: { userId: userId }
+          metadata: { clerkUserId: userId }
         });
+      }else{
+        customer = existingCustomers.data[0];
       }
 
-      console.log('Customer updated/created:', { 
+      console.log('Customer found/created:', { 
         id: customer.id, 
         email: customer.email, 
         metadata: customer.metadata 

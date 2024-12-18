@@ -128,7 +128,10 @@ export default defineSchema({
 	fleets: defineTable({
 		model: v.string(),
 		maker: v.string(),
+		year: v.number(),
+		trim: v.string(),
 		registrationNumber: v.array(v.string()), // Array to hold different plate numbers for the same model
+		quantity: v.number(), 
 	})
 		.index('by_model', ['model'])
 		.index('by_maker', ['maker']),

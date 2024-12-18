@@ -14,7 +14,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       limit: 100 // Increase limit to ensure we find the customer
     });
 
-    const customer = customers.data.find(cust => cust.metadata.userId === userId);
+    const customer = customers.data.find(cust => cust.metadata.clerkUserId == userId);
     
     if (!customer) {
       return res.status(404).json({ error: 'Customer not found' });
