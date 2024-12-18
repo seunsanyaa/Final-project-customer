@@ -4,5 +4,5 @@ export type Notification = {
   bookingId: string;
   message: string;
   isRead: boolean;
-  type: 'booking' | 'offer' | 'payment' | 'rewards' | 'reminder';
+  type: 'booking' | 'promotion' | 'payment' | 'rewards' | 'reminder';
 };

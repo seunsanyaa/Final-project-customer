@@ -63,11 +63,21 @@ export function Settings2() {
   const [paymentMethods, setPaymentMethods] = useState<PaymentMethod[]>([]);
   const [isLoadingPaymentMethods, setIsLoadingPaymentMethods] = useState(true);
   const [isDeletingPaymentMethod, setIsDeletingPaymentMethod] = useState<string | null>(null);
+  const [notificationPreferences, setNotificationPreferences] = useState({
+    booking: true,
+    promotion: true,
+    payment: true,
+    rewards: true,
+    reminder: true,
+  });
 
   useEffect(() => {
     if (userSettings) {
       setDarkMode(userSettings.darkMode);
       setLanguage(userSettings.language);
+      if (userSettings.notificationPreferences) {
+        setNotificationPreferences(userSettings.notificationPreferences);
+      }
     }
   }, [userSettings]); 
   const handleDarkModeToggle = async (checked: boolean) => {
@@ -333,6 +343,29 @@ const handleLanguageChange = async (newLanguage: string) => {
     }
   }, [user?.id]);
 
+  const handleNotificationToggle = async (type: keyof typeof notificationPreferences) => {
+    const newPreferences = {
+      ...notificationPreferences,
+      [type]: !notificationPreferences[type]
+    };
+    
+    setNotificationPreferences(newPreferences);
+    
+    if (user?.id) {
+      await saveSettings({
+        userId: user.id,
+        darkMode,
+        language,
+        notificationPreferences: newPreferences
+      });
+
+      toast({
+        title: "Success",
+        description: "Notification preferences updated successfully",
+      });
+    }
+  };
+
   return (
     <>
       <Navi/>
@@ -435,24 +468,72 @@ const handleLanguageChange = async (newLanguage: string) => {
               <div className="grid gap-4">
                 <div className="flex items-center justify-between">
                   <div>
-                    <div className="font-medium">New Rental Offers</div>
-                    <div className="text-muted-foreground text-sm">Receive notifications about new rental offers.</div>
+                    <div className="font-medium">Booking Updates</div>
+                    <div className="text-muted-foreground text-sm">
+                      Get notified about your booking status and changes.
+                    </div>
                   </div>
-                  <Switch id="new-rental-offers" defaultChecked />
+                  <Switch 
+                    id="booking-notifications" 
+                    checked={notificationPreferences.booking}
+                    onCheckedChange={() => handleNotificationToggle('booking')}
+                  />
                 </div>
+
                 <div className="flex items-center justify-between">
                   <div>
-                    <div className="font-medium">Reservation Updates</div>
-                    <div className="text-muted-foreground text-sm">Get notified regarding your reservations.</div>
+                    <div className="font-medium">Promotions</div>
+                    <div className="text-muted-foreground text-sm">
+                      Receive notifications about new offers and deals.
+                    </div>
                   </div>
-                  <Switch id="reservation-updates" defaultChecked />
+                  <Switch 
+                    id="promotion-notifications" 
+                    checked={notificationPreferences.promotion}
+                    onCheckedChange={() => handleNotificationToggle('promotion')}
+                  />
                 </div>
+
                 <div className="flex items-center justify-between">
                   <div>
-                    <div className="font-medium">Membership Rewards</div>
-                    <div className="text-muted-foreground text-sm">Receive updates about your membership rewards.</div>
+                    <div className="font-medium">Payment Updates</div>
+                    <div className="text-muted-foreground text-sm">
+                      Get notified about payments and billing information.
+                    </div>
                   </div>
-                  <Switch id="membership-rewards" />
+                  <Switch 
+                    id="payment-notifications" 
+                    checked={notificationPreferences.payment}
+                    onCheckedChange={() => handleNotificationToggle('payment')}
+                  />
+                </div>
+
+                <div className="flex items-center justify-between">
+                  <div>
+                    <div className="font-medium">Rewards Updates</div>
+                    <div className="text-muted-foreground text-sm">
+                      Receive updates about your rewards points and benefits.
+                    </div>
+                  </div>
+                  <Switch 
+                    id="rewards-notifications" 
+                    checked={notificationPreferences.rewards}
+                    onCheckedChange={() => handleNotificationToggle('rewards')}
+                  />
+                </div>
+
+                <div className="flex items-center justify-between">
+                  <div>
+                    <div className="font-medium">Reminders</div>
+                    <div className="text-muted-foreground text-sm">
+                      Get reminded about upcoming bookings and deadlines.
+                    </div>
+                  </div>
+                  <Switch 
+                    id="reminder-notifications" 
+                    checked={notificationPreferences.reminder}
+                    onCheckedChange={() => handleNotificationToggle('reminder')}
+                  />
                 </div>
               </div>
             </CardContent>

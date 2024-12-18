@@ -42,6 +42,13 @@ export default defineSchema({
 		userId: v.string(),
 		darkMode: v.boolean(),
 		language: v.string(),
+		notificationPreferences: v.optional(v.object({
+			booking: v.boolean(),
+			promotion: v.boolean(),
+			payment: v.boolean(),
+			rewards: v.boolean(),
+			reminder: v.boolean(),
+		})),
 	}).index('by_userId', ['userId']),
 
 	cars: defineTable({

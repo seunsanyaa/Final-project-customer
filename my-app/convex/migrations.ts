@@ -67,3 +67,27 @@ export const createFleetsFromCars = internalMutation({
     return `Created ${fleetMap.size} fleet entries`;
   },
 });
+
+export const updateSettingsWithNotificationPreferences = internalMutation({
+  handler: async (ctx) => {
+    const settings = await ctx.db.query("settings").collect();
+    
+    const defaultPreferences = {
+      booking: true,
+      promotion: true,
+      payment: true,
+      rewards: true,
+      reminder: true,
+    };
+
+    for (const setting of settings) {
+      if (!setting.notificationPreferences) {
+        await ctx.db.patch(setting._id, {
+          notificationPreferences: defaultPreferences
+        });
+      }
+    }
+
+    return `Updated ${settings.length} settings records`;
+  },
+});

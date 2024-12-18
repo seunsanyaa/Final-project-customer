@@ -199,7 +199,7 @@ export default function PaymentSuccess() {
           userId: paymentSession.userId,
           bookingId: paymentSession.bookingId as Id<"bookings">,
           message: `Payment successful for booking #${paymentSession.bookingId}`,
-          type: "payment_success"
+          type: "payment"
         });
 
         // 5. Award reward points only after payment session is marked as completed
