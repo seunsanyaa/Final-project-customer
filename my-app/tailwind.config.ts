@@ -60,6 +60,10 @@ const config = {
             "card": {
               "DEFAULT": "hsl(var(--card))",
               "foreground": "hsl(var(--card-foreground))"
+            },
+            "promotion": {
+              "DEFAULT": "hsl(0 84% 60%)",
+              "hover": "hsl(0 84% 50%)"
             }
            
           },

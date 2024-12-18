@@ -3,10 +3,10 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Separator } from "@/components/ui/separator"; // Ensure Separator is imported
 import { useQuery } from "convex/react";
-import { Search } from "lucide-react"; // Import Car icon
+import { Search, TagIcon } from "lucide-react"; // Import Car icon
 import Image from "next/image";
 import Link from "next/link";
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useMemo } from "react";
 import { Label } from "@/components/ui/label";
 import {
   Select,
@@ -23,6 +23,7 @@ import dynamic from 'next/dynamic';
 import loadingAnimation from "@/public/animations/loadingAnimation.json";
 import { LottieRefCurrentProps } from "lottie-react";
 import axios from 'axios'; // Add this import
+import { useUser } from "@clerk/nextjs";
 
 // Add dynamic import for Lottie
 const Lottie = dynamic(() => import('lottie-react'), {
@@ -32,6 +33,8 @@ const Lottie = dynamic(() => import('lottie-react'), {
 export default function AllVehicles() {
   const [showAdvanced, setShowAdvanced] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState<string>("");
+  const [showPromotionsOnly, setShowPromotionsOnly] = useState(false);
+  const { user } = useUser();
 
   // Declare all state variables first
   const [searchParams, setSearchParams] = useState({
@@ -143,6 +146,50 @@ export default function AllVehicles() {
   //   }
   // };
 
+  // Add this query to get promotions for each car
+  const promotionsMap = useQuery(api.promotions.getAllPromotions);
+
+  // Modify the displayed cars logic
+  const displayedCars = useMemo(() => {
+    let filteredCars = cars; // Start with all cars from search results
+    
+    // Apply category filter if one is selected
+    if (selectedCategory && selectedCategory !== "all") {
+      filteredCars = carsByCategory;
+    }
+    
+    // Apply promotions filter if enabled
+    if (showPromotionsOnly && promotionsMap) {
+      filteredCars = filteredCars?.filter(car => {
+        const carPromotions = promotionsMap.filter(promo => 
+          promo.specificTarget.some(target => 
+            target === car._id || 
+            (car.categories && car.categories.includes(target))
+          )
+        );
+        return carPromotions.length > 0;
+      });
+    }
+    
+    return filteredCars;
+  }, [cars, carsByCategory, selectedCategory, showPromotionsOnly, promotionsMap]);
+
+  // Add this helper function
+  const hasActivePromotion = (car: any) => {
+    if (!promotionsMap) return false;
+    return promotionsMap.some(promo => 
+      promo.specificTarget.some(target => 
+        target === car._id || 
+        (car.categories && car.categories.includes(target))
+      )
+    );
+  };
+
+  // Add this effect to trigger search when category changes
+  useEffect(() => {
+    handleSearch();
+  }, [selectedCategory]); // This will trigger a new search when category changes
+
   if (!cars) {
     return (
       <div className="flex items-center justify-center h-screen">
@@ -155,9 +202,6 @@ export default function AllVehicles() {
       </div>
     );
   }
-
-  // Update the displayed cars logic
-  const displayedCars = selectedCategory === "all" ? cars : carsByCategory;
 
   // Change the body types query to categories
   const categories = ["SUV", "Sedan", "Luxury", "Van", "Truck", "Convertible"];
@@ -206,13 +250,25 @@ export default function AllVehicles() {
                     ))}
                   </SelectContent>
                 </Select>
-                <Button className="hover:bg-blue-500 hover:shadow-lg transition-all duration-300 rounded-lg hover:bg-muted" onClick={handleSearch}>
+                <Button 
+                  className="hover:bg-blue-500 hover:shadow-lg transition-all duration-300 rounded-lg hover:bg-muted" 
+                  onClick={handleSearch}
+                >
                   <Search className="w-4 h-4 mr-2" />
                   Search
                 </Button>
+                
               </div>
+              
             </div>
+            <Button
 
+onClick={() => setShowPromotionsOnly(!showPromotionsOnly)}
+className="hover:bg-blue-500 hover:shadow-lg transition-all duration-300 rounded-lg hover:bg-muted"
+>
+<TagIcon className="w-4 h-4 mr-2" />
+{showPromotionsOnly ? "Show All" : "Only Promotions"}
+</Button>
             <div className="text-center">
               <Button 
                 className="hover:bg-blue-500 hover:shadow-lg transition-all duration-300 rounded-lg hover:bg-muted"
@@ -312,54 +368,7 @@ export default function AllVehicles() {
               )}
             </div>
           </div>
-          <div className="w-full max-w-3xl mx-auto mb-8">
-            <div className="bg-card rounded-lg shadow-xl p-6">
-              <div className="flex flex-col space-y-4">
-                <h2 className="text-2xl font-bold">Chat with our Car Assistant</h2>
-                
-                {/* Chat history display */}
-                {/* {aiResponse && (
-                  <div className="bg-muted rounded-lg p-4 max-h-48 overflow-y-auto">
-                    <div className="space-y-2">
-                      <div className="bg-primary/10 rounded p-2">
-                        <p className="text-sm font-semibold">You asked:</p>
-                        <p className="text-sm">{customerQuery}</p>
-                      </div>
-                      <div className="bg-secondary/10 rounded p-2">
-                        <p className="text-sm font-semibold">AI Assistant:</p>
-                        <p className="text-sm whitespace-pre-wrap">{aiResponse}</p>
-                      </div>
-                    </div>
-                  </div>
-                )} */}
 
-                {/* Input area */}
-                {/* <div className="flex gap-2">
-                  <Input
-                    placeholder="Ask me anything about cars..."
-                    value={customerQuery}
-                    onChange={(e) => setCustomerQuery(e.target.value)}
-                    onKeyPress={(e) => e.key === 'Enter' && handleAiQuery()}
-                    className="flex-1"
-                  />
-                  <Button 
-                    onClick={handleAiQuery}
-                    disabled={isLoading}
-                    className="hover:bg-blue-500 hover:shadow-lg transition-all duration-300"
-                  >
-                    {isLoading ? (
-                      <div className="flex items-center gap-2">
-                        <span className="animate-spin">⌛</span>
-                        <span>Thinking...</span>
-                      </div>
-                    ) : (
-                      "Ask AI"
-                    )}
-                  </Button>
-                </div> */}
-              </div>
-            </div>
-          </div>
           <section className="relative w-full h-auto overflow-hidden bg-gradient-to-b from-gray-200 to-white">
             <div className="max-w-full mx-auto h-full">
               <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-3 mt-20 mx-14 mb-20 relative z-0">
@@ -369,6 +378,11 @@ export default function AllVehicles() {
                     className="relative flex flex-col items-center justify-center p-0 transition-all duration-300 transform hover:scale-105 hover:shadow-2xl bg-card hover:bg-gradient-to-r from-blue-500 to-green-500 border-none hover:z-50"
                     style={{ border: "none" }}
                   >
+                    {hasActivePromotion(car) && (
+                      <div className="absolute top-2 right-2 bg-white/90 hover:bg-white p-2 rounded-full z-10 transition-colors duration-200  items-center justify-center" style={{ width: '64px', height: '64px' }}>
+                        <TagIcon className="w-8 h-8 text-customyello " />
+                      </div>
+                    )}
                     <Image
                       src={car.pictures[0]}
                       alt={`${car.maker} ${car.model}`}

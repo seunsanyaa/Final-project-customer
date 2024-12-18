@@ -15,7 +15,7 @@ import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { useState, useEffect } from 'react';
 import { Badge } from "@/components/ui/badge";
-import { StarIcon, AccessibilityIcon } from "lucide-react"; // Use AccessibilityIcon instead
+import { StarIcon, AccessibilityIcon, TagIcon } from "lucide-react"; // Use AccessibilityIcon instead
 
 
 const useCurrency = () => {
@@ -61,6 +61,20 @@ export function Carinfo() {
     excludeId: registrationNumber,
     limit: 3
   });
+
+  // Add this query near your other queries
+  const promotions = useQuery(api.promotions.getAllPromotions);
+
+  // Add this helper function
+  const getActivePromotion = (car: Car) => {
+    if (!promotions) return null;
+    return promotions.find(promo => 
+      promo.specificTarget.some(target => 
+        target === car._id || 
+        (car.categories && car.categories.includes(target))
+      )
+    );
+  };
 
   if (!car) {
     return <div>Loading...</div>; // Show loading state while fetching
@@ -122,6 +136,12 @@ export function Carinfo() {
                       <span className="text-amber-600">Premium</span>
                     </Badge>
                   )}
+                  {getActivePromotion(car) && (
+                    <Badge variant="secondary" className="flex items-center gap-1 bg-white">
+                      <TagIcon className="h-4 w-4 text-customyello" />
+                      <span className="text-customyello">Promotion</span>
+                    </Badge>
+                  )}
                 </div>
                 <p className="text-muted-foreground text-2xl mt-2">
                   {car.maker || "Lorem ipsum"}
@@ -131,9 +151,25 @@ export function Carinfo() {
               <div>
                 <h2 className="text-3xl font-bold">Pricing</h2>
                 <p className="mt-4 text-muted-foreground text-xl">
-                  Starting at <span className="text-foreground font-semibold">
-                    {formatPrice(car.pricePerDay)}
-                  </span>
+                  {getActivePromotion(car) ? (
+                    <>
+                      <span className="line-through text-gray-400">
+                        {formatPrice(car.pricePerDay)}
+                      </span>
+                      <span className="ml-2 text-promotion font-semibold">
+                        {formatPrice(car.pricePerDay * (1 - getActivePromotion(car)!.promotionValue / 100))}
+                      </span>
+                      <span className="ml-2 text-sm text-promotion">
+                        ({getActivePromotion(car)!.promotionValue}% off)
+                      </span>
+                    </>
+                  ) : (
+                    <>
+                      Starting at <span className="text-foreground font-semibold">
+                        {formatPrice(car.pricePerDay)}
+                      </span>
+                    </>
+                  )}
                 </p>
               </div>
 
