@@ -151,8 +151,15 @@ export default function PaymentSuccess() {
         if (getBooking.installmentPlan) {
           const remainingInstallments = getBooking.installmentPlan.remainingInstallments - 1;
           
-          if (remainingInstallments <= 0) {
-            updateData.installmentPlan = undefined;
+          if (remainingInstallments <= 0||getBooking.totalCost === getBooking.paidAmount+paymentSession.paidAmount) {
+            updateData.installmentPlan = {
+              frequency: 'undefined',
+              totalInstallments: 0,
+              amountPerInstallment: 0,
+              remainingInstallments: 0,
+              nextInstallmentDate: 'undefined'
+            };
+            console.log('Installment Plan in if:', updateData.installmentPlan);
           } else {
             const nextDate = new Date();
             nextDate.setDate(nextDate.getDate() + (getBooking.installmentPlan.frequency === 'weekly' ? 7 : 1));
@@ -162,7 +169,9 @@ export default function PaymentSuccess() {
               remainingInstallments,
               nextInstallmentDate: nextDate.toISOString()
             };
+            console.log('Installment Plan in else:', updateData.installmentPlan);
           }
+
         }
 
         // Add logging to debug the update

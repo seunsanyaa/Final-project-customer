@@ -14,6 +14,9 @@ import Image from "next/image";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { useState, useEffect } from 'react';
+import { Badge } from "@/components/ui/badge";
+import { StarIcon, AccessibilityIcon } from "lucide-react"; // Use AccessibilityIcon instead
+
 
 const useCurrency = () => {
   const [currency, setCurrency] = useState<string>('USD');
@@ -103,9 +106,23 @@ export function Carinfo() {
             {/* Left side - Car details and booking */}
             <div className="space-y-8">
               <div>
-                <h1 className="text-5xl font-bold tracking-tight">
-                  {car.model || "Lorem ipsum"}
-                </h1>
+                <div className="flex items-center gap-2">
+                  <h1 className="text-5xl font-bold tracking-tight">
+                    {car.model || "Lorem ipsum"}
+                  </h1>
+                  {car.disabled && (
+                    <Badge variant="secondary" className="flex items-center gap-1">
+                      <AccessibilityIcon className="h-4 w-4" />
+                      <span>Accessible</span>
+                    </Badge>
+                  )}
+                  {car.golden && (
+                    <Badge variant="secondary" className="flex items-center gap-1 bg-amber-200">
+                      <StarIcon className="h-4 w-4 text-amber-600" />
+                      <span className="text-amber-600">Premium</span>
+                    </Badge>
+                  )}
+                </div>
                 <p className="text-muted-foreground text-2xl mt-2">
                   {car.maker || "Lorem ipsum"}
                 </p>

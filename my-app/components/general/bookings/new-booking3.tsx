@@ -33,6 +33,8 @@ import {
   SelectValue,
 } from "../../../components/ui/select";
 import { ChevronDown } from 'lucide-react'; // Import the chevron icon
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { AlertCircle } from "lucide-react";
 
 // Dynamically import the MapComponent with ssr disabled
 const MapComponent = dynamic(
@@ -52,6 +54,13 @@ type Promotion = {
   promotionDescription: string;
   specificTarget: string[];
   target: 'all' | 'specific' | 'none';
+};
+
+// Add this near your other type definitions
+type OfficeLocation = {
+  name: string;
+  address: string;
+  coordinates: { lat: number; lng: number; }
 };
 
 // Update the useCurrency hook to include client-side check
@@ -112,6 +121,11 @@ export function NewBooking3() {
   const currency = useCurrency();
   const [showPickupMap, setShowPickupMap] = useState(false);
   const [showDropoffMap, setShowDropoffMap] = useState(false);
+  const [currentBooking, setCurrentBooking] = useState<any>(null);
+  const [dateError, setDateError] = useState<string>('');
+  const [showOfficeOptions, setShowOfficeOptions] = useState(false);
+  const [showDropoffOptions, setShowDropoffOptions] = useState(false);
+  const [showCashOption, setShowCashOption] = useState(false);
 
   // 3. Get query params
   const { registrationNumber, pricePerDay } = router.query as {
@@ -137,6 +151,9 @@ export function NewBooking3() {
   });
   const isGoldenMember = useQuery(api.customers.isGoldenMember, { 
     userId: user?.id ?? '' 
+  });
+  const currentBookingData = useQuery(api.analytics.getCurrentBooking, { 
+    customerId: user?.id ?? '' 
   });
 
   // 5. All useMemo hooks
@@ -299,8 +316,13 @@ export function NewBooking3() {
           travelKit: extras.travelKit
         }
       });
-
-      // Create payment session
+      if (selectedPromotion) {
+        await markPromotionAsUsed({
+          promotionId: selectedPromotion as Id<"promotions">,
+          userId: user.id,
+        });
+      }
+      if (paymentMethod === 'full'||paymentMethod === 'installment') {
       const { sessionId } = await createPaymentSession({
         bookingId,
         totalAmount: parseFloat(totalAmount),
@@ -310,28 +332,69 @@ export function NewBooking3() {
         isSubscription: false,
         subscriptionPlan: undefined // optional field from schema
       });
-
-      // If promotion is selected, mark it as used
-      if (selectedPromotion) {
-        await markPromotionAsUsed({
-          promotionId: selectedPromotion as Id<"promotions">,
-          userId: user.id,
-        });
-      }
-
-      // Redirect to payment page with all necessary information
       router.push(`/Newbooking/payment/${sessionId}?email=${encodeURIComponent(user.emailAddresses[0].emailAddress)}`);
+    }
+    else if (paymentMethod === 'cash') {
+      router.push(`/bookings`);
+    }
+      
     } catch (error) {
       console.error('Error creating booking:', error);
     }
   };
 
   const handlePickupChange = (date: string) => {
+    const tomorrow = new Date();
+    tomorrow.setDate(tomorrow.getDate() + 1);
+    tomorrow.setHours(0, 0, 0, 0);
+
+    const selectedDate = new Date(date);
+    if (selectedDate < tomorrow) {
+      setDateError('Pickup date must be at least tomorrow');
+      setPickupDateTime('');
+      return;
+    }
+
+    // Check if there's a current booking that overlaps
+    if (currentBooking) {
+      const bookingStart = new Date(currentBooking.startDate);
+      const bookingEnd = new Date(currentBooking.endDate);
+      
+      if (selectedDate >= bookingStart && selectedDate <= bookingEnd) {
+        setDateError('You have an existing booking during this period');
+        setPickupDateTime('');
+        return;
+      }
+    }
+
+    setDateError('');
     setPickupDateTime(date);
     updateTotalDays(date, dropoffDateTime);
   };
 
   const handleDropoffChange = (date: string) => {
+    const dropoffDate = new Date(date);
+    const pickupDate = new Date(pickupDateTime);
+
+    if (dropoffDate <= pickupDate) {
+      setDateError('Drop-off date must be after pickup date');
+      setDropoffDateTime('');
+      return;
+    }
+
+    // Check if there's a current booking that overlaps
+    if (currentBooking) {
+      const bookingStart = new Date(currentBooking.startDate);
+      const bookingEnd = new Date(currentBooking.endDate);
+      
+      if (dropoffDate >= bookingStart && dropoffDate <= bookingEnd) {
+        setDateError('You have an existing booking during this period');
+        setDropoffDateTime('');
+        return;
+      }
+    }
+
+    setDateError('');
     setDropoffDateTime(date);
     updateTotalDays(pickupDateTime, date);
   };
@@ -465,7 +528,7 @@ export function NewBooking3() {
           <div className="flex items-center justify-between">
             <p className="text-lg font-semibold">Payment Method</p>
             <p className="text-lg font-semibold">
-              {paymentMethod === 'full' ? 'Full Payment' : 'Installment Plan'}
+              {paymentMethod === 'full' ? 'Full Payment' : paymentMethod === 'installment' ? 'Installment Plan' : 'Cash Payment'}
             </p>
           </div>
         )}
@@ -542,6 +605,37 @@ export function NewBooking3() {
               Pay Now
             </Button>
           </div>
+          <div className="my-8 border-t border-gray-200" />
+          <div>
+            <h3 className="text-xl font-semibold mb-4">Pay in Cash</h3>
+            <p className="text-lg mb-4">
+              Available for office pickup and drop-off only
+            </p>
+            <h4 className="font-semibold mb-2">Cash Payment Details:</h4>
+            <ul className="list-disc pl-5 mb-4">
+              <li>Pay the full amount at the pickup office</li>
+              <li>No online payment required</li>
+              <li>Must arrive 30 minutes before pickup time</li>
+              <li>Valid ID required for verification</li>
+            </ul>
+            <Button 
+              className={`w-fit px-6 py-3 text-lg font-semibold text-white rounded-lg transition-colors shadow-2xl ${
+                showCashOption 
+                  ? 'bg-green-600 hover:bg-green-500' 
+                  : 'bg-gray-400 cursor-not-allowed'
+              }`}
+              onClick={() => handlePaymentSelection('cash')}
+              disabled={!showCashOption}
+              title={!showCashOption ? "Both pickup and drop-off must be at office locations" : undefined}
+            >
+              Select Cash Payment
+            </Button>
+            {!showCashOption && (
+              <p className="text-sm text-muted-foreground mt-2">
+                * Both pickup and drop-off must be at office locations to enable cash payment
+              </p>
+            )}
+          </div>
         </div>
       </CardContent>
     </Card>
@@ -587,6 +681,48 @@ export function NewBooking3() {
     comprehensive: { price: 30, coverage: 'Full coverage with zero deductible and roadside assistance' }
   };
 
+  // Add this function to your handlers
+  const handleOfficeSelect = (office: OfficeLocation) => {
+    setPickupLocation(office.address);
+    setShowOfficeOptions(false);
+  };
+
+  const handleDropoffOfficeSelect = (office: OfficeLocation) => {
+    setDropoffLocation(office.address);
+    setShowDropoffOptions(false);
+  };
+
+  useEffect(() => {
+    if (currentBookingData) {
+      setCurrentBooking(currentBookingData);
+    }
+  }, [currentBookingData]);
+
+  // Add this with your other constants
+  const officeLocations: OfficeLocation[] = [
+    { 
+      name: "Nicosia Office", 
+      address: "Ataturk Cd, Nicosia, CY",
+      coordinates: { lat: 35.190103, lng: 33.362347 }
+    },
+    { 
+      name: "Famagusta Office", 
+      address: "Esrif bitlis Cd, Famagusta, CY",
+      coordinates: { lat: 35.130542, lng: 33.928980 }
+    },
+    { 
+      name: "Girne Office", 
+      address: "Ecevit Cd, Girne, CY",
+      coordinates: { lat: 35.3364, lng: 33.3199 }
+    }
+  ];
+
+  useEffect(() => {
+    const isPickupOffice = officeLocations.some(office => office.address === pickupLocation);
+    const isDropoffOffice = officeLocations.some(office => office.address === dropoffLocation);
+    setShowCashOption(isPickupOffice && isDropoffOffice);
+  }, [pickupLocation, dropoffLocation]);
+
   return (
     <>
       <Navi/>
@@ -594,6 +730,23 @@ export function NewBooking3() {
       <Separator />
 
       <div className="w-full max-w-6xl mx-auto px-2 md:px-6 py-12 md:py-16">
+        {currentBooking && (
+          <Alert variant="destructive" className="mb-6">
+            <AlertCircle className="h-4 w-4" />
+            <AlertTitle>Current Booking Alert</AlertTitle>
+            <AlertDescription>
+              You have an existing booking from {currentBooking.startDate} to {currentBooking.endDate}.
+              Please select dates that don't overlap with this booking.
+            </AlertDescription>
+          </Alert>
+        )}
+        {dateError && (
+          <Alert variant="destructive" className="mb-6">
+            <AlertCircle className="h-4 w-4" />
+            <AlertTitle>Date Selection Error</AlertTitle>
+            <AlertDescription>{dateError}</AlertDescription>
+          </Alert>
+        )}
         <div>
           <h1 className="text-3xl font-bold tracking-tight">New Booking</h1>
           <p className="text-muted-foreground">Choose your extras, and complete your booking.</p>
@@ -626,22 +779,54 @@ export function NewBooking3() {
                     </div>
                     <div>
                       <Label htmlFor="pickup">Pickup Location</Label>
-                      <div className="relative flex gap-2">
-                        <Input 
-                          id="pickup" 
-                          placeholder="Enter location" 
-                          className="mt-1 w-full bg-card rounded-lg shadow-lg relative"
-                          value={pickupLocation}
-                          onChange={(e) => setPickupLocation(e.target.value)}
-                        />
-                        <Button
-                          variant="outline"
-                          size="icon"
-                          className="mt-1"
-                          onClick={() => setShowPickupMap(!showPickupMap)}
-                        >
-                          <MapPin className="h-4 w-4" />
-                        </Button>
+                      <div className="relative">
+                        <div className="flex gap-2">
+                          <div className="relative flex-1">
+                            <Input 
+                              id="pickup" 
+                              placeholder="Enter location or select office" 
+                              className="mt-1 w-full bg-card rounded-lg shadow-lg relative pr-10"
+                              value={pickupLocation}
+                              onChange={(e) => setPickupLocation(e.target.value)}
+                            />
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              className="absolute right-0 top-1/2 -translate-y-1/2"
+                              onClick={() => setShowOfficeOptions(!showOfficeOptions)}
+                            >
+                              <ChevronDown className={`h-4 w-4 transition-transform ${showOfficeOptions ? 'rotate-180' : ''}`} />
+                            </Button>
+                          </div>
+                          <Button
+                            variant="outline"
+                            size="icon"
+                            className="mt-1"
+                            onClick={() => setShowPickupMap(!showPickupMap)}
+                          >
+                            <MapPin className="h-4 w-4" />
+                          </Button>
+                        </div>
+
+                        {showOfficeOptions && (
+                          <Card className="absolute z-10 w-full mt-1 shadow-lg bg-background">
+                            <CardContent className="p-2">
+                              {officeLocations.map((office) => (
+                                <Button
+                                  key={office.name}
+                                  variant="ghost"
+                                  className="w-full justify-start text-left hover:bg-slate-100 p-2 rounded-md"
+                                  onClick={() => handleOfficeSelect(office)}
+                                >
+                                  <div>
+                                    <p className="font-semibold">{office.name}</p>
+                                    <p className="text-sm text-muted-foreground">{office.address}</p>
+                                  </div>
+                                </Button>
+                              ))}
+                            </CardContent>
+                          </Card>
+                        )}
                       </div>
                       {showPickupMap && (
                         <div className="mt-2">
@@ -651,22 +836,54 @@ export function NewBooking3() {
                     </div>
                     <div>
                       <Label htmlFor="dropoff">Drop-off Location</Label>
-                      <div className="relative flex gap-2">
-                        <Input 
-                          id="dropoff" 
-                          placeholder="Enter location" 
-                          className="mt-1 w-full bg-card rounded-lg shadow-lg relative"
-                          value={dropoffLocation}
-                          onChange={(e) => setDropoffLocation(e.target.value)}
-                        />
-                        <Button
-                          variant="outline"
-                          size="icon"
-                          className="mt-1"
-                          onClick={() => setShowDropoffMap(!showDropoffMap)}
-                        >
-                          <MapPin className="h-4 w-4" />
-                        </Button>
+                      <div className="relative">
+                        <div className="flex gap-2">
+                          <div className="relative flex-1">
+                            <Input 
+                              id="dropoff" 
+                              placeholder="Enter location or select office" 
+                              className="mt-1 w-full bg-card rounded-lg shadow-lg relative pr-10 "
+                              value={dropoffLocation}
+                              onChange={(e) => setDropoffLocation(e.target.value)}
+                            />
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              className="absolute right-0 top-1/2 -translate-y-1/2"
+                              onClick={() => setShowDropoffOptions(!showDropoffOptions)}
+                            >
+                              <ChevronDown className={`h-4 w-4 transition-transform ${showDropoffOptions ? 'rotate-180' : ''}`} />
+                            </Button>
+                          </div>
+                          <Button
+                            variant="outline"
+                            size="icon"
+                            className="mt-1"
+                            onClick={() => setShowDropoffMap(!showDropoffMap)}
+                          >
+                            <MapPin className="h-4 w-4" />
+                          </Button>
+                        </div>
+
+                        {showDropoffOptions && (
+                          <Card className="absolute z-10 w-full mt-1 shadow-lg bg-background">
+                            <CardContent className="p-2">
+                              {officeLocations.map((office) => (
+                                <Button
+                                  key={office.name}
+                                  variant="ghost"
+                                  className="w-full justify-start text-left hover:bg-slate-100 p-2 rounded-md"
+                                  onClick={() => handleDropoffOfficeSelect(office)}
+                                >
+                                  <div>
+                                    <p className="font-semibold">{office.name}</p>
+                                    <p className="text-sm text-muted-foreground">{office.address}</p>
+                                  </div>
+                                </Button>
+                              ))}
+                            </CardContent>
+                          </Card>
+                        )}
                       </div>
                       {showDropoffMap && (
                         <div className="mt-2">
