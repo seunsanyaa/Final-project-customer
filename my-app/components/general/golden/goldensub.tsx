@@ -92,7 +92,8 @@ export const GoldenSubscribe = () => {
         body: JSON.stringify({
           planId,
           email: user.emailAddresses[0].emailAddress,
-          sessionId: sessionId
+          sessionId: sessionId,
+          userId: user.id
         }),
       });
 
