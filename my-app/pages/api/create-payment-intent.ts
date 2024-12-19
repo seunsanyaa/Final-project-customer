@@ -20,7 +20,7 @@ export default async function handler(
   }
 
   try {
-    const { amount, sessionId, type, planId, email, userId } = req.body;
+    const { amount, sessionId, email, userId } = req.body;
 
     if (!email) {
       return res.status(400).json({ error: 'Email is required' });
