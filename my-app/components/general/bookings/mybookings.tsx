@@ -15,6 +15,10 @@ import dynamic from 'next/dynamic';
 import loadingAnimation from "@/public/animations/loadingAnimation.json";
 import { Redirection } from "@/components/ui/redirection";
 import { LottieRefCurrentProps } from "lottie-react"
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
+import { useToast } from "@/hooks/use-toast"
+import { Id } from "@/convex/_generated/dataModel"
+
 
 // Add dynamic import for Lottie
 const Lottie = dynamic(() => import('lottie-react'), {
@@ -22,7 +26,7 @@ const Lottie = dynamic(() => import('lottie-react'), {
 });
 
 interface Booking {
-  _id: string;
+  _id: Id<"bookings">;
   make: string;
   model: string;
   color: string;
@@ -76,6 +80,8 @@ export function Mybookings() {
   const [loading, setLoading] = useState(true);
   const lottieRef = useRef<LottieRefCurrentProps>(null);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [showCancelDialog, setShowCancelDialog] = useState(false);
+  const { toast } = useToast()
 
   const customerId = user?.id || "";
   
@@ -163,6 +169,60 @@ export function Mybookings() {
       return `₺${(amount * 34).toFixed(2)}`;
     }
     return `$${amount.toFixed(2)}`;
+  };
+
+  // Add this function to handle cancellation
+  const handleCancelBooking = (booking: Booking) => {
+    setSelectedBooking(booking);
+    setShowCancelDialog(true);
+  };
+
+  // Add the mutation
+  const cancelBookingMutation = useMutation(api.bookings.cancelBooking);
+
+  // Update the processCancellation function
+  const processCancellation = async () => {
+    if (!selectedBooking || !user) return;
+
+    try {
+      // 1. Call the refund API
+      const refundResponse = await fetch('/api/refund', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          bookingId: selectedBooking._id,
+          userId: user.id,
+        }),
+      });
+
+      if (!refundResponse.ok) {
+        const error = await refundResponse.json();
+        throw new Error(error.message || 'Failed to process refund');
+      }
+
+      // 2. Cancel the booking
+      await cancelBookingMutation({
+        bookingId: selectedBooking._id
+      });
+
+      // 3. Close dialogs and show success message
+      setShowCancelDialog(false);
+      setIsDialogOpen(false);
+      toast({
+        title: "Booking Cancelled",
+        description: "Your refund has been processed and will be credited to your original payment method.",
+      });
+
+    } catch (error) {
+      console.error('Cancellation error:', error);
+      toast({
+        title: "Error",
+        description: error instanceof Error ? error.message : "Failed to cancel booking",
+        variant: "destructive",
+      });
+    }
   };
 
   if (loading) {
@@ -507,10 +567,49 @@ export function Mybookings() {
                   <p>{selectedBooking.dropoffLocation}</p>
                 </div>
               </div>
+              
+              {/* Add this button for upcoming bookings */}
+              {isUpcomingBooking(selectedBooking.startDate) && (
+                <Button 
+                  onClick={() => handleCancelBooking(selectedBooking)}
+                  variant="destructive"
+                  className="w-full mt-4"
+                >
+                  Cancel Booking
+                </Button>
+              )}
             </div>
           )}
         </DialogContent>
       </Dialog>
+
+      {/* Add the Cancel Confirmation Dialog */}
+      <AlertDialog open={showCancelDialog} onOpenChange={setShowCancelDialog}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Cancel Booking</AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to cancel this booking? This action cannot be undone.
+              {selectedBooking && (
+                <div className="mt-4 p-4 bg-muted rounded-lg">
+                  <p><strong>Vehicle:</strong> {selectedBooking.make} {selectedBooking.model}</p>
+                  <p><strong>Dates:</strong> {selectedBooking.startDate} - {selectedBooking.endDate}</p>
+                  <p><strong>Total Cost:</strong> {formatPrice(selectedBooking.totalCost)}</p>
+                </div>
+              )}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Keep Booking</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={processCancellation}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              Yes, Cancel Booking
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </>
   );
 }

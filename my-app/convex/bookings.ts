@@ -141,13 +141,7 @@ export const updateBooking = mutation({
 });
 
 // Delete a booking
-export const deleteBooking = mutation({
-	args: { id: v.id('bookings') },
-	handler: async (ctx, args) => {
-		await ctx.db.delete(args.id);
-		return args.id;
-	},
-});
+
 
 // Get bookings by customer ID
 export const getBookingsByCustomer = query({
@@ -156,6 +150,7 @@ export const getBookingsByCustomer = query({
 		const bookings = await ctx.db
 			.query('bookings')
 			.withIndex('by_customerId', (q) => q.eq('customerId', args.customerId))
+			.filter(q => q.neq(q.field('status'), 'cancelled'))
 			.collect();
 
 		const today = new Date();
@@ -567,4 +562,63 @@ export const getActiveBookingsCount = query({
 			bookings: activeBookings
 		};
 	},
+});
+
+// Add this new mutation
+export const cancelBooking = mutation({
+	args: {
+		bookingId: v.id('bookings')
+	},
+	handler: async (ctx, args) => {
+		// 1. Get the booking details
+		const booking = await ctx.db.get(args.bookingId);
+		if (!booking) {
+			throw new Error('Booking not found');
+		}
+
+		// 2. Get the car details
+		const car = await ctx.db
+			.query('cars')
+			.withIndex('by_registrationNumber', q => q.eq('registrationNumber', booking.carId))
+			.first();
+
+		if (!car) {
+			throw new Error('Car not found');
+		}
+
+		// 3. Find and update the fleet
+		const fleet = await ctx.db
+			.query('fleets')
+			.filter(q => 
+				q.and(
+					q.eq(q.field('maker'), car.maker),
+					q.eq(q.field('model'), car.model),
+					q.eq(q.field('trim'), car.trim),
+					q.eq(q.field('year'), car.year)
+				)
+			)
+			.first();
+
+		if (!fleet) {
+			throw new Error('Fleet not found');
+		}
+
+		// 4. Update fleet: add registration number back and increase quantity
+		await ctx.db.patch(fleet._id, {
+			registrationNumber: [...fleet.registrationNumber, booking.carId],
+			quantity: fleet.quantity + 1
+		});
+
+		// 5. Update car availability
+		await ctx.db.patch(car._id, {
+			available: true
+		});
+
+		// 6. Update booking status
+		await ctx.db.patch(args.bookingId, {
+			status: 'cancelled'
+		});
+
+		return { success: true };
+	}
 });
