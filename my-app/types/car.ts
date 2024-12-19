@@ -13,6 +13,7 @@ export interface Car {
   pricePerDay: number;
   averageRating: number;
   golden: boolean;
+  categories: string[];
 }
 
 export interface Specifications {

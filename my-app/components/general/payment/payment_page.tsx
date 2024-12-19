@@ -58,9 +58,9 @@ export function Payment_Page() {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const total = paymentSession?.totalAmount || 0;
+
   const paidAmount = paymentSession?.paidAmount || 0;
-  const paymentType = paymentSession?.paymentType;
+
 
   const stripePromise = loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY!);
 

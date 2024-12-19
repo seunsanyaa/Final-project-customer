@@ -128,10 +128,9 @@ export function NewBooking3() {
   const [showCashOption, setShowCashOption] = useState(false);
 
   // 3. Get query params
-  const { registrationNumber, pricePerDay } = router.query as {
-    registrationNumber?: string;
-    pricePerDay?: string;
-  };
+  const searchParams = new URLSearchParams(typeof window !== 'undefined' ? window.location.search : '');
+  const registrationNumber = searchParams.get('registrationNumber') || '';
+  const pricePerDay = searchParams.get('pricePerDay') || '';
 
   // 4. All query hooks
   const promotions = useQuery(api.promotions.getAllPromotions);
@@ -156,7 +155,30 @@ export function NewBooking3() {
     customerId: user?.id ?? '' 
   });
 
-  // 5. All useMemo hooks
+  // 5. All mutation hooks (moved up)
+  const createBooking = useMutation(api.bookings.createBooking);
+  const createPaymentSession = useMutation(api.payment.createPaymentSession);
+  const markPromotionAsUsed = useMutation(api.promotions.markPromotionAsUsed);
+
+  // 6. All memo hooks
+  const officeLocations = useMemo(() => [
+    { 
+      name: "Nicosia Office", 
+      address: "Ataturk Cd, Nicosia, CY",
+      coordinates: { lat: 35.190103, lng: 33.362347 }
+    },
+    { 
+      name: "Famagusta Office", 
+      address: "Esrif bitlis Cd, Famagusta, CY",
+      coordinates: { lat: 35.130542, lng: 33.928980 }
+    },
+    { 
+      name: "Girne Office", 
+      address: "Ecevit Cd, Girne, CY",
+      coordinates: { lat: 35.3364, lng: 33.3199 }
+    }
+  ], []);
+
   const applicablePromotions = useMemo(() => {
     if (!promotions || !carDetails || !userPromotions) return [];
     
@@ -179,16 +201,24 @@ export function NewBooking3() {
     return [...regularPromotions, ...permanentPromotions];
   }, [promotions, carDetails, userPromotions]);
 
-  // 6. All mutation hooks
-  const createBooking = useMutation(api.bookings.createBooking);
-  const createPaymentSession = useMutation(api.payment.createPaymentSession);
-  const markPromotionAsUsed = useMutation(api.promotions.markPromotionAsUsed);
+  // 7. All useEffect hooks
+  useEffect(() => {
+    if (currentBookingData) {
+      setCurrentBooking(currentBookingData);
+    }
+  }, [currentBookingData]);
 
-  // 7. Early return checks
-  // if (!isAuthenticated || !user) {
-  //   return <Redirection />;
-  // }
+  useEffect(() => {
+    const checkOfficeLocations = () => {
+      const isPickupOffice = officeLocations.some(office => office.address === pickupLocation);
+      const isDropoffOffice = officeLocations.some(office => office.address === dropoffLocation);
+      setShowCashOption(isPickupOffice && isDropoffOffice);
+    };
 
+    checkOfficeLocations();
+  }, [pickupLocation, dropoffLocation, officeLocations]);
+
+  // 8. Early return checks (after all hooks)
   if (!registrationNumber || !pricePerDay) {
     return (
       <div className="p-4">
@@ -198,7 +228,7 @@ export function NewBooking3() {
     );
   }
 
-  // 8. Event handlers and other functions
+  // 9. Event handlers and other functions
   const scrollToBookingSummary = () => {
     bookingSummaryRef.current?.scrollIntoView({ behavior: 'smooth' });
   };
@@ -350,18 +380,17 @@ export function NewBooking3() {
 
     const selectedDate = new Date(date);
     if (selectedDate < tomorrow) {
-      setDateError('Pickup date must be at least tomorrow');
+      setDateError("Pickup date must be at least tomorrow");
       setPickupDateTime('');
       return;
     }
 
-    // Check if there's a current booking that overlaps
     if (currentBooking) {
       const bookingStart = new Date(currentBooking.startDate);
       const bookingEnd = new Date(currentBooking.endDate);
       
       if (selectedDate >= bookingStart && selectedDate <= bookingEnd) {
-        setDateError('You have an existing booking during this period');
+        setDateError("You have an existing booking during this period");
         setPickupDateTime('');
         return;
       }
@@ -692,37 +721,6 @@ export function NewBooking3() {
     setShowDropoffOptions(false);
   };
 
-  useEffect(() => {
-    if (currentBookingData) {
-      setCurrentBooking(currentBookingData);
-    }
-  }, [currentBookingData]);
-
-  // Add this with your other constants
-  const officeLocations: OfficeLocation[] = [
-    { 
-      name: "Nicosia Office", 
-      address: "Ataturk Cd, Nicosia, CY",
-      coordinates: { lat: 35.190103, lng: 33.362347 }
-    },
-    { 
-      name: "Famagusta Office", 
-      address: "Esrif bitlis Cd, Famagusta, CY",
-      coordinates: { lat: 35.130542, lng: 33.928980 }
-    },
-    { 
-      name: "Girne Office", 
-      address: "Ecevit Cd, Girne, CY",
-      coordinates: { lat: 35.3364, lng: 33.3199 }
-    }
-  ];
-
-  useEffect(() => {
-    const isPickupOffice = officeLocations.some(office => office.address === pickupLocation);
-    const isDropoffOffice = officeLocations.some(office => office.address === dropoffLocation);
-    setShowCashOption(isPickupOffice && isDropoffOffice);
-  }, [pickupLocation, dropoffLocation]);
-
   return (
     <>
       <Navi/>
@@ -736,7 +734,7 @@ export function NewBooking3() {
             <AlertTitle>Current Booking Alert</AlertTitle>
             <AlertDescription>
               You have an existing booking from {currentBooking.startDate} to {currentBooking.endDate}.
-              Please select dates that don't overlap with this booking.
+              Please select dates that don&apos;t overlap with this booking.
             </AlertDescription>
           </Alert>
         )}
