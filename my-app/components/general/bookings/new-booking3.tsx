@@ -898,9 +898,9 @@ export function NewBooking3() {
               <div className="grid gap-4">
                 <Card className={`w-full mx-auto mt-1 rounded-lg p-1 bg-white shadow-lg ${extras.insurance ? 'bg-muted' : ''}`} style={{ border: "none" }}>
                   <CardContent>
-                    <Accordion type="single" collapsible className="w-full">
-                      <AccordionItem value="insurance" className="border-none">
-                        <AccordionTrigger className="hover:no-underline p-0 group">
+                    <Accordion type="single" collapsible>
+                      <AccordionItem value="insurance">
+                        <AccordionTrigger>
                           <div className="flex items-center justify-between w-full">
                             <div>
                               <div className="flex items-center gap-2">

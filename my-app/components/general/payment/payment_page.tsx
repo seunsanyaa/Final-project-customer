@@ -120,7 +120,7 @@ export function Payment_Page() {
         })
         .finally(() => setIsLoading(false));
     }
-  }, [paidAmount, sessionId, email, currency]); // Add currency to dependencies
+  }, [paidAmount, sessionId, email, currency, userId]); // Add currency to dependencies
 
   useEffect(() => {
     const fetchPaymentMethods = async () => {
@@ -145,7 +145,7 @@ export function Payment_Page() {
     if (email) {
       fetchPaymentMethods();
     }
-  }, [email]);
+  }, [email, userId]);
 
   const appearance: Appearance = {
     theme: 'stripe',

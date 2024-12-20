@@ -341,7 +341,7 @@ const handleLanguageChange = async (newLanguage: string) => {
     if (user?.id) {
       fetchPaymentMethods();
     }
-  }, [user?.id]);
+  }, [user?.id,fetchPaymentMethods]);
 
   const handleNotificationToggle = async (type: keyof typeof notificationPreferences) => {
     const newPreferences = {
