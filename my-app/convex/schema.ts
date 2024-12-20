@@ -17,6 +17,7 @@ export default defineSchema({
 		email: v.string(), //username is used in login
 		role: v.string(),
 		token: v.optional(v.string()),
+		userId: v.optional(v.string()),
 	}).index('by_email', ['email']),
 
 	customers: defineTable({

@@ -276,3 +276,46 @@ export const changePassword = mutation({
 		return `Password for user with ID ${args.userId} has been changed.`;
 	},
 });
+
+// New function for creating staff user
+export const createStaffUser = mutation({
+	args: {
+		email: v.string(),
+		userId: v.string(),
+		firstName: v.string(),
+		lastName: v.string(),
+	},
+	handler: async (ctx, args) => {
+		// Check if user already exists
+		const existingUser = await ctx.db
+			.query('users')
+			.withIndex('by_userId', (q) => q.eq('userId', args.userId))
+			.first();
+
+		if (existingUser) {
+			throw new Error('User already exists');
+		}
+
+		// Create new staff user
+		return ctx.db.insert('users', {
+			email: args.email,
+			userId: args.userId,
+			firstName: args.firstName,
+			lastName: args.lastName,
+			staff: true, // Always true for staff users
+		});
+	},
+});
+
+// Query to check if a user is staff
+export const isUserStaff = query({
+	args: { userId: v.string() },
+	handler: async (ctx, args) => {
+		const user = await ctx.db
+			.query('users')
+			.withIndex('by_userId', (q) => q.eq('userId', args.userId))
+			.first();
+
+		return user?.staff ?? false;
+	},
+});

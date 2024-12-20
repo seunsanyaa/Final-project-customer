@@ -6,6 +6,7 @@ interface StaffMember {
 	role: string;
 	email: string;
 	token?: string;
+	userId?: string;
 }
 
 // Query to get all staff members
@@ -79,5 +80,25 @@ export const getStaffCount = query({
 	handler: async (ctx) => {
 		const staffMembers = await ctx.db.query('staff').collect();
 		return staffMembers.length;
+	},
+});
+
+// New mutation to update staff userId
+export const updateStaffUserId = mutation({
+	args: {
+		email: v.string(),
+		userId: v.string(),
+	},
+	handler: async (ctx, args) => {
+		const staff = await ctx.db
+			.query('staff')
+			.withIndex('by_email', (q) => q.eq('email', args.email))
+			.first();
+
+		if (!staff) {
+			throw new Error('Staff member not found');
+		}
+
+		return await ctx.db.patch(staff._id, { userId: args.userId });
 	},
 });

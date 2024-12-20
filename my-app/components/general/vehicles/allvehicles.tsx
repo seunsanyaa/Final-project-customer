@@ -188,7 +188,7 @@ export default function AllVehicles() {
   // Add this effect to trigger search when category changes
   useEffect(() => {
     handleSearch();
-  }, [selectedCategory, handleSearch]); // This will trigger a new search when category changes
+  }, [selectedCategory]); // This will trigger a new search when category changes
 
   if (!cars) {
     return (
