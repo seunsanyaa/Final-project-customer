@@ -1,3 +1,6 @@
+//mista allam says we need to make a function that alerts users for when the drop-off date is close, same thing when 
+// the pickup date is close
+
 import { v } from 'convex/values';
 import { mutation, query } from './_generated/server';
 

@@ -1,3 +1,5 @@
+// we might need to make a function to filter reviews for the customer, like imagine he is in the review page and wants to see his review for all bmws he rented
+//same thing with the all ratings page, we need to implement a search bar there which will rely on a function
 import { v } from "convex/values";
 import { mutation, query } from "./_generated/server";
 import { Car } from "../types/car";
