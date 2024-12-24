@@ -1,6 +1,9 @@
 //mista allam says we need to make a function that alerts users for when the drop-off date is close, same thing when 
 // the pickup date is close
 
+//function to print booking details on the admin side
+//function to make search bar work on the admin side to filter
+
 import { v } from 'convex/values';
 import { mutation, query } from './_generated/server';
 

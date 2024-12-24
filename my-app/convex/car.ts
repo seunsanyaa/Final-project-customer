@@ -1,5 +1,6 @@
 //we might need a function here or in the booking table that fetches similar cars based on the customer's booking history
 
+//function to make search bar work on the admin side to filter
 
 import { v } from 'convex/values';
 import { mutation, query, action } from './_generated/server';
