@@ -1,16 +1,27 @@
-// we might need to make a function to filter reviews for the customer, like imagine he is in the review page and wants to see his review for all bmws he rented
-//same thing with the all ratings page, we need to implement a search bar there which will rely on a function
+
 import { v } from "convex/values";
 import { mutation, query } from "./_generated/server";
 import { Car } from "../types/car";
 import { Booking } from "../types/booking";
 import { Review } from "../types/review";
 import { Id } from "../convex/_generated/dataModel";
-/**
- * Helper function to update the average rating of a car.
- * @param ctx - The Convex context.
- * @param carId - The registration number of the car.
- */
+export const FilterCustomerReviews = mutation({
+	args: {
+		userId: v.string(),
+	},
+	handler: async (ctx, args) => {
+		const { userId } = args;
+		return await ctx.db.query('reviews').filter(q => q.eq(q.field('userId'), userId)).collect();
+	}
+});
+export const SearchReviews = query({
+	args: {
+		userId: v.optional(v.string()),
+	},
+	handler: async (ctx, args) => {
+		return await ctx.db.query('reviews').filter(q => q.eq(q.field('userId'), args.userId)).collect();
+	}
+});
 async function updateCarAverageRating(ctx: any, carId: string) {
   // Get all reviews for this car by:
   // 1. Get all bookings for this car

@@ -211,11 +211,11 @@ export default defineSchema({
 		.index('by_status', ['status']),
 
 	messages: defineTable({
-		customerId: v.string(),
+		userId: v.string(),
 		message: v.string(),
 		isAdmin: v.boolean(),
 		timestamp: v.string(),
-	}).index('by_customerId', ['customerId']),
+	}).index('by_userId', ['userId']),
 
 	notifications: defineTable({
 		userId: v.string(),

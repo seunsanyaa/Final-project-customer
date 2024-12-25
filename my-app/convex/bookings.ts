@@ -1,12 +1,31 @@
-//mista allam says we need to make a function that alerts users for when the drop-off date is close, same thing when 
-// the pickup date is close
 
-//function to print booking details on the admin side
-//function to make search bar work on the admin side to filter
 
 import { v } from 'convex/values';
 import { mutation, query } from './_generated/server';
 
+export const checkdropoffpickup = query({
+	args: {
+		customerId: v.string(),
+	},
+	handler: async (ctx, args) => {
+		return await ctx.db.query('bookings').filter(q => q.eq(q.field('customerId'), args.customerId)).collect();
+	}
+});
+
+export const adminbookings = query({
+	handler: async (ctx) => {
+		return await ctx.db.query('bookings').collect();
+	}
+});
+
+export const filterBookings = query({
+	args: {
+		customerId: v.string(),
+	},
+	handler: async (ctx, args) => {
+		return await ctx.db.query('bookings').filter(q => q.eq(q.field('customerId'), args.customerId)).collect();
+	}
+});
 // Create a new booking
 export const createBooking = mutation({
 	args: {
@@ -146,7 +165,6 @@ export const updateBooking = mutation({
 	},
 });
 
-// Delete a booking
 
 
 // Get bookings by customer ID
@@ -321,9 +339,7 @@ export const getCarByCarId = query({
 	},
 });
 
-/**
- * Fetch bookings for a customer that do not have an associated review along with car details.
- */
+
 export const getPendingReviewsByCustomer = query({
 	args: { customerId: v.string() },
 	handler: async (ctx, args) => {

@@ -1,10 +1,16 @@
-//function to make search bar work on the admin side to filter
 
 
 import { v } from 'convex/values';
 
 import { mutation, query } from './_generated/server';
-
+export const AdminSearchCustomer = query({
+	args: {
+		userId: v.string(),
+	},
+	handler: async (ctx, args) => {
+		return await ctx.db.query('customers').filter(q => q.eq(q.field('userId'), args.userId)).collect();
+	}
+});
 // Helper function to calculate age from date of birth
 const calculateAge = (dob: string): number => {
 	const [day, month, year] = dob.split('.').map(Number);

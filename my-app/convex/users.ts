@@ -139,34 +139,7 @@ export const getUserByEmail = query({
 	},
 });
 
-// export const editUser = mutation({
-// 	args: {
-// 		userId: v.string(),
-// 		email: v.optional(v.string()),
-// 		firstName: v.optional(v.string()),
-// 		lastName: v.optional(v.string()),
-// 		staff: v.optional(v.boolean()),
-// 	},
-// 	handler: async (ctx, args) => {
-// 		const userToUpdate = await ctx.db
-// 			.query('users')
-// 			.withIndex('by_userId', (q) => q.eq('userId', args.userId))
-// 			.first();
 
-// 		if (!userToUpdate) {
-// 			throw new Error('User not found');
-// 		}
-
-// 		// Update only the fields that are provided
-// 		const updates = {};
-// 		if (args.email !== undefined) updates.email = args.email;
-// 		if (args.firstName !== undefined) updates.firstName = args.firstName;
-// 		if (args.lastName !== undefined) updates.lastName = args.lastName;
-// 		if (args.staff !== undefined) updates.staff = args.staff;
-
-// 		await ctx.db.patch(userToUpdate._id, updates);
-// 	},
-// });
 export const editUser = mutation({
 	args: {
 		userId: v.string(),

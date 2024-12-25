@@ -1,8 +1,17 @@
-//function to print analytical reports
 
 import { v } from 'convex/values';
 import { query } from './_generated/server';
 
+
+export const getAnalyticsReport = query({
+  args: {
+    month: v.optional(v.number()),
+    year: v.optional(v.number()),
+  },
+  handler: async (ctx, args) => {
+    return { message: 'Analytics data' };
+  }
+});
 // Get the most rented cars for a specific month
 export const getMostRentedCars = query({
   args: {

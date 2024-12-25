@@ -1,11 +1,27 @@
-//we might need a function here or in the booking table that fetches similar cars based on the customer's booking history
 
-//function to make search bar work on the admin side to filter
 
 import { v } from 'convex/values';
 import { mutation, query, action } from './_generated/server';
 import { api } from './_generated/api';
 
+
+export const getSimilarCar = query({
+	args: {
+		registrationNumber: v.string(),
+	},
+	handler: async (ctx, args) => {
+		return await ctx.db.query('cars').filter(q => q.eq(q.field('registrationNumber'), args.registrationNumber)).collect();
+	}
+});
+
+export const AdminSearchCar = query({
+	args: {
+		registrationNumber: v.string(),
+	},
+	handler: async (ctx, args) => {
+		return await ctx.db.query('cars').filter(q => q.eq(q.field('registrationNumber'), args.registrationNumber)).collect();
+	}
+});
 // Action to fetch and store car specifications
 export const fetchAndStoreCarSpecifications = action({
 	args: {

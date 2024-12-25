@@ -1,0 +1,186 @@
+@startuml
+
+entity "Users" as users {
+  *userId: String
+  *firstName: String
+  *lastName: String
+  *email: String
+  +password: String
+  +staff: Boolean
+}
+
+entity "Staff" as staff {
+  *email: String
+  *role: String
+  +token: String
+  +userId: String
+}
+
+entity "Customers" as customers {
+  *userId: String
+  *nationality: String
+  age: Number
+  *phoneNumber: String
+  *licenseNumber: String
+  *expirationDate: String
+  *address: String
+  *dateOfBirth: String
+  +licensePicture: String
+  *goldenMember: Boolean
+  *rewardPoints: Number
+  +subscriptionPlan: String
+}
+
+entity "Settings" as settings {
+  *userId: String
+  *darkMode: Boolean
+  *language: String
+  +notificationPreferences: Object
+}
+
+entity "Cars" as cars {
+  *model: String
+  *color: String
+  *maker: String
+  *trim: String
+  +lastMaintenanceDate: String
+  *available: Boolean
+  *year: Number
+  *disabled: Boolean
+  *registrationNumber: String
+  *pictures: List<String>
+  *pricePerDay: Number
+  +averageRating: Number
+  +categories: List<String>
+  +golden: Boolean
+}
+
+entity "Specifications" as specifications {
+  *registrationNumber: String
+  *engineType: String
+  *engineCylinders: String
+  *engineHorsepower: String
+  *fuelType: String
+  *transmission: String
+  *drive: String
+  *doors: String
+  *bodyType: String
+}
+
+entity "Bookings" as bookings {
+  *customerId: String
+  *carId: String
+  *startDate: String
+  *endDate: String
+  *totalCost: Number
+  *paidAmount: Number
+  *status: String
+  *pickupLocation: String
+  *dropoffLocation: String
+  +reviewId: String
+  +paymentType: String
+  +installmentPlan: Object
+  +extras: Object
+}
+
+entity "Payments" as payments {
+  *receiptNumber: String
+  +bookingId: Booking
+  *amount: Number
+  *paymentDate: String
+  *paymentType: String
+  +paymentIntentId: String
+  +isSubscription: Boolean
+}
+
+entity "Fleets" as fleets {
+  *model: String
+  *maker: String
+  *year: Number
+  *trim: String
+  *registrationNumber: List<String>
+  *quantity: Number
+}
+
+entity "Reviews" as reviews {
+  *bookingId: Booking
+  *rating: Number
+  *userId: String
+  *comment: String
+  *numberOfStars: Number
+  *reviewDate: String
+}
+
+entity "Promotions" as promotions {
+  *promotionTitle: String
+  *promotionDescription: String
+  *promotionImage: String
+  *promotionType: String
+  *promotionValue: Number
+  +promotionStartDate: String
+  +promotionEndDate: String
+  *status: String
+  *goldenMembersOnly: Boolean
+  *target: String
+  +specificTarget: List<String>
+  +minimumRentals: Number
+  +minimumMoneySpent: Number
+}
+
+entity "PaymentSessions" as paymentSessions {
+  +bookingId: Booking
+  +subscriptionPlan: String
+  *paidAmount: Number
+  *userId: String
+  *status: String
+  *createdAt: String
+  *expiresAt: String
+  +isSubscription: Boolean
+}
+
+entity "Subscriptions" as subscriptions {
+  *userId: String
+  *plan: String
+  *amount: Number
+  *paymentSessionId: PaymentSession
+  *stripeSubscriptionId: String
+  *status: String
+  *startDate: String
+  *endDate: String
+  *lastPaymentDate: String
+  *nextPaymentDate: String
+}
+
+entity "Messages" as messages {
+  *userId: String
+  *message: String
+  *isAdmin: Boolean
+  *timestamp: String
+}
+
+entity "Notifications" as notifications {
+  *userId: String
+  +bookingId: String
+  *message: String
+  *type: String
+  *isRead: Boolean
+  *createdAt: Number
+  +promotionId: Promotion
+}
+
+users ||--o{ staff
+users ||--o{ customers
+customers ||--o| settings
+customers ||--o{ bookings
+cars ||--o{ bookings
+bookings ||--o{ payments
+bookings ||--|| reviews
+bookings ||--o{ paymentSessions
+promotions ||--o{ customers
+customers ||--o{ notifications
+users ||--o{ messages
+customers ||--o| subscriptions
+cars ||--|| specifications
+cars }o--|| fleets
+
+@enduml 

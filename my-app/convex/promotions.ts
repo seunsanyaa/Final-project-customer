@@ -1,4 +1,4 @@
-//function to make search bar work on the admin side to filter
+
 
 
 import { v } from 'convex/values';
@@ -6,11 +6,14 @@ import { mutation, query } from './_generated/server';
 import { Promotion } from '../types/Promotion';
 import { Id } from '../convex/_generated/dataModel';
 
-type Car = {
-  _id: string;
-  categories?: string[];
-  // ... other properties ...
-};
+export const adminSearchPromotion = query({
+	args: {
+		promotionTitle: v.optional(v.string()),
+	},
+	handler: async (ctx, args) => {
+		return await ctx.db.query('promotions').filter(q => q.eq(q.field('promotionTitle'), args.promotionTitle)).collect();
+	}
+});
 
 // Create a new promotion
 export const createPromotion = mutation({

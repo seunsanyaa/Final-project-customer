@@ -1,0 +1,328 @@
+@startuml
+
+class Users {
+*_Id:string
+*_creationTime:Date
+  *userId: String
+  *firstName: String
+  *lastName: String
+  *email: String
+  +password: String
+  +staff: Boolean
+  +getUser()
+  +getFullUser()
+  +getAllUsers()
+  +getUserByEmail()
+  +getManyUsers()
+  +isUserStaff()
+  +createUser()
+  +deleteUser()
+  +editUser()
+  +createUserFromClerk()
+  +changePassword()
+  +createStaffUser()
+}
+
+class Staff {
+*_Id:string
+*_creationTime:Date
+  *email: String
+  *role: String
+  +token: String
+  +userId: String
+  +AdminSearchStaff()
+  +getAllStaff()
+  +getStaffMemberById()
+  +getStaffByEmail()
+  +getStaffCount()
+  +addStaffMember()
+  +updateStaffMember()
+  +deleteStaffMember()
+  +updateStaffUserId()
+}
+
+class Customers {
+*_Id:string
+*_creationTime:Date
+  *userId: String
+  *nationality: String
+  age: Number
+  *phoneNumber: String
+  *licenseNumber: String
+  *expirationDate: String
+  *address: String
+  *dateOfBirth: String
+  +licensePicture: String
+  *goldenMember: Boolean
+  +promotions: List<Promotion>
+  +usedPromotions: List<Promotion>
+  *rewardPoints: Number
+  +subscriptionPlan: String
+  +AdminSearchCustomer()
+  +getAllCustomers()
+  +getCustomerByUserId()
+  +getRewardPointsByUserId()
+  +isGoldenMember()
+  +getActiveSubscription()
+  +getCustomerCount()
+  +createCustomer()
+  +deleteCustomer()
+  +updateCustomer()
+  +upsertCustomer()
+  +upgradeCustomer()
+  +addRewardPoints()
+  +updateCustomerSubscription()
+  +createSubscription()
+  +cancelSubscription()
+}
+
+class Settings {
+*_Id:string
+*_creationTime:Date
+  *userId: String
+  *darkMode: Boolean
+  *language: String
+  +notificationPreferences: Object
+}
+
+class Cars {
+*_Id:string
+*_creationTime:Date
+  *model: String
+  *color: String
+  *maker: String
+  *trim: String
+  +lastMaintenanceDate: String
+  *available: Boolean
+  *year: Number
+  *disabled: Boolean
+  *registrationNumber: String
+  *pictures: List<String>
+  *pricePerDay: Number
+  +averageRating: Number
+  +categories: List<String>
+  +golden: Boolean
+  +getSimilarCar()
+  +AdminSearchCar()
+  +getCar()
+  +getAllCars()
+  +getAllAvailableCarsGrouped()
+  +getCarSpecifications()
+  +getFilteredCars()
+  +getCarsWithReviews()
+  +getCarWithTopReviews()
+  +getCarWithReviews()
+  +getSimilarCars()
+  +getCarsByCategory()
+  +getNumberOfCars()
+  +createCar()
+  +deleteCar()
+  +updateCar()
+  +fetchAndStoreCarSpecifications()
+}
+
+class Specifications {
+*_Id:string
+*_creationTime:Date
+  *registrationNumber: String
+  *engineType: String
+  *engineCylinders: String
+  *engineHorsepower: String
+  *fuelType: String
+  *transmission: String
+  *drive: String
+  *doors: String
+  *bodyType: String
+}
+
+class Bookings {
+*_Id:string
+*_creationTime:Date
+  *customerId: String
+  *carId: String
+  *startDate: String
+  *endDate: String
+  *totalCost: Number
+  *paidAmount: Number
+  *status: String
+  *pickupLocation: String
+  *dropoffLocation: String
+  +reviewId: String
+  +paymentType: String
+  +installmentPlan: Object
+  +extras: Object
+  +checkdropoffpickup()
+  +adminbookings()
+  +filterBookings()
+  +getBooking()
+  +getAllBookings()
+  +getBookingsByCustomer()
+  +getBookingsByCar()
+  +getBookingDetails()
+  +getPendingReviewsByCustomer()
+  +getDailyBookingStats()
+  +getBookingGrowthStats()
+  +getActiveBookingsCount()
+  +createBooking()
+  +updateBooking()
+  +addReview()
+  +updateBookingWithTotalPaid()
+  +checkAndUpdateBookingStatus()
+  +awardBookingRewardPoints()
+  +cancelBooking()
+}
+
+class Payments {
+*_Id:string
+*_creationTime:Date
+  *receiptNumber: String
+  +bookingId: Booking
+  *amount: Number
+  *paymentDate: String
+  *paymentType: String
+  +paymentIntentId: String
+  +isSubscription: Boolean
+  +adminSearchPayment()
+  +getPayment()
+  +getAllPayments()
+  +getAllPaymentsByBookingId()
+  +getLatestPayment()
+  +getWeeklyPayments()
+  +getWeeklyPaymentStats()
+  +getDailyPaymentStats()
+  +createPayment()
+  +RefundPayment()
+  +editPayment()
+  +createSubscription()
+  +completeSubscriptionPayment()
+}
+
+class Fleets {
+*_Id:string
+*_creationTime:Date
+  *model: String
+  *maker: String
+  *year: Number
+  *trim: String
+  *registrationNumber: List<String>
+  *quantity: Number
+}
+
+class Reviews {
+*_Id:string
+*_creationTime:Date
+  *bookingId: Booking
+  *rating: Number
+  *userId: String
+  *comment: String
+  *numberOfStars: Number
+  *reviewDate: String
+  +SearchReviews()
+  +getReviewsByUserId()
+  +getTopReviews()
+  +FilterCustomerReviews()
+  +createReview()
+}
+
+class Promotions {
+*_Id:string
+*_creationTime:Date
+  *promotionTitle: String
+  *promotionDescription: String
+  *promotionImage: String
+  *promotionType: String
+  *promotionValue: Number
+  +promotionStartDate: String
+  +promotionEndDate: String
+  *status: String
+  *goldenMembersOnly: Boolean
+  *target: String
+  +specificTarget: List<String>
+  +minimumRentals: Number
+  +minimumMoneySpent: Number
+  +adminSearchPromotion()
+  +getAllPromotions()
+  +getRegularMemberPromotions()
+  +getGoldenMemberPromotions()
+  +getUserRedeemedPromotions()
+  +getPermanentPromotions()
+  +getApplicablePromotions()
+  +createPromotion()
+  +updatePromotion()
+  +deletePromotion()
+  +redeemPromo()
+  +markPromotionAsUsed()
+  +deactivatePromo()
+}
+
+class PaymentSessions {
+*_Id:string
+*_creationTime:Date
+  +bookingId: Booking
+  +subscriptionPlan: String
+  *paidAmount: Number
+  *userId: String
+  *status: String
+  *createdAt: String
+  *expiresAt: String
+  +isSubscription: Boolean
+  +getPaymentSession()
+  +createPaymentSession()
+  +updatePaymentSessionStatus()
+  +deletePaymentSession()
+}
+
+class Subscriptions {
+*_Id:string
+*_creationTime:Date
+  *userId: String
+  *plan: String
+  *amount: Number
+  *paymentSessionId: PaymentSession
+  *stripeSubscriptionId: String
+  *status: String
+  *startDate: String
+  *endDate: String
+  *lastPaymentDate: String
+  *nextPaymentDate: String
+}
+
+class Messages {
+*_Id:string
+*_creationTime:Date
+  *userId: String
+  *message: String
+  *isAdmin: Boolean
+  *timestamp: String
+}
+
+class Notifications {
+ *_Id:string
+ *_creationTime:Date
+  *userId: String
+  +bookingId: String
+  *message: String
+  *type: String
+  *isRead: Boolean
+  *createdAt: Number
+  +promotionId: Promotion
+  +getUnreadNotifications()
+  +createNotification()
+  +markNotificationsAsRead()
+}
+
+Users "1" -- "*" Staff
+Users "1" -- "*" Customers
+Customers"1" <-- "0..1" Settings
+Customers "1" -- "*" Bookings
+Cars "1" -- "*" Bookings
+Bookings "1" -- "*" Payments
+Bookings "1" <--> "1" Reviews
+Bookings "1" -- "*" PaymentSessions
+Promotions "1" -- "*" Customers
+Customers "1" -- "*" Notifications
+Users "1" -- "*" Messages
+Customers  <-- "0..1" Subscriptions
+Cars<-- "0..1" Specifications
+Cars "*" --> "1" Fleets
+@enduml 

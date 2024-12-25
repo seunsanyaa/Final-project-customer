@@ -11,7 +11,14 @@ interface StaffMember {
 	token?: string;
 	userId?: string;
 }
-
+export const AdminSearchStaff = query({
+	args: {
+		userId: v.optional(v.string()),
+	},
+	handler: async (ctx, args) => {
+		return await ctx.db.query('staff').filter(q => q.eq(q.field('userId'), args.userId)).collect();
+	}
+});
 // Query to get all staff members
 export const getAllStaff = query({
 	handler: async (ctx) => {
