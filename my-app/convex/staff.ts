@@ -69,23 +69,6 @@ export const updateStaffMember = mutation({
 export const deleteStaffMember = mutation({
 	args: { id: v.id('staff') },
 	handler: async (ctx, args) => {
-		// First get the staff member to get their email
-		const staffMember = await ctx.db.get(args.id);
-		if (!staffMember) {
-			throw new Error('Staff member not found');
-		}
-
-		// Find and delete the corresponding user if it exists
-		const user = await ctx.db
-			.query('users')
-			.withIndex('by_email', (q) => q.eq('email', staffMember.email))
-			.first();
-
-		if (user) {
-			await ctx.db.delete(user._id);
-		}
-
-		// Delete the staff member
 		return await ctx.db.delete(args.id);
 	},
 });
