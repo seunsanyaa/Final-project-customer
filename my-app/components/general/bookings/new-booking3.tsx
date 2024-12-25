@@ -451,9 +451,10 @@ export function NewBooking3() {
             return (
               <Card 
                 key={promo?._id} 
-                className={`cursor-pointer ${
+                className={`w-full mx-auto mt-1 rounded-lg p-1 bg-white shadow-xl hover:bg-muted cursor-pointer ${
                   selectedPromotion === promo?._id ? 'border-2 border-blue-500' : ''
                 }`}
+                style={{ border: "none" }}
                 onClick={() => setSelectedPromotion(
                   promo?._id ? 
                   (promo._id === selectedPromotion ? null : promo._id.toString()) 
@@ -899,8 +900,8 @@ export function NewBooking3() {
                 <Card className={`w-full mx-auto mt-1 rounded-lg p-1 bg-white shadow-lg ${extras.insurance ? 'bg-muted' : ''}`} style={{ border: "none" }}>
                   <CardContent>
                     <Accordion type="single" collapsible>
-                      <AccordionItem value="insurance">
-                        <AccordionTrigger>
+                      <AccordionItem value="insurance" className="border-none">
+                        <AccordionTrigger className="hover:no-underline">
                           <div className="flex items-center justify-between w-full">
                             <div>
                               <div className="flex items-center gap-2">
