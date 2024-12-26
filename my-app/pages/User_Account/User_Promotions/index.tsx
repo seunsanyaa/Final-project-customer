@@ -79,7 +79,7 @@ export default function UserPromotions() {
       <Navi />
       <Separator />
       <div className="flex flex-row h-full">
-        <aside className="flex flex-col items-left justify-between w-fit px-4 md:px-6 border-b bg-primary text-primary-foreground py-2 md:py-12">
+        <aside className="flex flex-col items-left w-fit px-4 md:px-6 border-b bg-primary text-primary-foreground py-2 md:py-12 min-h-[calc(95.5vh-65px)]">
           <nav className="flex flex-col items-left justify-between h-fit w-fit gap-4 sm:gap-6">
             <div className="flex flex-col md:flex items-left gap-4 w-fit">
               <Link
@@ -95,13 +95,6 @@ export default function UserPromotions() {
                 prefetch={false}
               >
                 My Promotions
-              </Link>
-              <Link
-                href="/User_Account/User_Bookings"
-                className="text-muted-foreground hover:text-customyello transition-colors"
-                prefetch={false}
-              >
-                Previous Bookings
               </Link>
             </div>
           </nav>
