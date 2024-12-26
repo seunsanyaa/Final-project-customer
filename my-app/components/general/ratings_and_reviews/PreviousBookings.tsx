@@ -85,6 +85,9 @@ const PreviousBookings: React.FC<{ customerId: string }> = ({ customerId }) => {
           {pendingBookings.map((booking) => {
             const car = booking.carDetails;
             const isExpanded = expandedBooking === booking._id;
+            const bookingEndDate = new Date(booking.endDate);
+            const currentDate = new Date();
+            const isBookingEnded = currentDate > bookingEndDate;
 
             return (
               <Card key={booking._id} className="w-full mx-auto mt-1 rounded-lg p-1 bg-white shadow-2xl" style={{ border: "none" }}>
@@ -97,6 +100,8 @@ const PreviousBookings: React.FC<{ customerId: string }> = ({ customerId }) => {
                   <p><strong>Status:</strong> {booking.status}</p>
                   {booking.reviewId ? (
                     <p className="text-green-600">You&apos;ve already reviewed this booking.</p>
+                  ) : !isBookingEnded ? (
+                    <p className="text-yellow-600">You can review this booking after {bookingEndDate.toLocaleDateString()}</p>
                   ) : (
                     <Button onClick={() => handleExpandBooking(booking._id)}>
                       Leave a Review
@@ -104,7 +109,7 @@ const PreviousBookings: React.FC<{ customerId: string }> = ({ customerId }) => {
                     </Button>
                   )}
                 </CardContent>
-                {isExpanded && (
+                {isExpanded && isBookingEnded && (
                   <CardFooter className="flex flex-col items-start">
                     <div className="flex items-center mb-4">
                       {[...Array(5)].map((_, i) => (
