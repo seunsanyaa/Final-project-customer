@@ -23,18 +23,34 @@ import { useQuery } from 'convex/react';
 import { api } from '@/convex/_generated/api';
 import Image from "next/image";
 import { LottieRefCurrentProps } from "lottie-react";
+import { useRouter } from 'next/navigation';
+import { Input } from "@/components/ui/input";
+import { Search } from "lucide-react";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { useAction } from "convex/react";
 // Add dynamic import for Lottie
 const Lottie = dynamic(() => import('lottie-react'), {
   ssr: false,
 });
 
 export function Homepage_v2() {
+  const router = useRouter();
+  const [searchTerm, setSearchTerm] = useState("");
   const [ref1, inView1] = useInView({ threshold: 0.6, triggerOnce: true });
   const [ref2, inView2] = useInView({ threshold: 0.6, triggerOnce: true });
   const [ref3, inView3] = useInView({ threshold: 0.3, triggerOnce: true });
   const [ref4, inView4] = useInView({ threshold: 0.3, triggerOnce: true });
   const lottieRef = useRef<LottieRefCurrentProps>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const searchSuggestions = useQuery(api.analytics.searchCarsByTerm, { 
+    searchTerm: searchTerm 
+  });
 
   const reviews = useQuery(api.review.getTopReviews);
   const userIds = Array.from(new Set(reviews?.map(review => review.userId) ?? []));
@@ -66,6 +82,29 @@ export function Homepage_v2() {
     carousel.scrollTo({ left: scrollPosition, behavior: 'smooth' });
   };
 
+  const handleSearch = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!searchTerm.trim()) return;
+
+    const queryParams = new URLSearchParams();
+    
+    if (searchSuggestions?.maker) {
+      queryParams.append('maker', searchSuggestions.maker);
+    }
+    if (searchSuggestions?.model) {
+      queryParams.append('model', searchSuggestions.model);
+    }
+    
+    router.push(`/vehicles?${queryParams.toString()}`);
+  };
+
+  const handleCategoryClick = (category: string) => {
+    router.push(`/vehicles?category=${category}`);
+  };
+
+  // Add categories constant
+  const categories = ["SUV", "Sedan", "Luxury", "Van", "Truck", "Convertible"];
+
   if (isLoading) {
     return (
       <div className="flex items-center justify-center h-screen">
@@ -83,38 +122,39 @@ export function Homepage_v2() {
     <div className="flex flex-col min-h-dvh font-roboto">
       <Navi className="bg-gradient-to-r from-gray-800 to-gray-600"/>
       <main className="flex-1 top-0 mt-0">
-      <section  ref={ref1}className={`relative top-0 md:py-16 w-full h-[610px] px-4 md:px-6 lg:px-10 bg-cover bg-center bg-no-repeat ${
-        inView1 ? 'animate-fadeInUp' : 'opacity-0'
-       }`}
-       style={{ backgroundImage: `url(https://res.cloudinary.com/dbsxjsktb/image/upload/v1729108115/benjamin-child-7Cdw956mZ4w-unsplash_ted8ag.jpg)`, 
-                backgroundColor: 'rgba(0, 0, 0, 0.5)' }} 
-    >
-    <div className="absolute inset-0 flex items-center justify-center">
-      <Card className="bg-white p-8 rounded-5 shadow-2xl backdrop-blur-md bg-opacity-90" style={{ zIndex: 50 }}>
-        <div className="text-center w-full max-w-[600px]">
-          <h1 className="text-5xl font-bold tracking-tight bg-gradient-to-r from-blue-500 to-teal-500 bg-clip-text text-transparent drop-shadow-xl font-poppins">
-            Find your perfect ride
-          </h1>
-          
-          <form className="flex gap-4 justify-center mt-5">
-            <div className="relative w-full max-w-[600px]">
-              <input
-                type="text"
-                placeholder="Search by location or vehicle"
-                className="p-5 border-2 border-gray-800 rounded-lg w-full text-gray-800 placeholder:text-gray-500 shadow-lg focus:ring-4 focus:ring-blue-500 transition-transform ease-in-out duration-300 transform hover:scale-105 h-5"
-              />          
-              <button type="submit" className="absolute inset-y-0 right-3 flex items-center bg-blue-500 hover:bg-blue-700 text-white p-2 transition-transform ease-in-out duration-300 transform hover:scale-110">
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" className="w-5 h-5">
-                  <path fill="currentColor" d="M416 208c0 45.9-14.9 88.3-40 122.7L502.6 457.4c12.5 12.5 12.5 32.8 0 45.3s-32.8 12.5-45.3 0L330.7 376c-34.4 25.2-76.8 40-122.7 40C93.1 416 0 322.9 0 208S93.1 0 208 0S416 93.1 416 208zM208 352a144 144 0 1 0 0-288 144 144 0 1 0 0 288z"/>
-                </svg>
-              </button>
-            </div>
-          </form>
-        </div>
-      </Card>
-    </div>
-
-    </section>
+        <section ref={ref1} className={`relative top-0 md:py-16 w-full h-[610px] px-4 md:px-6 lg:px-10 bg-cover bg-center bg-no-repeat ${
+          inView1 ? 'animate-fadeInUp' : 'opacity-0'
+         }`}
+         style={{ backgroundImage: `url(https://res.cloudinary.com/dbsxjsktb/image/upload/v1729108115/benjamin-child-7Cdw956mZ4w-unsplash_ted8ag.jpg)`, 
+                  backgroundColor: 'rgba(0, 0, 0, 0.5)' }} 
+        >
+          <div className="absolute inset-0 flex items-center justify-center">
+            <Card className="bg-white p-8 rounded-5 shadow-2xl backdrop-blur-md bg-opacity-90" style={{ zIndex: 50 }}>
+              <div className="text-center w-full max-w-[800px]">
+                <h1 className="text-5xl font-bold tracking-tight bg-gradient-to-r from-blue-500 to-teal-500 bg-clip-text text-transparent drop-shadow-xl font-poppins mb-6">
+                  Find Your Perfect Rental Car
+                </h1>
+                
+                <div className="grid grid-cols-1 gap-4 mb-4 mt-4 bg-card rounded-lg shadow-xl p-4 relative overflow-hidden">
+                  <div className="flex items-center gap-2">
+                    <Input
+                      placeholder="Search by make or model (e.g., Toyota Camry)"
+                      value={searchTerm}
+                      onChange={(e) => setSearchTerm(e.target.value)}
+                      className="flex-1"
+                    />
+                    <Button 
+                      className="hover:bg-blue-500 hover:shadow-lg transition-all duration-300 rounded-lg hover:bg-muted" 
+                      onClick={handleSearch}
+                    >
+                      <Search className="w-4 h-4" />
+                    </Button>
+                  </div>
+                </div>
+              </div>
+            </Card>
+          </div>
+        </section>
         <section ref={ref2} className={`relative w-full h-screen overflow-hidden bg-gradient-to-b from-gray-200 to-white ${ 
           inView2 ? 'animate-fadeInUp' : 'opacity-0'
         }`} onMouseMove={handleMouseMove}> 
@@ -226,9 +266,12 @@ export function Homepage_v2() {
                   <p className="text-black font-semibold">Comfortable and efficient.</p> 
                   <p className="text-black">Starting from $45/day</p> 
                 </div>
-                <Link href="/Search">
-                  <Button className="hover:bg-blue-500 hover:shadow-lg transition-all duration-300 rounded-lg mt-0 hover:bg-muted">Rent Now</Button> 
-                </Link>
+                <Button 
+                  onClick={() => handleCategoryClick("Sedan")} 
+                  className="hover:bg-blue-500 hover:shadow-lg transition-all duration-300 rounded-lg mt-0 hover:bg-muted"
+                >
+                  Rent Now
+                </Button>
               </div>
               <div className="flex flex-col items-center justify-center gap-4 p-6 transition-transform transform hover:scale-105 hover:shadow-lg bg-card hover:bg-gradient-to-r from-blue-500 to-green-500 hover:z-50"> 
                 <Image
@@ -243,9 +286,12 @@ export function Homepage_v2() {
                   <p className="text-black font-semibold">Spacious and versatile.</p> 
                   <p className="text-black">Starting from $50/day</p> 
                 </div>
-                <Link href="/Search">
-                  <Button className="hover:bg-blue-500 hover:shadow-lg transition-all duration-300 rounded-lg hover:bg-muted">Rent Now</Button> 
-                </Link>
+                <Button 
+                  onClick={() => handleCategoryClick("SUV")} 
+                  className="hover:bg-blue-500 hover:shadow-lg transition-all duration-300 rounded-lg hover:bg-muted"
+                >
+                  Rent Now
+                </Button>
               </div>
               <div className="flex flex-col items-center justify-center gap-4 p-6 transition-transform transform hover:scale-105 hover:shadow-lg bg-card hover:bg-gradient-to-r from-blue-500 to-green-500 hover:z-50"> 
                 <Image
@@ -260,9 +306,12 @@ export function Homepage_v2() {
                   <p className="text-black font-semibold">Indulge in style and comfort.</p> 
                   <p className="text-black">Starting from $70/day</p> 
                 </div>
-                <Link href="/Search">
-                  <Button className="hover:bg-blue-500 hover:shadow-lg transition-all duration-300 rounded-lg hover:bg-muted">Rent Now</Button> 
-                </Link>
+                <Button 
+                  onClick={() => handleCategoryClick("Luxury")} 
+                  className="hover:bg-blue-500 hover:shadow-lg transition-all duration-300 rounded-lg hover:bg-muted"
+                >
+                  Rent Now
+                </Button>
               </div>
               <div className="flex flex-col items-center justify-center gap-4 p-6 transition-transform transform hover:scale-105 hover:shadow-lg bg-card hover:bg-gradient-to-r from-blue-500 to-green-500 hover:z-50"> 
                 <Image
@@ -277,9 +326,12 @@ export function Homepage_v2() {
                   <p className="text-black font-semibold mb-0">Spacious and practical.</p> 
                   <p className="text-black">Starting from $30/day</p> 
                 </div>
-                <Link href="/Search">
-                  <Button className="hover:bg-blue-500 hover:shadow-lg  hover:bg-muted transition-all duration-300 rounded-lg mt-0">Rent Now</Button> 
-                </Link>
+                <Button 
+                  onClick={() => handleCategoryClick("Van")} 
+                  className="hover:bg-blue-500 hover:shadow-lg transition-all duration-300 rounded-lg hover:bg-muted"
+                >
+                  Rent Now
+                </Button>
               </div>
               <div className="flex flex-col items-center justify-center gap-4 p-6 transition-transform transform hover:scale-105 hover:shadow-lg bg-card hover:bg-gradient-to-r from-blue-500 to-green-500 hover:z-50"> 
                 <Image
@@ -294,9 +346,12 @@ export function Homepage_v2() {
                   <p className="text-black font-semibold mb-0">Spacious and practical.</p> 
                   <p className="text-black">Starting from $300/day</p> 
                 </div>
-                <Link href="/Search">
-                  <Button className="hover:bg-blue-500 hover:shadow-lg transition-all duration-300 rounded-lg mt-0 hover:bg-muted">Rent Now</Button> 
-                </Link>
+                <Button 
+                  onClick={() => handleCategoryClick("Convertible")} 
+                  className="hover:bg-blue-500 hover:shadow-lg transition-all duration-300 rounded-lg hover:bg-muted"
+                >
+                  Rent Now
+                </Button>
               </div>
               <div className="flex flex-col items-center justify-center gap-4 p-6 transition-transform transform hover:scale-105 hover:shadow-lg bg-card hover:bg-gradient-to-r from-blue-500 to-green-500 hover:z-50"> 
                 <Image
@@ -311,9 +366,12 @@ export function Homepage_v2() {
                   <p className="text-black font-semibold mb-0">Spacious and practical.</p> 
                   <p className="text-black">Starting from $120/day</p> 
                 </div>
-                <Link href="/Search">
-                  <Button className="hover:bg-blue-500 hover:shadow-lg transition-all duration-300 rounded-lg mt-0 hover:bg-muted">Rent Now</Button> 
-                </Link>
+                <Button 
+                  onClick={() => handleCategoryClick("Truck")} 
+                  className="hover:bg-blue-500 hover:shadow-lg transition-all duration-300 rounded-lg hover:bg-muted"
+                >
+                  Rent Now
+                </Button>
               </div>
             </div>
           </div>
