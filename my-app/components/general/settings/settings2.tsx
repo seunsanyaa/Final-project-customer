@@ -72,6 +72,11 @@ export function Settings2() {
   });
   const paymentMethodsRef = useRef<HTMLDivElement>(null);
   const [hasLoadedPaymentMethods, setHasLoadedPaymentMethods] = useState(false);
+  const [showDeactivateDialog, setShowDeactivateDialog] = useState(false);
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+  const [isProcessing, setIsProcessing] = useState(false);
+  const deleteUser = useMutation(api.users.deleteUser);
+  const deleteCustomer = useMutation(api.customers.deleteCustomer);
 
   useEffect(() => {
     if (userSettings) {
@@ -95,15 +100,41 @@ export function Settings2() {
   }
 }
 const handleLanguageChange = async (newLanguage: string) => {
-  const newSettings = { darkMode: darkMode, language: newLanguage };
-  localStorage.setItem('userSettings', JSON.stringify(newSettings));
-  setLanguage(newLanguage);
-  if (user?.id) {
-    await saveSettings({
-      userId: user.id,
-      darkMode: darkMode,
-      language: newLanguage
+  try {
+    setIsProcessing(true);
+    // Update settings in database
+    if (user?.id) {
+      await saveSettings({
+        userId: user.id,
+        darkMode: darkMode,
+        language: newLanguage
+      });
+    }
+
+    // Update local storage
+    const newSettings = { darkMode: darkMode, language: newLanguage };
+    localStorage.setItem('userSettings', JSON.stringify(newSettings));
+    setLanguage(newLanguage);
+
+    toast({
+      title: "Success",
+      description: "Language settings updated successfully. Page will refresh to apply changes.",
     });
+
+    // Use URL parameter to trigger language change on reload
+    const url = new URL(window.location.href);
+    url.searchParams.set('lang', newLanguage);
+    window.location.href = url.toString();
+
+  } catch (error) {
+    console.error('Error changing language:', error);
+    toast({
+      variant: "destructive",
+      title: "Error",
+      description: "Failed to update language settings. Please try again.",
+    });
+  } finally {
+    setIsProcessing(false);
   }
 };
   const userData = useQuery(api.users.getFullUser, { userId: user?.id ?? "" });
@@ -386,6 +417,84 @@ const handleLanguageChange = async (newLanguage: string) => {
     }
   };
 
+  const handleDeactivateAccount = async () => {
+    try {
+      setIsProcessing(true);
+      if (user?.id) {
+        toast({
+          title: "Account Deactivated",
+          description: "Your account has been deactivated successfully. You will be signed out.",
+        });
+        
+        await clerk.signOut();
+      }
+    } catch (error) {
+      console.error('Error deactivating account:', error);
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "Failed to deactivate account. Please try again.",
+      });
+    } finally {
+      setIsProcessing(false);
+      setShowDeactivateDialog(false);
+    }
+  };
+
+  const handleDeleteAccount = async () => {
+    try {
+      setIsProcessing(true);
+      if (!user?.id) {
+        throw new Error("User ID not found");
+      }
+
+      // Step 1: Delete customer data
+      try {
+        const customerResult = await deleteCustomer({ userId: user.id });
+        console.log('Customer deletion result:', customerResult);
+      } catch (error) {
+        console.error('Error deleting customer:', error);
+        throw new Error('Failed to delete customer data');
+      }
+
+      // Step 2: Delete user data
+      try {
+        await deleteUser({ userId: user.id });
+        console.log('User data deleted successfully');
+      } catch (error) {
+        console.error('Error deleting user:', error);
+        throw new Error('Failed to delete user data');
+      }
+
+      // Step 3: Delete Clerk account
+      try {
+        await clerk.user?.delete();
+        console.log('Clerk account deleted successfully');
+      } catch (error) {
+        console.error('Error deleting Clerk account:', error);
+        throw new Error('Failed to delete Clerk account');
+      }
+
+      toast({
+        title: "Account Deleted",
+        description: "Your account has been permanently deleted. You will be signed out.",
+      });
+
+      // Step 4: Sign out
+      await clerk.signOut();
+    } catch (error) {
+      console.error('Error in deletion process:', error);
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: error instanceof Error ? error.message : "Failed to delete account. Please try again.",
+      });
+    } finally {
+      setIsProcessing(false);
+      setShowDeleteDialog(false);
+    }
+  };
+
   return (
     <>
       <Navi/>
@@ -453,8 +562,8 @@ const handleLanguageChange = async (newLanguage: string) => {
               </form>
             </CardContent>
             <CardFooter className="flex justify-end gap-2">
-              <Button variant="outline">Cancel</Button>
-              <Button onClick={handlePersonalInfoSave}>Save Changes</Button>
+              <Button className="px-6 py-3 text-lg font-semibold text-white bg-blue-600 hover:bg-blue-500 rounded-lg transition-colors hover:bg-muted shadow-2xl" style={{ border: "none" }} variant="outline">Cancel</Button>
+              <Button className="px-6 py-3 text-lg font-semibold text-white bg-blue-600 hover:bg-blue-500 rounded-lg transition-colors hover:bg-muted shadow-2xl" onClick={handlePersonalInfoSave}>Save Changes</Button>
             </CardFooter>
           </Card>
           <Card className="w-full mx-auto mt-1 rounded-lg p-1 bg-white shadow-xl" style={{ border: "none" }}>
@@ -475,8 +584,8 @@ const handleLanguageChange = async (newLanguage: string) => {
               </form>
             </CardContent>
             <CardFooter className="flex justify-end gap-2">
-              <Button variant="outline">Cancel</Button>
-              <Button onClick={handleContactInfoSave}>Save Changes</Button>
+              <Button className="px-6 py-3 text-lg font-semibold text-white bg-blue-600 hover:bg-blue-500 rounded-lg transition-colors hover:bg-muted shadow-2xl" style={{ border: "none" }} variant="outline">Cancel</Button>
+              <Button className="px-6 py-3 text-lg font-semibold text-white bg-blue-600 hover:bg-blue-500 rounded-lg transition-colors hover:bg-muted shadow-2xl" onClick={handleContactInfoSave}>Save Changes</Button>
             </CardFooter>
           </Card>
           <Card className="w-full mx-auto mt-1 rounded-lg p-1 bg-white shadow-xl" style={{ border: "none" }}>
@@ -558,8 +667,8 @@ const handleLanguageChange = async (newLanguage: string) => {
               </div>
             </CardContent>
             <CardFooter className="flex justify-end gap-2">
-              <Button variant="outline">Cancel</Button>
-              <Button>Save Changes</Button>
+              <Button className="px-6 py-3 text-lg font-semibold text-white bg-blue-600 hover:bg-blue-500 rounded-lg transition-colors hover:bg-muted shadow-2xl" style={{ border: "none" }} variant="outline">Cancel</Button>
+              <Button className="px-6 py-3 text-lg font-semibold text-white bg-blue-600 hover:bg-blue-500 rounded-lg transition-colors hover:bg-muted shadow-2xl" onClick={() => handleNotificationToggle('booking')}>Save Changes</Button>
             </CardFooter>
           </Card>
           <Card className="w-full mx-auto mt-1 rounded-lg p-1 bg-white shadow-xl" style={{ border: "none" }}>
@@ -568,20 +677,46 @@ const handleLanguageChange = async (newLanguage: string) => {
               <CardDescription>Select your preferred language.</CardDescription>
             </CardHeader>
             <CardContent>
-              <Select value={language} onValueChange={handleLanguageChange}>
+              <Select 
+                value={language} 
+                onValueChange={setLanguage}
+                disabled={isProcessing}
+              >
                 <SelectTrigger>
                   <SelectValue placeholder="Select language" />
                 </SelectTrigger>
-                <SelectContent>
+                <SelectContent className="bg-white" style={{ backgroundColor: "#fff" }}>
                   <SelectItem value="english">English</SelectItem>
-                  <SelectItem value="arabic">Arabic</SelectItem>
                   <SelectItem value="turkish">Turkish</SelectItem>
                 </SelectContent>
               </Select>
             </CardContent>
             <CardFooter className="flex justify-end gap-2">
-              <Button variant="outline">Cancel</Button>
-              <Button>Save Changes</Button>
+              <Button 
+                className="px-6 py-3 text-lg font-semibold text-white bg-blue-600 hover:bg-blue-500 rounded-lg transition-colors hover:bg-muted shadow-2xl" 
+                style={{ border: "none" }} 
+                variant="outline"
+                onClick={() => {
+                  setLanguage(userSettings?.language ?? 'english');
+                }}
+                disabled={isProcessing}
+              >
+                Cancel
+              </Button>
+              <Button 
+                className="px-6 py-3 text-lg font-semibold text-white bg-blue-600 hover:bg-blue-500 rounded-lg transition-colors hover:bg-muted shadow-2xl" 
+                onClick={() => handleLanguageChange(language)}
+                disabled={isProcessing}
+              >
+                {isProcessing ? (
+                  <div className="flex items-center gap-2">
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                    <span>Saving...</span>
+                  </div>
+                ) : (
+                  "Save Changes"
+                )}
+              </Button>
             </CardFooter>
           </Card>
           <Card className="w-full mx-auto mt-1 rounded-lg p-1 bg-white shadow-xl" style={{ border: "none" }}>
@@ -603,13 +738,13 @@ const handleLanguageChange = async (newLanguage: string) => {
                     <div className="font-medium">Upcoming Rewards</div>
                     <div className="text-muted-foreground text-sm">Redeem your points for free rentals or upgrades.</div>
                   </div>
-                  <Button variant="outline">View Rewards</Button>
+                  <Button className="px-6 py-3 text-lg font-semibold text-white bg-blue-600 hover:bg-blue-500 rounded-lg transition-colors hover:bg-muted shadow-2xl" style={{ border: "none" }} variant="outline">View Rewards</Button>
                 </div>
               </div>
             </CardContent>
             <CardFooter className="flex justify-end gap-2">
-              <Button variant="outline">Cancel</Button>
-              <Button>Save Changes</Button>
+              <Button className="px-6 py-3 text-lg font-semibold text-white bg-blue-600 hover:bg-blue-500 rounded-lg transition-colors hover:bg-muted shadow-2xl" style={{ border: "none" }} variant="outline">Cancel</Button>
+              <Button className="px-6 py-3 text-lg font-semibold text-white bg-blue-600 hover:bg-blue-500 rounded-lg transition-colors hover:bg-muted shadow-2xl">Save Changes</Button>
             </CardFooter>
           </Card>
 
@@ -620,8 +755,24 @@ const handleLanguageChange = async (newLanguage: string) => {
             </CardHeader>
             <CardContent>
               <div className="grid gap-4">
-                <Button variant="outline">Deactivate Account</Button>
-                <Button variant="outline">Delete Account</Button>
+                <Button 
+                  className="px-6 py-3 text-lg font-semibold text-white bg-blue-600 hover:bg-blue-500 rounded-lg transition-colors hover:bg-muted shadow-xl" 
+                  style={{ border: "none" }} 
+                  variant="outline"
+                  onClick={() => setShowDeactivateDialog(true)}
+                  disabled={isProcessing}
+                >
+                  {isProcessing ? <Loader2 className="h-4 w-4 animate-spin" /> : "Deactivate Account"}
+                </Button>
+                <Button 
+                  className="px-6 py-3 text-lg font-semibold text-white bg-red-600 hover:bg-red-500 rounded-lg transition-colors hover:bg-muted shadow-xl" 
+                  style={{ border: "none" }} 
+                  variant="outline"
+                  onClick={() => setShowDeleteDialog(true)}
+                  disabled={isProcessing}
+                >
+                  {isProcessing ? <Loader2 className="h-4 w-4 animate-spin" /> : "Delete Account"}
+                </Button>
               </div>
             </CardContent>
           </Card>
@@ -648,6 +799,7 @@ const handleLanguageChange = async (newLanguage: string) => {
                         </div>
                       </div>
                       <Button 
+                        className="px-6 py-3 text-lg font-semibold text-white bg-blue-600 hover:bg-blue-500 rounded-lg transition-colors hover:bg-muted shadow-2xl" 
                         variant="outline" 
                         onClick={() => removePaymentMethod(method.id)}
                         disabled={isDeletingPaymentMethod === method.id}
@@ -664,7 +816,7 @@ const handleLanguageChange = async (newLanguage: string) => {
                   <p className="text-muted-foreground text-sm">No payment methods saved.</p>
                 )}
                 <Link href="/User_Account/add-payment-method">
-                  <Button variant="outline" className="w-full">
+                  <Button className="px-6 py-3 text-lg font-semibold text-white bg-blue-600 hover:bg-blue-500 rounded-lg transition-colors hover:bg-muted shadow-2xl" variant="outline" style={{ border: "none" }}>
                     Add New Payment Method
                   </Button>
                 </Link>
@@ -689,8 +841,8 @@ const handleLanguageChange = async (newLanguage: string) => {
               </div>
             </CardContent>
             <CardFooter className="flex justify-end gap-2">
-              <Button variant="outline">Cancel</Button>
-              <Button>Save Changes</Button>
+              <Button className="px-6 py-3 text-lg font-semibold text-white bg-blue-600 hover:bg-blue-500 rounded-lg transition-colors hover:bg-muted shadow-2xl" style={{ border: "none" }} variant="outline">Cancel</Button>
+              <Button className="px-6 py-3 text-lg font-semibold text-white bg-blue-600 hover:bg-blue-500 rounded-lg transition-colors hover:bg-muted shadow-2xl">Save Changes</Button>
             </CardFooter>
           </Card>
         </div>
@@ -714,7 +866,7 @@ const handleLanguageChange = async (newLanguage: string) => {
                 <InputOTPSlot index={5} />
               </InputOTPGroup>
             </InputOTP>
-            <Button onClick={handleVerifyCode}>Verify Email</Button>
+            <Button className="px-6 py-3 text-lg font-semibold text-white bg-blue-600 hover:bg-blue-500 rounded-lg transition-colors hover:bg-muted shadow-2xl" onClick={handleVerifyCode}>Verify Email</Button>
           </div>
         </DialogContent>
       </Dialog>
@@ -728,14 +880,71 @@ const handleLanguageChange = async (newLanguage: string) => {
             </DialogDescription>
           </DialogHeader>
           <div className="flex flex-col space-y-4">
-            <Button onClick={handleConnectSocial}>
+            <Button className="px-6 py-3 text-lg font-semibold text-white bg-blue-600 hover:bg-blue-500 rounded-lg transition-colors hover:bg-muted shadow-2xl" onClick={handleConnectSocial}>
               {pendingSocialEmail === 'google' ? 'Connect Google Account' : 'Connect Microsoft Account'}
             </Button>
-            <Button variant="outline" onClick={() => {
+            <Button className="px-6 py-3 text-lg font-semibold text-white bg-blue-600 hover:bg-blue-500 rounded-lg transition-colors hover:bg-muted shadow-2xl" variant="outline" onClick={() => {
               setShowSocialDialog(false);
               setVerifyDialog(true);
             }}>
               Skip for now
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+      <Dialog open={showDeactivateDialog} onOpenChange={setShowDeactivateDialog}>
+        <DialogContent className="bg-white" style={{ backgroundColor: "#fff" }}>
+          <DialogHeader>
+            <DialogTitle>Deactivate Account</DialogTitle>
+            <DialogDescription>
+              Are you sure you want to deactivate your account? You can reactivate it later by signing in again.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="flex justify-end space-x-2">
+            <Button 
+              className="px-6 py-3 text-lg font-semibold text-white bg-blue-600 hover:bg-blue-500 rounded-lg transition-colors hover:bg-muted shadow-2xl" style={{ border: "none" }}
+              variant="outline" 
+              onClick={() => setShowDeactivateDialog(false)}
+              disabled={isProcessing}
+            >
+              Cancel
+            </Button>
+            <Button 
+              className="px-6 py-3 text-lg font-semibold text-white bg-red-600 hover:bg-red-500 rounded-lg transition-colors hover:bg-muted shadow-2xl" style={{ border: "none" }}
+              variant="destructive"
+              onClick={handleDeactivateAccount}
+              disabled={isProcessing}
+            >
+              {isProcessing ? <Loader2 className="h-4 w-4 animate-spin" /> : "Deactivate"}
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
+        <DialogContent className="bg-white" style={{ backgroundColor: "#fff" }}>
+          <DialogHeader>
+            <DialogTitle>Delete Account</DialogTitle>
+            <DialogDescription>
+              Are you sure you want to permanently delete your account? This action cannot be undone and all your data will be lost.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="flex justify-end space-x-2">
+            <Button 
+              className="px-6 py-3 text-lg font-semibold text-white bg-blue-600 hover:bg-blue-500 rounded-lg transition-colors hover:bg-muted shadow-2xl" style={{ border: "none" }}
+              variant="outline" 
+              onClick={() => setShowDeleteDialog(false)}
+              disabled={isProcessing}
+            >
+              Cancel
+            </Button>
+            <Button 
+              className="px-6 py-3 text-lg font-semibold text-white bg-red-600 hover:bg-red-500 rounded-lg transition-colors hover:bg-muted shadow-2xl" style={{ border: "none" }}
+              variant="destructive"
+              onClick={handleDeleteAccount}
+              disabled={isProcessing}
+            >
+              {isProcessing ? <Loader2 className="h-4 w-4 animate-spin" /> : "Delete Permanently"}
             </Button>
           </div>
         </DialogContent>
