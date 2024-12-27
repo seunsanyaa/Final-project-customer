@@ -6,6 +6,8 @@ import { ChevronUp, ChevronDown, Star } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/card";
 import { Textarea } from "@/components/ui/textarea";
 import { Id } from '../../../convex/_generated/dataModel'
+import Image from "next/image";
+
 type BookingWithCarDetails = {
   _id: string;
   customerId: string;
@@ -30,6 +32,7 @@ type CarDetails = {
   year: number;
   color: string;
   trim: string;
+  pictures: string[];
 };
 
 const PreviousBookings: React.FC<{ customerId: string }> = ({ customerId }) => {
@@ -91,9 +94,24 @@ const PreviousBookings: React.FC<{ customerId: string }> = ({ customerId }) => {
 
             return (
               <Card key={booking._id} className="w-full mx-auto mt-1 rounded-lg p-1 bg-white shadow-2xl" style={{ border: "none" }}>
-                <CardHeader>
-                  <CardTitle>{car ? `${car.maker} ${car.model} (${car.year})` : 'Car Details Not Available'}</CardTitle>
-                  <CardDescription>{new Date(booking.startDate).toLocaleDateString()} to {new Date(booking.endDate).toLocaleDateString()}</CardDescription>
+                <CardHeader className="p-0">
+                  {car?.pictures ? (
+                    <Image 
+                      src={car.pictures[0]} 
+                      alt={`${car.maker} ${car.model}`} 
+                      width={400}
+                      height={300}
+                      className="w-full h-48 object-cover" 
+                    />
+                  ) : (
+                    <div className="w-full h-48 bg-muted flex items-center justify-center">
+                      No image available
+                    </div>
+                  )}
+                  <div className="p-4">
+                    <CardTitle>{car ? `${car.maker} ${car.model} (${car.year})` : 'Car Details Not Available'}</CardTitle>
+                    <CardDescription>{new Date(booking.startDate).toLocaleDateString()} to {new Date(booking.endDate).toLocaleDateString()}</CardDescription>
+                  </div>
                 </CardHeader>
                 <CardContent>
                   <p><strong>Total Cost:</strong> ${booking.totalCost.toFixed(2)}</p>
@@ -115,7 +133,7 @@ const PreviousBookings: React.FC<{ customerId: string }> = ({ customerId }) => {
                       {[...Array(5)].map((_, i) => (
                         <Star
                           key={i}
-                          className={`w-6 h-6 cursor-pointer ${i < newRating ? 'text-foreground fill-foreground' : 'text-gray-300'}`}
+                          className={`w-6 h-6 cursor-pointer ${i < newRating ? 'text-customyello fill-customyello' : 'text-gray-300'}`}
                           onClick={() => setNewRating(i + 1)}
                         />
                       ))}

@@ -1,5 +1,3 @@
-
-
 import { v } from 'convex/values';
 import { mutation, query } from './_generated/server';
 
@@ -373,6 +371,7 @@ export const getPendingReviewsByCustomer = query({
 								year: car.year,
 								color: car.color,
 								trim: car.trim,
+								pictures: car.pictures,
 							}
 						: null,
 				};
