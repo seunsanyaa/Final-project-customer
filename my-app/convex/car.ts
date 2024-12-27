@@ -1,3 +1,5 @@
+
+
 import { v } from 'convex/values';
 import { mutation, query, action } from './_generated/server';
 import { api } from './_generated/api';
@@ -318,7 +320,6 @@ export const getFilteredCars = query({
 		engineHorsepower: v.optional(v.string()),
 		golden: v.optional(v.boolean()),
 		disabled: v.optional(v.boolean()),
-		categories: v.optional(v.array(v.string())),
 	},
 	handler: async (ctx, args) => {
 		// First get all non-disabled cars
@@ -358,13 +359,6 @@ export const getFilteredCars = query({
 			if (args.maker && !car.maker.toLowerCase().includes(args.maker.toLowerCase())) return false;
 			if (args.model && !car.model.toLowerCase().includes(args.model.toLowerCase())) return false;
 			if (args.year && car.year !== args.year) return false;
-
-			// Category filter
-			if (args.categories && args.categories.length > 0) {
-				if (!car.categories) return false;
-				// Check if any of the searched categories match the car's categories
-				if (!args.categories.some(category => car.categories?.includes(category))) return false;
-			}
 
 			// Specification filters
 			if (!carSpecs) return true;

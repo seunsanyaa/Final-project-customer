@@ -1,3 +1,4 @@
+
 import { v } from 'convex/values';
 import { query } from './_generated/server';
 
@@ -344,50 +345,6 @@ export const getCurrentBooking = query({
     // Return the most relevant booking (current or soonest upcoming)
     return bookingsWithDetails[0];
   }
-});
-
-// Add this new function for search suggestions
-export const searchCarsByTerm = query({
-  args: {
-    searchTerm: v.string(),
-  },
-  handler: async (ctx, args) => {
-    const allCars = await ctx.db.query("cars").collect();
-    
-    // Get unique makes and models
-    const uniqueMakes = new Set(allCars.map(car => car.maker.toLowerCase()));
-    const uniqueModels = new Set(allCars.map(car => car.model.toLowerCase()));
-
-    const searchTerms = args.searchTerm.toLowerCase().split(' ');
-    let maker = "";
-    let model = "";
-
-    // Compare each word against our unique makes and models
-    for (const term of searchTerms) {
-      // Check if the term is part of any make
-      const matchingMake = Array.from(uniqueMakes).find(make => 
-        make.includes(term) || term.includes(make)
-      );
-      if (matchingMake) {
-        maker = matchingMake;
-        continue;
-      }
-
-      // Check if the term is part of any model
-      const matchingModel = Array.from(uniqueModels).find(model => 
-        model.includes(term) || term.includes(model)
-      );
-      if (matchingModel) {
-        model = matchingModel;
-      }
-    }
-
-    return {
-      maker,
-      model,
-      searchTerms
-    };
-  },
 });
 
 
