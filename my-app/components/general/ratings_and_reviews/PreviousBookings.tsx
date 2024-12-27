@@ -94,39 +94,43 @@ const PreviousBookings: React.FC<{ customerId: string }> = ({ customerId }) => {
 
             return (
               <Card key={booking._id} className="w-full mx-auto mt-1 rounded-lg p-1 bg-white shadow-2xl" style={{ border: "none" }}>
-                <CardHeader className="p-0">
-                  {car?.pictures ? (
-                    <Image 
-                      src={car.pictures[0]} 
-                      alt={`${car.maker} ${car.model}`} 
-                      width={400}
-                      height={300}
-                      className="w-full h-48 object-cover" 
-                    />
-                  ) : (
-                    <div className="w-full h-48 bg-muted flex items-center justify-center">
-                      No image available
-                    </div>
-                  )}
-                  <div className="p-4">
-                    <CardTitle>{car ? `${car.maker} ${car.model} (${car.year})` : 'Car Details Not Available'}</CardTitle>
-                    <CardDescription>{new Date(booking.startDate).toLocaleDateString()} to {new Date(booking.endDate).toLocaleDateString()}</CardDescription>
+                <div className="flex flex-row">
+                  <div className="flex-1">
+                    <CardHeader>
+                      <CardTitle>{car ? `${car.maker} ${car.model} (${car.year})` : 'Car Details Not Available'}</CardTitle>
+                      <CardDescription>{new Date(booking.startDate).toLocaleDateString()} to {new Date(booking.endDate).toLocaleDateString()}</CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                      <p><strong>Total Cost:</strong> ${booking.totalCost.toFixed(2)}</p>
+                      <p><strong>Status:</strong> {booking.status}</p>
+                      {booking.reviewId ? (
+                        <p className="text-green-600">You&apos;ve already reviewed this booking.</p>
+                      ) : !isBookingEnded ? (
+                        <p className="text-yellow-600">You can review this booking after {bookingEndDate.toLocaleDateString()}</p>
+                      ) : (
+                        <Button onClick={() => handleExpandBooking(booking._id)}>
+                          Leave a Review
+                          {isExpanded ? <ChevronUp className="ml-2 h-4 w-4" /> : <ChevronDown className="ml-2 h-4 w-4" />}
+                        </Button>
+                      )}
+                    </CardContent>
                   </div>
-                </CardHeader>
-                <CardContent>
-                  <p><strong>Total Cost:</strong> ${booking.totalCost.toFixed(2)}</p>
-                  <p><strong>Status:</strong> {booking.status}</p>
-                  {booking.reviewId ? (
-                    <p className="text-green-600">You&apos;ve already reviewed this booking.</p>
-                  ) : !isBookingEnded ? (
-                    <p className="text-yellow-600">You can review this booking after {bookingEndDate.toLocaleDateString()}</p>
-                  ) : (
-                    <Button onClick={() => handleExpandBooking(booking._id)}>
-                      Leave a Review
-                      {isExpanded ? <ChevronUp className="ml-2 h-4 w-4" /> : <ChevronDown className="ml-2 h-4 w-4" />}
-                    </Button>
-                  )}
-                </CardContent>
+                  <div className="w-64 h-48">
+                    {car?.pictures ? (
+                      <Image 
+                        src={car.pictures[0]} 
+                        alt={`${car.maker} ${car.model}`} 
+                        width={400}
+                        height={300}
+                        className="w-full h-full object-cover rounded-r-lg" 
+                      />
+                    ) : (
+                      <div className="w-full h-full bg-muted flex items-center justify-center rounded-r-lg">
+                        No image available
+                      </div>
+                    )}
+                  </div>
+                </div>
                 {isExpanded && isBookingEnded && (
                   <CardFooter className="flex flex-col items-start">
                     <div className="flex items-center mb-4">
