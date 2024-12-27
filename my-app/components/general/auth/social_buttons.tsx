@@ -14,7 +14,7 @@ export const SignInOAuthButtons = () => {
 
   const getRedirectUrl = () => {
     const storedRedirect = sessionStorage.getItem('redirectAfterLogin');
-    return storedRedirect || '/vehicles';
+    return storedRedirect || '/redirection';
   };
 
   const signInWithGoogle = () =>

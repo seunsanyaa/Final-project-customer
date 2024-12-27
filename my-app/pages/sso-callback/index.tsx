@@ -8,20 +8,10 @@ export default function SSOCallback() {
   const generateToken = useMutation(api.verify.generateStaffToken);
 
   // Default redirect
-  let redirectUrl = "/";
-
-  // Handle staff token generation
-  if (staffMember?.email) {
-    generateToken({ email: staffMember.email })
-      .then(result => {
-        if (result.success) {
-          redirectUrl = `https://car-rental-fullstack.vercel.app?token=${result.token}`;
-        }
-      });
-  }
+  let redirectUrl = "/vehicles";
 
   return <AuthenticateWithRedirectCallback 
     afterSignInUrl={redirectUrl}
-    afterSignUpUrl={ staffMember?.email? redirectUrl :"/onboarding"}
+    afterSignUpUrl={ "/redirection"}
          />;
 }
