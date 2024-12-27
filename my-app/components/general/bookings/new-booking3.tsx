@@ -451,8 +451,8 @@ export function NewBooking3() {
             return (
               <Card 
                 key={promo?._id} 
-                className={`w-full mx-auto mt-1 rounded-lg p-1 bg-white shadow-xl hover:bg-muted cursor-pointer ${
-                  selectedPromotion === promo?._id ? 'border-2 border-blue-500' : ''
+                className={`w-full mx-auto mt-1 rounded-lg p-1 shadow-xl cursor-pointer ${
+                  selectedPromotion === promo?._id ? 'bg-muted border-2 border-blue-500' : 'bg-white hover:bg-muted'
                 }`}
                 style={{ border: "none" }}
                 onClick={() => setSelectedPromotion(
