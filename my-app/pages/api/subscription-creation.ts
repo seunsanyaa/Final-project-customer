@@ -42,30 +42,34 @@ export default async function handler(
     // Create or get customer
     let customer;
     try {
-      // First try to find customer by metadata
+      // Search for existing customer
       const existingCustomers = await stripe.customers.search({
         query: `email:'${email}' AND metadata['clerkUserId']:'${userId}'`,
         limit: 1
       });
 
-      if (!existingCustomers) {
+      if (existingCustomers.data.length === 0) {
+        // No existing customer found, create a new one
         customer = await stripe.customers.create({
           email,
           metadata: { clerkUserId: userId }
         });
-      }else{
+        console.log('New customer created:', { 
+          id: customer.id, 
+          email: customer.email 
+        });
+      } else {
+        // Use existing customer
         customer = existingCustomers.data[0];
+        console.log('Existing customer found:', { 
+          id: customer.id, 
+          email: customer.email 
+        });
       }
-
-      console.log('Customer found/created:', { 
-        id: customer.id, 
-        email: customer.email, 
-        metadata: customer.metadata 
-      });
 
     } catch (error) {
       console.error('Error handling customer:', error);
-      return res.status(500).json({ error: 'Failed to process customer' });
+      throw new Error('Failed to process customer');
     }
 
     // Create a subscription
