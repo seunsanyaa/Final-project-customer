@@ -27,7 +27,7 @@ import { Footer } from "../head/footer";
 import { useUser, useClerk, useSignIn } from "@clerk/nextjs";
 import { useMutation, useQuery } from "convex/react";
 import { api } from "@/convex/_generated/api";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef, useCallback } from "react";
 import { clerkClient } from "@clerk/nextjs/server";
 import { useToast } from "@/hooks/use-toast";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
@@ -70,6 +70,8 @@ export function Settings2() {
     rewards: true,
     reminder: true,
   });
+  const paymentMethodsRef = useRef<HTMLDivElement>(null);
+  const [hasLoadedPaymentMethods, setHasLoadedPaymentMethods] = useState(false);
 
   useEffect(() => {
     if (userSettings) {
@@ -285,13 +287,17 @@ const handleLanguageChange = async (newLanguage: string) => {
     }
   }, [toast, user]);
 
-  const fetchPaymentMethods = async () => {
+  const fetchPaymentMethods = useCallback(async () => {
+    if (!user?.id || hasLoadedPaymentMethods) return;
+    
     try {
+      setIsLoadingPaymentMethods(true);
       const response = await fetch(`/api/payment-methods?userId=${user?.id}`);
       const data = await response.json();
       
       if (response.ok) {
         setPaymentMethods(data.paymentMethods);
+        setHasLoadedPaymentMethods(true);
       } else {
         console.error('Error fetching payment methods:', data.error);
       }
@@ -300,7 +306,26 @@ const handleLanguageChange = async (newLanguage: string) => {
     } finally {
       setIsLoadingPaymentMethods(false);
     }
-  };
+  }, [user?.id, hasLoadedPaymentMethods]);
+
+  useEffect(() => {
+    if (!paymentMethodsRef.current) return;
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting) {
+          fetchPaymentMethods();
+        }
+      },
+      { threshold: 0.1 }
+    );
+
+    observer.observe(paymentMethodsRef.current);
+
+    return () => {
+      observer.disconnect();
+    };
+  }, [fetchPaymentMethods]);
 
   const removePaymentMethod = async (paymentMethodId: string) => {
     try {
@@ -318,6 +343,7 @@ const handleLanguageChange = async (newLanguage: string) => {
 
       if (response.ok) {
         setPaymentMethods(prev => prev.filter(pm => pm.id !== paymentMethodId));
+        setHasLoadedPaymentMethods(false);
         toast({
           title: "Success",
           description: "Payment method removed successfully",
@@ -336,12 +362,6 @@ const handleLanguageChange = async (newLanguage: string) => {
       setIsDeletingPaymentMethod(null);
     }
   };
-
-  useEffect(() => {
-    if (user?.id) {
-      fetchPaymentMethods();
-    }
-  }, [user?.id,fetchPaymentMethods]);
 
   const handleNotificationToggle = async (type: keyof typeof notificationPreferences) => {
     const newPreferences = {
@@ -605,7 +625,7 @@ const handleLanguageChange = async (newLanguage: string) => {
               </div>
             </CardContent>
           </Card>
-          <Card className="w-full mx-auto mt-1 rounded-lg p-1 bg-white shadow-xl" style={{ border: "none" }} >
+          <Card className="w-full mx-auto mt-1 rounded-lg p-1 bg-white shadow-xl" style={{ border: "none" }} ref={paymentMethodsRef}>
             <CardHeader>
               <CardTitle>Payment Methods</CardTitle>
               <CardDescription>Manage your saved payment methods.</CardDescription>
