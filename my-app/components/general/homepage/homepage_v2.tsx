@@ -130,27 +130,27 @@ export function Homepage_v2() {
         >
           <div className="absolute inset-0 flex items-center justify-center">
             <Card className="bg-white p-8 rounded-5 shadow-2xl backdrop-blur-md bg-opacity-90" style={{ zIndex: 50 }}>
-              <div className="text-center w-full max-w-[800px]">
-                <h1 className="text-5xl font-bold tracking-tight bg-gradient-to-r from-blue-500 to-teal-500 bg-clip-text text-transparent drop-shadow-xl font-poppins mb-6">
-                  Find Your Perfect Rental Car
+              <div className="text-center w-full max-w-[600px]">
+                <h1 className="text-5xl font-bold tracking-tight bg-gradient-to-r from-blue-500 to-teal-500 bg-clip-text text-transparent drop-shadow-xl font-poppins">
+                  Find your perfect ride
                 </h1>
                 
-                <div className="grid grid-cols-1 gap-4 mb-4 mt-4 bg-card rounded-lg shadow-xl p-4 relative overflow-hidden">
-                  <div className="flex items-center gap-2">
-                    <Input
-                      placeholder="Search by make or model (e.g., Toyota Camry)"
+                <form className="flex gap-4 justify-center mt-5" onSubmit={handleSearch}>
+                  <div className="relative w-full max-w-[600px]">
+                    <input
+                      type="text"
+                      placeholder="Search by make or model (e.g., Toyota prius)"
                       value={searchTerm}
                       onChange={(e) => setSearchTerm(e.target.value)}
-                      className="flex-1"
-                    />
-                    <Button 
-                      className="hover:bg-blue-500 hover:shadow-lg transition-all duration-300 rounded-lg hover:bg-muted" 
-                      onClick={handleSearch}
-                    >
-                      <Search className="w-4 h-4" />
-                    </Button>
+                      className="p-5 border-2 border-gray-800 rounded-lg w-full text-gray-800 placeholder:text-gray-500 shadow-lg focus:ring-4 focus:ring-blue-500 transition-transform ease-in-out duration-300 transform hover:scale-105 h-5"
+                    />          
+                    <button type="submit" className="absolute inset-y-0 right-3 flex items-center bg-blue-500 hover:bg-blue-700 text-white p-2 transition-transform ease-in-out duration-300 transform hover:scale-110">
+                      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" className="w-5 h-5">
+                        <path fill="currentColor" d="M416 208c0 45.9-14.9 88.3-40 122.7L502.6 457.4c12.5 12.5 12.5 32.8 0 45.3s-32.8 12.5-45.3 0L330.7 376c-34.4 25.2-76.8 40-122.7 40C93.1 416 0 322.9 0 208S93.1 0 208 0S416 93.1 416 208zM208 352a144 144 0 1 0 0-288 144 144 0 1 0 0 288z"/>
+                      </svg>
+                    </button>
                   </div>
-                </div>
+                </form>
               </div>
             </Card>
           </div>

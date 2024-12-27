@@ -1,20 +1,17 @@
 import { Button } from "@/components/ui/button";
 import { useSignIn } from "@clerk/nextjs";
-import { useRouter } from "next/router";
  
 // const publicPages: Array<string> = [];
  
 export const SignInOAuthButtons = () => {
   const { signIn, isLoaded } = useSignIn();
-  const router = useRouter();
 
   if (!isLoaded) {
     return null;
   }
 
   const getRedirectUrl = () => {
-    const storedRedirect = sessionStorage.getItem('redirectAfterLogin');
-    return storedRedirect || '/redirection';
+    return  '/redirection';
   };
 
   const signInWithGoogle = () =>
