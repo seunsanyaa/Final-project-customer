@@ -24,25 +24,60 @@ import loadingAnimation from "@/public/animations/loadingAnimation.json";
 import { LottieRefCurrentProps } from "lottie-react";
 import axios from 'axios'; // Add this import
 import { useUser } from "@clerk/nextjs";
+import { useSearchParams, useRouter } from 'next/navigation';
 
 // Add dynamic import for Lottie
 const Lottie = dynamic(() => import('lottie-react'), {
   ssr: false,
 });
 
+// Add type definition at the top of the file
+type Car = {
+  _id: string;
+  categories?: string[];
+  // ... other car properties
+};
+
 export default function AllVehicles() {
+  const router = useRouter();
+  const urlSearchParams = useSearchParams();
   const [showAdvanced, setShowAdvanced] = useState(false);
-  const [selectedCategory, setSelectedCategory] = useState<string>("");
+  const [selectedCategory, setSelectedCategory] = useState<string>(urlSearchParams.get('category') || "all");
   const [showPromotionsOnly, setShowPromotionsOnly] = useState(false);
   const { user } = useUser();
+  const promotionsMap = useQuery(api.promotions.getAllPromotions);
 
-  // Declare all state variables first
+  // Add effect to trigger search when component mounts with URL parameters
+  useEffect(() => {
+    const maker = urlSearchParams.get('maker');
+    const model = urlSearchParams.get('model');
+    const category = urlSearchParams.get('category');
+
+    if (maker || model || category) {
+      setInputValues(prev => ({
+        ...prev,
+        maker: maker || "",
+        model: model || "",
+      }));
+
+      setSearchParams(prev => ({
+        ...prev,
+        maker: maker || "",
+        model: model || "",
+        categories: category ? [category] : [],
+      }));
+    }
+  }, [urlSearchParams]);
+
+  // Combine all search parameters into a single state
   const [searchParams, setSearchParams] = useState({
-    maker: "",
-    model: "",
+    maker: urlSearchParams.get('maker') || "",
+    model: urlSearchParams.get('model') || "",
     year: undefined as number | undefined,
+    categories: urlSearchParams.get('category') ? [urlSearchParams.get('category') as string] : [] as string[],
     engineType: "",
     engineCylinders: "",
+    engineHorsepower: "",
     fuelType: "",
     transmission: "",
     drive: "",
@@ -51,36 +86,31 @@ export default function AllVehicles() {
 
   // Add a separate state for input values
   const [inputValues, setInputValues] = useState({
-    maker: "",
-    model: "",
+    maker: urlSearchParams.get('maker') || "",
+    model: urlSearchParams.get('model') || "",
     year: "",
+    categories: urlSearchParams.get('category') ? [urlSearchParams.get('category') as string] : [] as string[],
     engineType: "",
-    engineHorsepower: "",
     engineCylinders: "",
+    engineHorsepower: "",
     fuelType: "",
     transmission: "",
     drive: "",
     doors: "",
-
   });
 
-  // Then use them in the query
+  // Modify the query to include all parameters
   const cars = useQuery(api.car.getFilteredCars, searchParams);
-  const carsByCategory = useQuery(api.car.getCarsByCategory, {
-    category: selectedCategory,
-  });
 
   const lottieRef = useRef<LottieRefCurrentProps>(null);
 
-  // Optionally set speed after the component mounts
   useEffect(() => {
     if (lottieRef.current) {
       lottieRef.current.setSpeed(1.5);
-      
     }
   }, []);
 
-  // Add this handler for input changes
+  // Update input change handler to handle all fields
   const handleInputChange = (field: string, value: string) => {
     setInputValues(prev => ({
       ...prev,
@@ -88,83 +118,52 @@ export default function AllVehicles() {
     }));
   };
 
-  // Add this handler for the search button
+  // Update search handler to clear URL params
   const handleSearch = () => {
-    setSearchParams({
+    const newSearchParams = {
       ...inputValues,
       year: inputValues.year ? parseInt(inputValues.year) : undefined,
-    });
+      categories: selectedCategory === "all" ? [] : [selectedCategory],
+    };
+    setSearchParams(newSearchParams);
+    
+    // Clear URL parameters by replacing the current URL with the base path
+    router.replace('/vehicles');
   };
 
-  // Add new state variables for AI chat
-  const [customerQuery, setCustomerQuery] = useState("");
-  // const [aiResponse, setAiResponse] = useState("");
-  const [isLoading, setIsLoading] = useState(false);
-
-  // Add AI query handler
-  // const handleAiQuery = async () => {
-  //   if (!customerQuery.trim()) return;
+  // Update category change handler
+  const handleCategoryChange = (value: string) => {
+    setSelectedCategory(value);
+    const newCategories = value === "all" ? [] : [value];
+    const newInputValues = {
+      ...inputValues,
+      categories: newCategories
+    };
+    setInputValues(newInputValues);
     
-  //   setIsLoading(true);
-  //   try {
-  //     const response = await fetch('/api/chat', {
-  //       method: 'POST',
-  //       headers: {
-  //         'Content-Type': 'application/json',
-  //         'Accept': 'application/json',
-  //       },
-  //       body: JSON.stringify({
-  //         query: customerQuery
-  //       })
-  //     });
-      
-  //     // Check if the response is JSON
-  //     const contentType = response.headers.get("content-type");
-  //     if (!contentType || !contentType.includes("application/json")) {
-  //       throw new Error("Response is not JSON");
-  //     }
+    // Update search params and clear URL
+    const newSearchParams = {
+      ...newInputValues,
+      year: newInputValues.year ? parseInt(newInputValues.year) : undefined,
+      categories: newCategories,
+    };
+    setSearchParams(newSearchParams);
+    router.replace('/vehicles');
+  };
 
-  //     const data = await response.json();
-  //     console.log('Received response data:', data);
-
-  //     if (data.error) {
-  //       throw new Error(data.error);
-  //     }
-
-  //     setAiResponse(data.response || 'No response received');
-  //   } catch (error: any) {
-  //     console.error('Detailed error:', error);
-  //     try {
-  //       const responseText = await response?.text();
-  //       console.error('Raw response:', responseText);
-  //     } catch (e) {
-  //       console.error('Could not get response text:', e);
-  //     }
-  //     setAiResponse("I apologize, but I'm having trouble connecting right now. Please try again in a moment.");
-  //   } finally {
-  //     setIsLoading(false);
-  //   }
-  // };
-
-  // Add this query to get promotions for each car
-  const promotionsMap = useQuery(api.promotions.getAllPromotions);
-
-  // Modify the displayed cars logic
+  // Modify the displayed cars logic to handle all filters with proper types
   const displayedCars = useMemo(() => {
-    let filteredCars = cars; // Start with all cars from search results
-    
-    // Apply category filter if one is selected
-    if (selectedCategory && selectedCategory !== "all") {
-      filteredCars = carsByCategory;
-    }
+    if (!cars) return [];
+
+    let filteredCars = cars;
     
     // Apply promotions filter if enabled
     if (showPromotionsOnly && promotionsMap) {
-      filteredCars = filteredCars?.filter(car => {
+      filteredCars = filteredCars.filter((car: Car) => {
         const carPromotions = promotionsMap.filter(promo => 
           promo.specificTarget.some(target => 
             target === car._id || 
-            (car.categories && car.categories.includes(target))
+            (car.categories && car.categories.some((cat: string) => promo.specificTarget.includes(cat)))
           )
         );
         return carPromotions.length > 0;
@@ -172,23 +171,18 @@ export default function AllVehicles() {
     }
     
     return filteredCars;
-  }, [cars, carsByCategory, selectedCategory, showPromotionsOnly, promotionsMap]);
+  }, [cars, showPromotionsOnly, promotionsMap]);
 
-  // Add this helper function
-  const hasActivePromotion = (car: any) => {
+  // Add helper function for promotions with proper types
+  const hasActivePromotion = (car: Car) => {
     if (!promotionsMap) return false;
     return promotionsMap.some(promo => 
       promo.specificTarget.some(target => 
         target === car._id || 
-        (car.categories && car.categories.includes(target))
+        (car.categories && car.categories.some((cat: string) => promo.specificTarget.includes(cat)))
       )
     );
   };
-
-  // Add this effect to trigger search when category changes
-  useEffect(() => {
-    handleSearch();
-  }, [selectedCategory]); // This will trigger a new search when category changes
 
   if (!cars) {
     return (
@@ -236,7 +230,7 @@ export default function AllVehicles() {
                 />
                 <Select
                   value={selectedCategory}
-                  onValueChange={(value) => setSelectedCategory(value)}
+                  onValueChange={handleCategoryChange}
                 >
                   <SelectTrigger className="w-[180px] bg-background">
                     <SelectValue placeholder="Category" />
@@ -257,18 +251,15 @@ export default function AllVehicles() {
                   <Search className="w-4 h-4 mr-2" />
                   Search
                 </Button>
-                
               </div>
-              
             </div>
             <Button
-
-onClick={() => setShowPromotionsOnly(!showPromotionsOnly)}
-className="hover:bg-blue-500 hover:shadow-lg transition-all duration-300 rounded-lg hover:bg-muted"
->
-<TagIcon className="w-4 h-4 mr-2" />
-{showPromotionsOnly ? "Show All" : "Only Promotions"}
-</Button>
+              onClick={() => setShowPromotionsOnly(!showPromotionsOnly)}
+              className="hover:bg-blue-500 hover:shadow-lg transition-all duration-300 rounded-lg hover:bg-muted"
+            >
+              <TagIcon className="w-4 h-4 mr-2" />
+              {showPromotionsOnly ? "Show All" : "Only Promotions"}
+            </Button>
             <div className="text-center">
               <Button 
                 className="hover:bg-blue-500 hover:shadow-lg transition-all duration-300 rounded-lg hover:bg-muted"
@@ -301,16 +292,16 @@ className="hover:bg-blue-500 hover:shadow-lg transition-all duration-300 rounded
                         className=" bg-card rounded-lg shadow-lg relative"
                       />
                     </div>
-                    {/* <div className="space-y-2">
+                    <div className="space-y-2">
                       <Label htmlFor="cylinders">Cylinders</Label>
                       <Input
                         id="cylinders"
                         value={inputValues.engineCylinders}
                         onChange={(e) => handleInputChange('engineCylinders', e.target.value)}
                         placeholder="e.g., 4, 6, 8"
+                        className=" bg-card rounded-lg shadow-lg relative"
                       />
-                    </div> */}
-
+                    </div>
                     <div className="space-y-2">
                       <Label htmlFor="fuelType">Fuel Type</Label>
                       <Input
