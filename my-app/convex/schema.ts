@@ -211,7 +211,7 @@ export default defineSchema({
 		.index('by_status', ['status']),
 
 	messages: defineTable({
-		userId: v.string(),
+		userId: v.optional(v.string()),
 		message: v.string(),
 		isAdmin: v.boolean(),
 		timestamp: v.string(),
