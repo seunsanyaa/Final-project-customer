@@ -16,6 +16,7 @@ import { Button } from "@/components/ui/button";
 import { useState, useEffect } from 'react';
 import { Badge } from "@/components/ui/badge";
 import { StarIcon, AccessibilityIcon, TagIcon } from "lucide-react"; // Use AccessibilityIcon instead
+import { useUser } from "@clerk/nextjs";
 
 
 const useCurrency = () => {
@@ -47,6 +48,7 @@ const useCurrency = () => {
 
 export function Carinfo() {
   const currency = useCurrency();
+  const { user } = useUser();
   const router = useRouter();
   // Ensure registrationNumber is a string before using it
   const registrationNumber = typeof router.query.id === 'string' ? router.query.id : '';
@@ -54,12 +56,14 @@ export function Carinfo() {
   // Fetch car details using the registration number
   const car = useQuery(api.car.getCar, { registrationNumber }) as Car; // Assert type to Car | undefined
 
-  // Add this new query to fetch similar cars
+  // Add this new query to fetch similar cars with enhanced recommendations
   const similarCars = useQuery(api.car.getSimilarCars, { 
     maker: car?.maker,
     model: car?.model,
     excludeId: registrationNumber,
-    limit: 3
+    limit: 3,
+    userId: user?.id ?? undefined,
+    categories: car?.categories
   });
 
   // Add this query near your other queries

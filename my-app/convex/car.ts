@@ -532,24 +532,108 @@ export const getSimilarCars = query({
 		maker: v.optional(v.string()),
 		model: v.optional(v.string()),
 		excludeId: v.string(),
-		limit: v.optional(v.number())
+		limit: v.optional(v.number()),
+		userId: v.optional(v.string()),
+		categories: v.optional(v.array(v.string()))
 	},
 	handler: async (ctx, args) => {
 		const limit = args.limit ?? 3;
+		const recommendations: any[] = [];
 		
-		return await ctx.db
-			.query("cars")
-			.filter(q => 
-				q.and(
-					q.neq(q.field("registrationNumber"), args.excludeId),
-					q.eq(q.field('available'), true),
-					q.or(
-						q.eq(q.field("maker"), args.maker),
-						q.eq(q.field("model"), args.model)
+		// 1. Get previously rented cars if userId is provided
+		if (args.userId) {
+			const bookings = await ctx.db
+				.query("bookings")
+				.withIndex("by_customerId", q => q.eq("customerId", args.userId as string))
+				.collect();
+
+			for (const booking of bookings) {
+				if (!booking.carId) continue;
+				const rentedCar = await ctx.db
+					.query("cars")
+					.withIndex("by_registrationNumber", q => q.eq("registrationNumber", booking.carId))
+					.filter(q => 
+						q.and(
+							q.neq(q.field("registrationNumber"), args.excludeId),
+							q.eq(q.field('available'), true)
+						)
+					)
+					.first();
+				
+				if (rentedCar && !recommendations.some(car => car.registrationNumber === rentedCar.registrationNumber)) {
+					recommendations.push(rentedCar);
+					if (recommendations.length >= Math.floor(limit / 3)) break;
+				}
+			}
+		}
+
+		// 2. Get cars with similar categories
+		if (args.categories && args.categories.length > 0) {
+			const similarCategoryCars = await ctx.db
+				.query("cars")
+				.filter(q => 
+					q.and(
+						q.neq(q.field("registrationNumber"), args.excludeId),
+						q.eq(q.field('available'), true)
 					)
 				)
-			)
-			.take(limit);
+				.collect();
+
+			const categoryCars = similarCategoryCars
+				.filter(car => 
+					car.categories?.some(category => args.categories?.includes(category)) &&
+					!recommendations.some(rec => rec.registrationNumber === car.registrationNumber)
+				)
+				.slice(0, Math.floor(limit / 3));
+
+			recommendations.push(...categoryCars);
+		}
+
+		// 3. Get cars with similar make/model
+		if (args.maker || args.model) {
+			const similarMakeModelCars = await ctx.db
+				.query("cars")
+				.filter(q => 
+					q.and(
+						q.neq(q.field("registrationNumber"), args.excludeId),
+						q.eq(q.field('available'), true),
+						args.maker ? q.eq(q.field("maker"), args.maker) :
+						args.model ? q.eq(q.field("model"), args.model) :
+						q.eq(q.field("available"), true)
+					)
+				)
+				.collect();
+
+			const filteredMakeModelCars = similarMakeModelCars
+				.filter(car => !recommendations.some(rec => rec.registrationNumber === car.registrationNumber))
+				.slice(0, limit - recommendations.length);
+
+			recommendations.push(...filteredMakeModelCars);
+		}
+
+		// If we still haven't reached the limit, add random available cars
+		if (recommendations.length < limit) {
+			const remainingCount = limit - recommendations.length;
+			const randomCars = await ctx.db
+				.query("cars")
+				.filter(q => 
+					q.and(
+						q.neq(q.field("registrationNumber"), args.excludeId),
+						q.eq(q.field('available'), true)
+					)
+				)
+				.collect();
+
+			const filteredRandomCars = randomCars
+				.filter(car => !recommendations.some(rec => rec.registrationNumber === car.registrationNumber))
+				.slice(0, remainingCount);
+
+			recommendations.push(...filteredRandomCars);
+		}
+
+		// Shuffle the recommendations to mix the different types
+		const shuffled = recommendations.sort(() => Math.random() - 0.5);
+		return shuffled.slice(0, limit);
 	},
 });
 

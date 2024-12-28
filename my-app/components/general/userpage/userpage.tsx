@@ -10,6 +10,7 @@ import { createWorker, OEM, LoggerMessage } from 'tesseract.js';
 import { useMutation, useQuery } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import { useUser } from "@clerk/nextjs";
+import { Input } from "@/components/ui/input";
 
 interface PersonalInfo {
   fullName: string;
@@ -308,10 +309,17 @@ export function User_page() {
                   <div className="grid gap-2">
                     <Label className="text-black">Date of Birth</Label>
                     {isEditing ? (
-                      <input
+                      <Input
                         type="date"
-                        value={personalInfo.dob}
-                        onChange={(e) => setPersonalInfo({ ...personalInfo, dob: e.target.value })}
+                        value={personalInfo.dob ? personalInfo.dob.split('.').reverse().join('-') : ''}
+                        onChange={(e) => {
+                          const date = e.target.value;
+                          const [year, month, day] = date.split('-');
+                          setPersonalInfo({ 
+                            ...personalInfo, 
+                            dob: `${day}.${month}.${year}`
+                          });
+                        }}
                       />
                     ) : (
                       <div className="text-black">{personalInfo.dob}</div>
@@ -362,22 +370,22 @@ export function User_page() {
                     )}
                   </div>
                   <div className="grid gap-2">
-                    <Label className="text-black">Expiration Date</Label>
+                    <Label className="text-black">License Expiry Date</Label>
                     {isEditing ? (
-                      <input
+                      <Input
                         type="date"
-                        value={(personalInfo.expirationDate || extractedInfo.expirationDate)?.split('.').reverse().join('-')}
-                        onChange={(e) => setPersonalInfo({ 
-                          ...personalInfo, 
-                          expirationDate: e.target.value.split('-').reverse().join('.') 
-                        })}
+                        value={personalInfo.expirationDate ? personalInfo.expirationDate.split('.').reverse().join('-') : ''}
+                        onChange={(e) => {
+                          const date = e.target.value;
+                          const [year, month, day] = date.split('-');
+                          setPersonalInfo({ 
+                            ...personalInfo, 
+                            expirationDate: `${day}.${month}.${year}`
+                          });
+                        }}
                       />
                     ) : (
-                      <div className="text-black">
-                        {(personalInfo.expirationDate || extractedInfo.expirationDate) ? 
-                          new Date((personalInfo.expirationDate || extractedInfo.expirationDate).split('.').reverse().join('-')).toLocaleDateString() 
-                          : ''}
-                      </div>
+                      <div className="text-black">{personalInfo.expirationDate}</div>
                     )}
                   </div>
                   <div className="grid gap-2">
