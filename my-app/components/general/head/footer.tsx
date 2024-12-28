@@ -40,7 +40,7 @@ export function Footer() {
           <div className="space-y-4">
             <h3 className="text-lg font-bold tracking-wide">Resources</h3>
             <div className="flex flex-col space-y-2">
-              <Link href="#" prefetch={false} className="text-sm hover:text-muted-foreground transition-colors duration-200">
+              <Link href="/FAQ" prefetch={false} className="text-sm hover:text-muted-foreground transition-colors duration-200">
                 FAQ
               </Link>
               <Link href="#" className="text-sm hover:text-muted-foreground transition-colors duration-200">
@@ -114,15 +114,15 @@ export function Footer() {
           </div>
 
           <div className="flex items-center space-x-4 text-sm">
-            <Link href="#" className="hover:text-muted-foreground transition-colors duration-200">
+            <Link href="/Legal#privacy-policy" className="hover:text-muted-foreground transition-colors duration-200">
               Privacy Policy
             </Link>
             <span className="text-primary/30">•</span>
-            <Link href="#" className="hover:text-muted-foreground transition-colors duration-200">
+            <Link href="/Legal#terms-of-service" className="hover:text-muted-foreground transition-colors duration-200">
               Terms of Service
             </Link>
             <span className="text-primary/30">•</span>
-            <Link href="#" className="hover:text-muted-foreground transition-colors duration-200">
+            <Link href="/contactUS/contact-form" className="hover:text-muted-foreground transition-colors duration-200">
               Contact Us
             </Link>
           </div>
