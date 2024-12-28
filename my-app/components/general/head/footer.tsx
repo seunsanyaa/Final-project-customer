@@ -13,7 +13,7 @@ export function Footer() {
               <Link href="/aboutus" className="text-sm hover:text-muted-foreground transition-colors duration-200">
                 About Us
               </Link>
-              <Link href="#" className="text-sm hover:text-muted-foreground transition-colors duration-200">
+              <Link href="/team" className="text-sm hover:text-muted-foreground transition-colors duration-200">
                 Our Team
               </Link>
               <Link href="#" className="text-sm hover:text-muted-foreground transition-colors duration-200">
@@ -25,13 +25,13 @@ export function Footer() {
           <div className="space-y-4">
             <h3 className="text-lg font-bold tracking-wide">Products</h3>
             <div className="flex flex-col space-y-2">
-              <Link href="#" className="text-sm hover:text-muted-foreground transition-colors duration-200">
+              <Link href="/vehicles" className="text-sm hover:text-muted-foreground transition-colors duration-200">
                 Cars
               </Link>
-              <Link href="#" className="text-sm hover:text-muted-foreground transition-colors duration-200">
+              <Link href="/vehicles" className="text-sm hover:text-muted-foreground transition-colors duration-200">
                 Vans
               </Link>
-              <Link href="#" className="text-sm hover:text-muted-foreground transition-colors duration-200">
+              <Link href="/accessibility" className="text-sm hover:text-muted-foreground transition-colors duration-200">
                 Accessibility Vehicles
               </Link>
             </div>
@@ -51,21 +51,6 @@ export function Footer() {
               </Link>
             </div>
           </div>
-
-          {/* <div className="space-y-4">
-            <h3 className="text-lg font-bold tracking-wide">Legal</h3>
-            <div className="flex flex-col space-y-2">
-              <Link href="#" className="text-sm hover:text-muted-foreground transition-colors duration-200">
-                Privacy Policy
-              </Link>
-              <Link href="#" className="text-sm hover:text-muted-foreground transition-colors duration-200">
-                Terms of Service
-              </Link>
-              <Link href="#" className="text-sm hover:text-muted-foreground transition-colors duration-200">
-                Cookie Policy
-              </Link>
-            </div>
-          </div> */}
         </div>
 
         <div className="flex flex-col items-center space-y-6 border-t border-primary/10 pt-8 mr-20 pr-20">
