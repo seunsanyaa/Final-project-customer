@@ -9,7 +9,7 @@ const RedirectionPage = () => {
   const router = useRouter();
   
   const email = isLoaded ? user?.emailAddresses[0]?.emailAddress : undefined;
-  const staff = useQuery(api.staff.getStaffByEmail, 
+  let staff = useQuery(api.staff.getStaffByEmail, 
     email ? { email } : "skip"
   );
   const customer = useQuery(api.customers.getCustomerByUserId,
@@ -24,9 +24,9 @@ const RedirectionPage = () => {
       
       if (staff) {
         try {
-          await generateToken({ email: email! });
           await updateStaffUserId({ email: email!, userId: user.id });
-          router.push(`http://localhost:3000?token=${staff.token}`);
+          const token = await generateToken({ email: email! });
+          router.push(`http://localhost:3000?token=${token.token}&&email=${email}`);
         } catch (error) {
           console.error('Error during staff redirect:', error);
           router.push('/');
