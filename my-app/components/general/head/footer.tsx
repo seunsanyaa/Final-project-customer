@@ -88,7 +88,7 @@ export function Footer() {
               </svg>
             </Link>
             <Link 
-              href="#" 
+              href="https://www.linkedin.com/company/renta-car-rental-system" 
               className="hover:text-muted-foreground transition-colors duration-200"
               aria-label="LinkedIn"
             >

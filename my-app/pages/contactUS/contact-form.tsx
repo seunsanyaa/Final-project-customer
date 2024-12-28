@@ -58,7 +58,7 @@ export default function ContactForm() {
                   <Mail className="w-5 h-5 text-primary" />
                   <div>
                     <p className="font-medium">Email</p>
-                    <p>support@renta.com</p>
+                    <p>rentacompanyhq@gmail.com</p>
                   </div>
                 </div>
                 <div className="flex items-center space-x-3">
@@ -76,7 +76,7 @@ export default function ContactForm() {
                   <a href="#" className="text-primary hover:text-primary/80">
                     <Facebook className="w-5 h-5" />
                   </a>
-                  <a href="#" className="text-primary hover:text-primary/80">
+                  <a href="https://www.linkedin.com/company/renta-car-rental-system" className="text-primary hover:text-primary/80">
                     <Linkedin className="w-5 h-5" />
                   </a>
                 </div>
