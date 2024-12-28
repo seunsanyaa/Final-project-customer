@@ -178,9 +178,9 @@ export function Homepage_v2() {
                       <p className="text-lg md:text-xl lg:text-2xl text-gray-500"> 
                         Rent the car of your dreams and explore the wilderness. 15% off for the summer season on choice* cars.
                       </p>
-                      <Link href="/Promotions">
+                      <Link href="/User_Account/User_Promotions">
                         <Button className="bg-customyello text-primary-foreground border-2 border-black p-4 shadow-md hover:bg-orange-500 transition"> 
-                          Book Now
+                          View Promotions
                         </Button>
                       </Link>
                     </div>
@@ -201,9 +201,9 @@ export function Homepage_v2() {
                       <p className="text-lg md:text-xl lg:text-2xl text-muted-foreground">
                         Rent the car of your dreams and experience the bustling nightlife. 10% off on sports cars for a week.
                       </p>
-                      <Link href="/Promotions">
+                      <Link href="/User_Account/User_Promotions">
                       <Button className="bg-customyello text-primary-foreground border-2 border-black" >
-                        Book Now
+                        View Promotions
                       </Button></Link>
                     </div>
                     <Image
@@ -222,9 +222,9 @@ export function Homepage_v2() {
                       <p className="text-lg md:text-xl lg:text-2xl text-muted-foreground">
                         Hop in with some friends for the long haul. 20% on travel vans when renting up to a month.
                       </p>
-                      <Link href="/Promotions">
+                      <Link href="/User_Account/User_Promotions">
                       <Button className="bg-customyello text-primary-foreground border-2 border-black" >
-                        Book Now
+                       View Promotions
                       </Button></Link>
                     </div>
                     <Image

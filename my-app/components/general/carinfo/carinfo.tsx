@@ -200,11 +200,11 @@ export function Carinfo() {
                 <button 
                   onClick={handleBooking} 
                   className={`px-6 py-3 text-lg font-semibold text-white rounded-lg transition-colors shadow-2xl ${
-                    activeBookingsCount && activeBookingsCount >= 3
+                    activeBookingsCount !== undefined && activeBookingsCount >= 3
                       ? 'bg-muted cursor-not-allowed'
                       : 'bg-blue-600 hover:bg-blue-500 hover:bg-muted'
                   }`}
-                  disabled={activeBookingsCount && activeBookingsCount >= 3}
+                  disabled={activeBookingsCount !== undefined && activeBookingsCount >= 3}
                 >
                   Book Now
                 </button>
