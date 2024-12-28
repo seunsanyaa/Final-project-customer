@@ -4,7 +4,7 @@ import { mutation, query } from "./_generated/server";
 export const createNotification = mutation({
   args: {
     userId: v.string(),
-    bookingId: v.string(),
+    bookingId: v.optional(v.string()),
     message: v.string(),
     type: v.string(),
   },

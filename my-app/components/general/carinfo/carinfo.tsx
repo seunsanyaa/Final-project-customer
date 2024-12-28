@@ -15,8 +15,9 @@ import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { useState, useEffect } from 'react';
 import { Badge } from "@/components/ui/badge";
-import { StarIcon, AccessibilityIcon, TagIcon } from "lucide-react"; // Use AccessibilityIcon instead
+import { StarIcon, AccessibilityIcon, TagIcon, AlertCircle } from "lucide-react"; // Add AlertCircle
 import { useUser } from "@clerk/nextjs";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"; // Add Alert imports
 
 
 const useCurrency = () => {
@@ -69,6 +70,11 @@ export function Carinfo() {
   // Add this query near your other queries
   const promotions = useQuery(api.promotions.getAllPromotions);
 
+  // Add this new query
+  const activeBookingsCount = useQuery(api.analytics.getActiveBookingsCount, { 
+    customerId: user?.id ?? '' 
+  });
+
   // Add this helper function
   const getActivePromotion = (car: Car) => {
     if (!promotions) return null;
@@ -85,7 +91,10 @@ export function Carinfo() {
   }
 
   const handleBooking = () => {
-    // Pass car details as query parameters
+    if (activeBookingsCount && activeBookingsCount >= 3) {
+      return; // Don't proceed if booking limit reached
+    }
+    
     router.push({
       pathname: '/Newbooking',
       query: {
@@ -120,6 +129,16 @@ export function Carinfo() {
       <Separator />
       <div className="flex flex-col items-center justify-center min-h-screen bg-background text-foreground">
         <main className="container max-w-5xl px-4 py-12 sm:px-6 lg:px-8">
+          {activeBookingsCount && activeBookingsCount >= 3 && (
+            <Alert variant="destructive" className="mb-6">
+              <AlertCircle className="h-4 w-4" />
+              <AlertTitle>Booking Limit Reached</AlertTitle>
+              <AlertDescription>
+                You have reached the maximum limit of 3 active bookings. Please wait for some of your current bookings to end before making a new booking.
+              </AlertDescription>
+            </Alert>
+          )}
+          
           <div className="grid gap-12 md:grid-cols-2 items-start">
             {/* Left side - Car details and booking */}
             <div className="space-y-8">
@@ -180,7 +199,12 @@ export function Carinfo() {
               <div className="mt-8">
                 <button 
                   onClick={handleBooking} 
-                  className="px-6 py-3 text-lg font-semibold text-white bg-blue-600 hover:bg-blue-500 rounded-lg transition-colors hover:bg-muted shadow-2xl"
+                  className={`px-6 py-3 text-lg font-semibold text-white rounded-lg transition-colors shadow-2xl ${
+                    activeBookingsCount && activeBookingsCount >= 3
+                      ? 'bg-muted cursor-not-allowed'
+                      : 'bg-blue-600 hover:bg-blue-500 hover:bg-muted'
+                  }`}
+                  disabled={activeBookingsCount && activeBookingsCount >= 3}
                 >
                   Book Now
                 </button>

@@ -60,12 +60,9 @@ export default function UserPromotions() {
     if (!permanentPromotions || !bookings) return [];
 
     return permanentPromotions.filter(promotion => {
-      // Skip promotions that have both minimums as 0 or undefined
-      if ((!promotion.minimumRentals || promotion.minimumRentals === 0) && 
-          (!promotion.minimumMoneySpent || promotion.minimumMoneySpent === 0)) {
-        return false;
-      }
-      return true;
+      // Keep promotions that have at least one non-zero minimum
+      return (promotion.minimumRentals && promotion.minimumRentals > 0) || 
+             (promotion.minimumMoneySpent && promotion.minimumMoneySpent > 0);
     });
   }, [permanentPromotions, bookings]);
 
@@ -121,8 +118,8 @@ export default function UserPromotions() {
                     <CardContent>
                       <p className="text-muted-foreground mb-4">{promotion.promotionDescription}</p>
                       <div className="space-y-6">
-                        {/* Show Money Spent Progress Bar only for the last card */}
-                        {index === processedPermanentPromotions.length - 1 ? (
+                        {/* Show Money Spent Progress Bar if minimumMoneySpent is set and greater than 0 */}
+                        {promotion.minimumMoneySpent && promotion.minimumMoneySpent > 0 && (
                           <div className="mb-6">
                             <div className="flex justify-between items-center mb-2">
                               <span className="text-sm font-medium">Spending Progress</span>
@@ -146,8 +143,9 @@ export default function UserPromotions() {
                               ${Math.max(0, Math.ceil(((promotion.minimumMoneySpent ?? 0) - totalMoneySpent) * 100) / 100)} more to unlock
                             </p>
                           </div>
-                        ) : (
-                          /* Show Bookings Progress Bar for first two cards */
+                        )}
+                        {/* Show Bookings Progress Bar if minimumRentals is set and greater than 0 */}
+                        {promotion.minimumRentals && promotion.minimumRentals > 0 && (
                           <div className="mb-6">
                             <div className="flex justify-between items-center mb-2">
                               <span className="text-sm font-medium">Rental Progress</span>
