@@ -520,10 +520,17 @@ const handleLanguageChange = async (newLanguage: string) => {
                 <div className="grid gap-2">
                   <Label htmlFor="dob">Date of Birth</Label>
                   <Input 
-                    id="dob" 
+                    id="dob"
                     type="date"
-                    value={personalInfo.dob}
-                    onChange={(e) => setPersonalInfo(prev => ({ ...prev, dob: e.target.value }))}
+                    value={personalInfo.dob ? personalInfo.dob.split('.').reverse().join('-') : ''}
+                    onChange={(e) => {
+                      const date = e.target.value;
+                      const [year, month, day] = date.split('-');
+                      setPersonalInfo(prev => ({ 
+                        ...prev, 
+                        dob: `${day}.${month}.${year}`
+                      }));
+                    }}
                   />
                 </div>
                 <div className="grid gap-2">
@@ -539,8 +546,15 @@ const handleLanguageChange = async (newLanguage: string) => {
                   <Input 
                     id="expiry"
                     type="date"
-                    value={personalInfo.expirationDate}
-                    onChange={(e) => setPersonalInfo(prev => ({ ...prev, expirationDate: e.target.value }))}
+                    value={personalInfo.expirationDate ? personalInfo.expirationDate.split('.').reverse().join('-') : ''}
+                    onChange={(e) => {
+                      const date = e.target.value;
+                      const [year, month, day] = date.split('-');
+                      setPersonalInfo(prev => ({ 
+                        ...prev, 
+                        expirationDate: `${day}.${month}.${year}`
+                      }));
+                    }}
                   />
                 </div>
                 <div className="grid gap-2">

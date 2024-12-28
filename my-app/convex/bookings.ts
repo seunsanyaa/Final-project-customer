@@ -461,8 +461,20 @@ export const awardBookingRewardPoints = mutation({
 			.first();
 
 		if (customer) {
+			const oldPoints = customer.rewardPoints || 0;
+			const newPoints = oldPoints + pointsToAward;
+			
 			await ctx.db.patch(customer._id, {
-				rewardPoints: (customer.rewardPoints || 0) + pointsToAward,
+				rewardPoints: newPoints,
+			});
+
+			// Call the new notification function
+			await ctx.db.insert('notifications', {
+				userId: args.customerId,
+				message: `You've earned ${pointsToAward} reward points from your recent booking!`,
+				type: 'rewards',
+				isRead: false,
+				createdAt: Date.now(),
 			});
 		}
 
@@ -642,4 +654,57 @@ export const cancelBooking = mutation({
 
 		return { success: true };
 	}
+});
+
+// Add this new query for checking upcoming bookings and sending notifications
+export const checkUpcomingBookings = mutation({
+	args: {
+		customerId: v.string(),
+	},
+	handler: async (ctx, args) => {
+		const bookings = await ctx.db
+			.query('bookings')
+			.withIndex('by_customerId', (q) => q.eq('customerId', args.customerId))
+			.filter(q => q.neq(q.field('status'), 'cancelled'))
+			.collect();
+
+		const today = new Date();
+		const threeDaysFromNow = new Date(today);
+		threeDaysFromNow.setDate(today.getDate() + 3);
+
+		for (const booking of bookings) {
+			const startDate = new Date(booking.startDate);
+			const endDate = new Date(booking.endDate);
+
+			// Check for upcoming start date
+			const daysUntilStart = Math.ceil((startDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
+			if (daysUntilStart <= 3 && daysUntilStart > 0) {
+				// Create notification for upcoming booking start
+				await ctx.db.insert('notifications', {
+					userId: args.customerId,
+					bookingId: booking._id.toString(),
+					message: `Your booking starts in ${daysUntilStart} day${daysUntilStart === 1 ? '' : 's'}!`,
+					type: 'reminder',
+					isRead: false,
+					createdAt: Date.now(),
+				});
+			}
+
+			// Check for upcoming end date
+			const daysUntilEnd = Math.ceil((endDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
+			if (daysUntilEnd <= 3 && daysUntilEnd > 0) {
+				// Create notification for upcoming booking end
+				await ctx.db.insert('notifications', {
+					userId: args.customerId,
+					bookingId: booking._id.toString(),
+					message: `Your booking ends in ${daysUntilEnd} day${daysUntilEnd === 1 ? '' : 's'}!`,
+					type: 'reminder',
+					isRead: false,
+					createdAt: Date.now(),
+				});
+			}
+		}
+
+		return { success: true };
+	},
 });

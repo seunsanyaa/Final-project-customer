@@ -1,6 +1,78 @@
 import { v } from 'convex/values';
-import { query } from './_generated/server';
+import { query, mutation, internalMutation } from './_generated/server';
+import { cronJobs } from 'convex/server';
+import { api } from './_generated/api';
 
+// Shared function for checking bookings and sending notifications
+async function checkAndNotifyBookings(ctx: any) {
+  try {
+    console.log("Starting booking check process...");
+    // Get all customers
+    const customers = await ctx.db.query('customers').collect();
+    console.log(`Found ${customers.length} customers to check`);
+    
+    // Check bookings for each customer
+    for (const customer of customers) {
+      try {
+        console.log(`Checking bookings for customer ${customer.userId}`);
+        const bookings = await ctx.db
+          .query('bookings')
+          .withIndex('by_customerId', (q: any) => q.eq('customerId', customer.userId))
+          .filter((q: any) => q.neq(q.field('status'), 'cancelled'))
+          .collect();
+
+        console.log(`Found ${bookings.length} active bookings for customer ${customer.userId}`);
+        const today = new Date();
+
+        for (const booking of bookings) {
+          try {
+            const startDate = new Date(booking.startDate);
+            const endDate = new Date(booking.endDate);
+
+            // Check for upcoming start date
+            const daysUntilStart = Math.ceil((startDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
+            console.log(`Booking ${booking._id}: ${daysUntilStart} days until start`);
+            
+            if (daysUntilStart <= 3 && daysUntilStart > 0) {
+              console.log(`Creating start notification for booking ${booking._id}`);
+              await ctx.scheduler.runAfter(0, api.notifications.createNotification, {
+                userId: customer.userId,
+                bookingId: booking._id.toString(),
+                message: `Your booking starts in ${daysUntilStart} day${daysUntilStart === 1 ? '' : 's'}!`,
+                type: 'reminder',
+              });
+              console.log(`Start notification created successfully`);
+            }
+
+            // Check for upcoming end date
+            const daysUntilEnd = Math.ceil((endDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
+            console.log(`Booking ${booking._id}: ${daysUntilEnd} days until end`);
+            
+            if (daysUntilEnd <= 3 && daysUntilEnd > 0) {
+              console.log(`Creating end notification for booking ${booking._id}`);
+              await ctx.scheduler.runAfter(0, api.notifications.createNotification, {
+                userId: customer.userId,
+                bookingId: booking._id.toString(),
+                message: `Your booking ends in ${daysUntilEnd} day${daysUntilEnd === 1 ? '' : 's'}!`,
+                type: 'reminder',
+              });
+              console.log(`End notification created successfully`);
+            }
+          } catch (bookingError) {
+            console.error(`Error processing booking ${booking._id}:`, bookingError);
+          }
+        }
+      } catch (customerError) {
+        console.error(`Error processing customer ${customer.userId}:`, customerError);
+      }
+    }
+    console.log("Booking check process completed successfully");
+    return { success: true };
+  } catch (error) {
+    console.error("Error in checkAndNotifyBookings:", error);
+    throw error;
+  }
+}
 
 export const getAnalyticsReport = query({
   args: {
@@ -387,6 +459,178 @@ export const searchCarsByTerm = query({
       model,
       searchTerms
     };
+  },
+});
+
+// Add this new mutation for checking upcoming bookings and sending notifications
+export const checkUpcomingBookings = mutation({
+  args: {
+    customerId: v.string(),
+  },
+  handler: async (ctx, args) => {
+    const bookings = await ctx.db
+      .query('bookings')
+      .withIndex('by_customerId', (q) => q.eq('customerId', args.customerId))
+      .filter(q => q.neq(q.field('status'), 'cancelled'))
+      .collect();
+
+    const today = new Date();
+    const threeDaysFromNow = new Date(today);
+    threeDaysFromNow.setDate(today.getDate() + 3);
+
+    for (const booking of bookings) {
+      const startDate = new Date(booking.startDate);
+      const endDate = new Date(booking.endDate);
+
+      // Check for upcoming start date
+      const daysUntilStart = Math.ceil((startDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
+      if (daysUntilStart <= 3 && daysUntilStart > 0) {
+        // Create notification for upcoming booking start
+        await ctx.db.insert('notifications', {
+          userId: args.customerId,
+          bookingId: booking._id.toString(),
+          message: `Your booking starts in ${daysUntilStart} day${daysUntilStart === 1 ? '' : 's'}!`,
+          type: 'reminder',
+          isRead: false,
+          createdAt: Date.now(),
+        });
+      }
+
+      // Check for upcoming end date
+      const daysUntilEnd = Math.ceil((endDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
+      if (daysUntilEnd <= 3 && daysUntilEnd > 0) {
+        // Create notification for upcoming booking end
+        await ctx.db.insert('notifications', {
+          userId: args.customerId,
+          bookingId: booking._id.toString(),
+          message: `Your booking ends in ${daysUntilEnd} day${daysUntilEnd === 1 ? '' : 's'}!`,
+          type: 'reminder',
+          isRead: false,
+          createdAt: Date.now(),
+        });
+      }
+    }
+
+    return { success: true };
+  },
+});
+
+// Add this new mutation for periodic booking checks
+export const checkAllUsersUpcomingBookings = mutation({
+  handler: async (ctx) => {
+    // Get all customers
+    const customers = await ctx.db.query('customers').collect();
+    
+    // Check bookings for each customer
+    for (const customer of customers) {
+      await ctx.db.query('bookings')
+        .withIndex('by_customerId', (q) => q.eq('customerId', customer.userId))
+        .filter(q => q.neq(q.field('status'), 'cancelled'))
+        .collect()
+        .then(async (bookings) => {
+          const today = new Date();
+
+          for (const booking of bookings) {
+            const startDate = new Date(booking.startDate);
+            const endDate = new Date(booking.endDate);
+
+            // Check for upcoming start date
+            const daysUntilStart = Math.ceil((startDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
+            if (daysUntilStart <= 3 && daysUntilStart > 0) {
+              await ctx.db.insert('notifications', {
+                userId: customer.userId,
+                bookingId: booking._id.toString(),
+                message: `Your booking starts in ${daysUntilStart} day${daysUntilStart === 1 ? '' : 's'}!`,
+                type: 'reminder',
+                isRead: false,
+                createdAt: Date.now(),
+              });
+            }
+
+            // Check for upcoming end date
+            const daysUntilEnd = Math.ceil((endDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
+            if (daysUntilEnd <= 3 && daysUntilEnd > 0) {
+              await ctx.db.insert('notifications', {
+                userId: customer.userId,
+                bookingId: booking._id.toString(),
+                message: `Your booking ends in ${daysUntilEnd} day${daysUntilEnd === 1 ? '' : 's'}!`,
+                type: 'reminder',
+                isRead: false,
+                createdAt: Date.now(),
+              });
+            }
+          }
+        });
+    }
+
+    return { success: true };
+  },
+});
+
+// Add this new mutation for reward points notifications
+export const notifyRewardPointsChange = mutation({
+  args: {
+    userId: v.string(),
+    oldPoints: v.number(),
+    newPoints: v.number(),
+    reason: v.string(),
+  },
+  handler: async (ctx, args) => {
+    const pointsDiff = args.newPoints - args.oldPoints;
+    const message = pointsDiff > 0 
+      ? `You've earned ${pointsDiff} reward points from ${args.reason}!`
+      : `${Math.abs(pointsDiff)} reward points were deducted for ${args.reason}.`;
+
+    await ctx.scheduler.runAfter(0, api.notifications.createNotification, {
+      userId: args.userId,
+      message,
+      type: 'rewards',
+
+    });
+
+    return { success: true };
+  },
+});
+
+// Cron job using shared function
+export default {
+  checkBookings: {
+    schedule: "0 * * * *", // Run every hour
+    handler: async (ctx: any) => {
+      return await checkAndNotifyBookings(ctx);
+    }
+  }
+};
+
+// Manual trigger using shared function
+export const triggerBookingCheck = mutation({
+  handler: async (ctx) => {
+    return await checkAndNotifyBookings(ctx);
+  },
+});
+
+// Add this new query for checking active bookings count
+export const getActiveBookingsCount = query({
+  args: {
+    customerId: v.string(),
+  },
+  handler: async (ctx, args) => {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const todayISO = today.toISOString();
+
+    const activeBookings = await ctx.db
+      .query('bookings')
+      .withIndex('by_customerId', (q) => q.eq('customerId', args.customerId))
+      .filter((q) => 
+        q.and(
+          q.neq(q.field('status'), 'cancelled'),
+          q.gte(q.field('endDate'), todayISO)
+        )
+      )
+      .collect();
+
+    return activeBookings.length;
   },
 });
 
