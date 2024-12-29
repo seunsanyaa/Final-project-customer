@@ -406,7 +406,7 @@ export function Homepage_v2() {
                             </div>
                             <div className="flex items-center gap-1 text-xs font-medium">
                               {[...Array(review.numberOfStars)].map((_, i) => (
-                                <StarIcon key={i} className="w-4 h-4 fill-primary" />
+                                <StarIcon key={i} className="w-4 h-4 text-customyello fill-customyello" />
                               ))}
                             </div>
                           </div>
