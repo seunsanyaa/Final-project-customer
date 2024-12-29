@@ -208,9 +208,11 @@ export default function AllVehicles() {
         <div className="container mx-auto px-4 py-8">
           <div className="mb-12">
             <h1 className="text-3xl font-bold mb-6">Find Your Perfect Rental Car</h1>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4 mt-4 bg-card rounded-lg shadow-xl p-4 relative overflow-hidden">
+            <div className="w-fit grid grid-cols-1 md:grid-cols-4 gap-14 mb-4 mt-4 bg-card rounded-lg shadow-2xl p-4 relative overflow-hidden">
               <Input
                 placeholder="Make"
+                className="shadow-xl w-[350px]"
+                style={{ border: "none" }}  
                 value={inputValues.maker}
                 onChange={(e) => handleInputChange('maker', e.target.value)}
               />
@@ -218,11 +220,15 @@ export default function AllVehicles() {
                 placeholder="Model"
                 value={inputValues.model}
                 onChange={(e) => handleInputChange('model', e.target.value)}
+                className="shadow-xl w-[350px]"
+                style={{ border: "none" }}  
               />
               <div className="flex items-center gap-2">
                 <Input
                   placeholder="Year"
                   type="number"
+                  className="shadow-xl min-w-fit"
+                  style={{ border: "none" }}  
                   min="1990"
                   max="2024"
                   value={inputValues.year}
@@ -232,13 +238,13 @@ export default function AllVehicles() {
                   value={selectedCategory}
                   onValueChange={handleCategoryChange}
                 >
-                  <SelectTrigger className="w-[180px] bg-background">
+                  <SelectTrigger className="w-[180px] bg-background shadow-xl" style={{ border: "none" }}>
                     <SelectValue placeholder="Category" />
                   </SelectTrigger>
-                  <SelectContent className="w-[180px] bg-card rounded-lg shadow-2xl p-2 relative overflow-hidden">
-                    <SelectItem value="all" className="bg-background">All Categories</SelectItem>
+                  <SelectContent className="w-[180px] bg-card rounded-lg p-2 relative overflow-hidden shadow-2xl" style={{ border: "none" }}>
+                    <SelectItem value="all" className="bg-background hover:bg-muted">All Categories</SelectItem>
                     {categories.map((category) => (
-                      <SelectItem key={category} value={category} className="bg-background">
+                      <SelectItem key={category} value={category} className="bg-background hover:bg-muted">
                         {category.charAt(0).toUpperCase() + category.slice(1).replace('_', ' ')}
                       </SelectItem>
                     ))}
@@ -251,15 +257,15 @@ export default function AllVehicles() {
                   <Search className="w-4 h-4 mr-2" />
                   Search
                 </Button>
+                <Button
+                  onClick={() => setShowPromotionsOnly(!showPromotionsOnly)}
+                  className="hover:bg-blue-500 hover:shadow-lg transition-all duration-300 rounded-lg hover:bg-muted"
+                >
+                  <TagIcon className="w-4 h-4 mr-2" />
+                  {showPromotionsOnly ? "Show All" : "Only Promotions"}
+                </Button>
               </div>
             </div>
-            <Button
-              onClick={() => setShowPromotionsOnly(!showPromotionsOnly)}
-              className="hover:bg-blue-500 hover:shadow-lg transition-all duration-300 rounded-lg hover:bg-muted"
-            >
-              <TagIcon className="w-4 h-4 mr-2" />
-              {showPromotionsOnly ? "Show All" : "Only Promotions"}
-            </Button>
             <div className="text-center">
               <Button 
                 className="hover:bg-blue-500 hover:shadow-lg transition-all duration-300 rounded-lg hover:bg-muted"
@@ -277,9 +283,10 @@ export default function AllVehicles() {
                       <Input
                         id="engineType"
                         value={inputValues.engineType}
+                        style={{ border: "none" }}  
                         onChange={(e) => handleInputChange('engineType', e.target.value)}
                         placeholder="e.g., V6, Inline-4"
-                        className=" bg-card rounded-lg shadow-lg relative"
+                        className=" bg-card rounded-lg shadow-xl relative"
                       />
                     </div>
                     <div className="space-y-2">
@@ -289,7 +296,8 @@ export default function AllVehicles() {
                         value={inputValues.engineHorsepower}
                         onChange={(e) => handleInputChange('engineHorsepower', e.target.value)}
                         placeholder="e.g., 300, 400"
-                        className=" bg-card rounded-lg shadow-lg relative"
+                        className=" bg-card rounded-lg shadow-xl relative"
+                        style={{ border: "none" }}  
                       />
                     </div>
                     <div className="space-y-2">
@@ -299,7 +307,8 @@ export default function AllVehicles() {
                         value={inputValues.engineCylinders}
                         onChange={(e) => handleInputChange('engineCylinders', e.target.value)}
                         placeholder="e.g., 4, 6, 8"
-                        className=" bg-card rounded-lg shadow-lg relative"
+                        className=" bg-card rounded-lg shadow-xl relative"
+                        style={{ border: "none" }}  
                       />
                     </div>
                     <div className="space-y-2">
@@ -309,7 +318,8 @@ export default function AllVehicles() {
                         value={inputValues.fuelType}
                         onChange={(e) => handleInputChange('fuelType', e.target.value)}
                         placeholder="e.g., Gasoline, Diesel"
-                        className=" bg-card rounded-lg shadow-lg relative"
+                        className=" bg-card rounded-lg shadow-xl relative"
+                        style={{ border: "none" }}  
                       />
                     </div>
 
@@ -320,7 +330,8 @@ export default function AllVehicles() {
                         value={inputValues.transmission}
                         onChange={(e) => handleInputChange('transmission', e.target.value)}
                         placeholder="e.g., Automatic, Manual"
-                        className=" bg-card rounded-lg shadow-lg relative"
+                        className=" bg-card rounded-lg shadow-xl relative"
+                        style={{ border: "none" }}  
                       />
                     </div>
 
@@ -331,7 +342,8 @@ export default function AllVehicles() {
                         value={inputValues.drive}
                         onChange={(e) => handleInputChange('drive', e.target.value)}
                         placeholder="e.g., AWD, FWD, RWD"
-                        className=" bg-card rounded-lg shadow-lg relative"
+                        className=" bg-card rounded-lg shadow-xl relative"
+                        style={{ border: "none" }}  
                       />
                     </div>
 
@@ -342,7 +354,8 @@ export default function AllVehicles() {
                         value={inputValues.doors}
                         onChange={(e) => handleInputChange('doors', e.target.value)}
                         placeholder="e.g., 2, 4"
-                        className=" bg-card rounded-lg shadow-lg relative"
+                        className=" bg-card rounded-lg shadow-xl relative"
+                        style={{ border: "none" }}  
                       />
                     </div>
                   </div>
