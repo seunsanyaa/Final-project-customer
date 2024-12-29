@@ -51,6 +51,7 @@ export function Homepage_v2() {
   const searchSuggestions = useQuery(api.analytics.searchCarsByTerm, { 
     searchTerm: searchTerm 
   });
+  const minPrices = useQuery(api.car.getMinPricesByCategory);
 
   const reviews = useQuery(api.review.getTopReviews);
   const userIds = Array.from(new Set(reviews?.map(review => review.userId) ?? []));
@@ -264,7 +265,7 @@ export function Homepage_v2() {
                 <div className="text-center mb-0 mt-0">
                   <h3 className="text-4xl font-semibold text-black mt-0">Sedans</h3>
                   <p className="text-black font-semibold">Comfortable and efficient.</p> 
-                  <p className="text-black">Starting from $45/day</p> 
+                  <p className="text-black">Starting from ${minPrices?.["Sedan"] ?? 45}/day</p> 
                 </div>
                 <Button 
                   onClick={() => handleCategoryClick("Sedan")} 
@@ -284,7 +285,7 @@ export function Homepage_v2() {
                 <div className="text-center mb-0 mt-0">
                   <h3 className="text-4xl font-semibold text-black">SUVs</h3>
                   <p className="text-black font-semibold">Spacious and versatile.</p> 
-                  <p className="text-black">Starting from $50/day</p> 
+                  <p className="text-black">Starting from ${minPrices?.["SUV"] ?? 50}/day</p> 
                 </div>
                 <Button 
                   onClick={() => handleCategoryClick("SUV")} 
@@ -304,7 +305,7 @@ export function Homepage_v2() {
                 <div className="text-center mb-0 mt-0">
                   <h3 className="text-4xl font-semibold text-black mt-1">Luxury</h3>
                   <p className="text-black font-semibold">Indulge in style and comfort.</p> 
-                  <p className="text-black">Starting from $70/day</p> 
+                  <p className="text-black">Starting from ${minPrices?.["Luxury"] ?? 70}/day</p> 
                 </div>
                 <Button 
                   onClick={() => handleCategoryClick("Luxury")} 
@@ -324,7 +325,7 @@ export function Homepage_v2() {
                 <div className="text-center mb-0 mt-0">
                   <h3 className="text-4xl font-semibold text-black">Vans</h3>
                   <p className="text-black font-semibold mb-0">Spacious and practical.</p> 
-                  <p className="text-black">Starting from $30/day</p> 
+                  <p className="text-black">Starting from ${minPrices?.["Van"] ?? 30}/day</p> 
                 </div>
                 <Button 
                   onClick={() => handleCategoryClick("Van")} 
@@ -344,7 +345,7 @@ export function Homepage_v2() {
                 <div className="text-center mb-0 mt-0">
                   <h3 className="text-4xl font-semibold text-black">Convertible</h3>
                   <p className="text-black font-semibold mb-0">Spacious and practical.</p> 
-                  <p className="text-black">Starting from $300/day</p> 
+                  <p className="text-black">Starting from ${minPrices?.["Convertible"] ?? 300}/day</p> 
                 </div>
                 <Button 
                   onClick={() => handleCategoryClick("Convertible")} 
@@ -364,7 +365,7 @@ export function Homepage_v2() {
                 <div className="text-center mb-0 mt-0">
                   <h3 className="text-4xl font-semibold text-black">Pickup Truck</h3>
                   <p className="text-black font-semibold mb-0">Spacious and practical.</p> 
-                  <p className="text-black">Starting from $120/day</p> 
+                  <p className="text-black">Starting from ${minPrices?.["Truck"] ?? 120}/day</p> 
                 </div>
                 <Button 
                   onClick={() => handleCategoryClick("Truck")} 
