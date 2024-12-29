@@ -38,7 +38,7 @@ export function Reviews_Page() {
       <div className="flex min-h-screen">
         
         {/* Sidebar */}
-        <div className="w-25 p-4 border-r bg-primary">
+        <div className="sticky top-0 h-screen w-25 p-4 border-r bg-primary">
           <div className="space-y-2">
             <div>
               <button
