@@ -51,7 +51,7 @@ export function Homepage_v2() {
   const searchSuggestions = useQuery(api.analytics.searchCarsByTerm, { 
     searchTerm: searchTerm 
   });
-  const minPrices = useQuery(api.car.getMinPricesByCategory);
+  const minPrices = useQuery(api.analytics.getMinPricesByCategory);
 
   const reviews = useQuery(api.review.getTopReviews);
   const userIds = Array.from(new Set(reviews?.map(review => review.userId) ?? []));

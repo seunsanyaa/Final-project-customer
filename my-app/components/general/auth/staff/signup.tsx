@@ -4,21 +4,23 @@ import { useState } from "react";
 import { useMutation } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import { SignInOAuthButtons } from "../social_buttons";
+import { useToast } from "@/hooks/use-toast";
 
 export default function StaffSignup() {
   const { signUp, setActive } = useSignUp();
   const router = useRouter();
-  const { email, token } = router.query;
+  const { email } = router.query;
   const [error, setError] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const { toast } = useToast();
   
   const updateStaffUserId = useMutation(api.staff.updateStaffUserId);
   const createStaffUser = useMutation(api.users.createStaffUser);
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    if (!email || !token || typeof email !== 'string' || typeof token !== 'string' || !signUp) {
-      setError("Invalid signup link or initialization error");
+    if (!email || typeof email !== 'string' || !signUp) {
+      setError("Invalid signup link");
       return;
     }
 
@@ -31,46 +33,27 @@ export default function StaffSignup() {
     const lastName = (form.elements.namedItem('lastName') as HTMLInputElement).value;
 
     try {
-      // Start the signup process with Clerk
+      // Start the signup process with Clerk (only email and password)
       const signUpAttempt = await signUp.create({
         emailAddress: email,
-        password,
-        firstName,
-        lastName
+        password
       });
 
-      // Complete email verification (since we trust the token)
+      // Send verification email
       await signUpAttempt.prepareEmailAddressVerification({
-        strategy: "email_code",
+        strategy: "email_code"
       });
+
+      // Redirect to staff verification page with all necessary data
+      router.push(`/verify-staff?email=${email}&firstName=${firstName}&lastName=${lastName}`);
       
-      const response = await signUpAttempt.attemptEmailAddressVerification({
-        code: token,
-      });
-
-      if (response.status === "complete" && setActive) {
-        await setActive({ session: response.createdSessionId });
-        
-        // Create staff user in Convex
-        await createStaffUser({
-          userId: response.createdUserId || '',
-          email,
-          firstName,
-          lastName
-        });
-
-        // Update staff table with the userId
-        await updateStaffUserId({
-          email,
-          userId: response.createdUserId || ''
-        });
-
-        // Redirect to dashboard or appropriate page
-        router.push("/dashboard");
-      }
     } catch (err) {
       console.error(err);
-      setError("An error occurred during signup");
+      toast({
+        title: "Error",
+        description: "An error occurred during signup",
+        variant: "destructive"
+      });
     } finally {
       setIsLoading(false);
     }
@@ -108,7 +91,7 @@ export default function StaffSignup() {
               className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2"
             />
           </div>
-          
+
           <div>
             <label className="block text-sm font-medium text-gray-700">Last Name</label>
             <input

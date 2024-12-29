@@ -635,3 +635,30 @@ export const getActiveBookingsCount = query({
 });
 
 
+export const getMinPricesByCategory = query({
+	handler: async (ctx) => {
+		const cars = await ctx.db
+			.query("cars")
+			.filter(q => 
+				q.and(
+					q.eq(q.field('disabled'), false),
+					q.eq(q.field('available'), true)
+				)
+			)
+			.collect();
+
+		const minPrices: Record<string, number> = {};
+
+		cars.forEach(car => {
+			if (car.categories) {
+				car.categories.forEach(category => {
+					if (!minPrices[category] || car.pricePerDay < minPrices[category]) {
+						minPrices[category] = car.pricePerDay;
+					}
+				});
+			}
+		});
+
+		return minPrices;
+	},
+});
