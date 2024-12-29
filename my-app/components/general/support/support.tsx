@@ -15,7 +15,7 @@ import { Send, Loader2 } from "lucide-react"
 export function Support() {
   const { user, isSignedIn } = useUser();
   const [message, setMessage] = useState("");
-  const [ref1, inView1] = useInView({ threshold: 0.3, triggerOnce: true });
+  const [ref1, inView1] = useInView({ threshold: 0.1, triggerOnce: true });
   const [ref2, inView2] = useInView({ threshold: 0.3, triggerOnce: true });
   const chatContainerRef = useRef<HTMLDivElement>(null);
   
@@ -101,7 +101,7 @@ export function Support() {
         {/* Chat Section - Only visible for logged-in users */}
         {isSignedIn && user && (
           <section ref={ref1} className={`mb-12 ${inView1 ? 'animate-fadeInUp' : 'opacity-0'}`}>
-            <Card className="max-w-4xl mx-auto">
+            <Card className="max-w-4xl mx-auto mt-1 rounded-lg p-1 bg-white shadow-xl" style={{ border: "none" }}>
               <CardHeader>
                 <CardTitle className="text-2xl md:text-3xl lg:text-4xl font-bold text-center">
                   Live Support Chat
@@ -110,7 +110,7 @@ export function Support() {
               <CardContent>
                 <div 
                   ref={chatContainerRef}
-                  className="h-[400px] border rounded-lg p-4 mb-4 overflow-y-auto bg-gradient-to-b from-gray-50 to-white space-y-6"
+                  className="h-[400px] border rounded-lg p-4 mb-4 overflow-y-auto bg-gradient-to-b from-gray-50 to-white space-y-6 shadow-2xl" style={{ border: "none" }}
                 >
                   {messages?.slice().reverse().map((msg, index) => (
                     <div 
@@ -158,14 +158,15 @@ export function Support() {
                 <div className="flex gap-2 items-center">
                   <Input 
                     placeholder="Type your message here..." 
-                    className="flex-1 focus-visible:ring-blue-500"
+                    className="flex-1 focus-visible:ring-blue-500 shadow-xl"
+                    style={{ border: "none" }}
                     value={message}
                     onChange={(e) => setMessage(e.target.value)}
                     onKeyPress={(e) => e.key === 'Enter' && !e.shiftKey && handleSendMessage()}
                     disabled={isSending}
                   />
                   <Button 
-                    className={`bg-blue-500 hover:bg-blue-600 transition-all duration-200 ${
+                    className={`bg-blue-500 hover:bg-muted transition-all duration-200 ${
                       isSending ? 'opacity-70 cursor-not-allowed' : ''
                     }`}
                     onClick={handleSendMessage}
@@ -185,7 +186,7 @@ export function Support() {
 
         {/* Complaint Form Section - Always visible */}
         <section ref={ref2} className={`${inView2 ? 'animate-fadeInUp' : 'opacity-0'}`}>
-          <Card className="max-w-4xl mx-auto">
+          <Card className="max-w-4xl mx-auto mt-1 rounded-lg p-1 bg-white shadow-xl" style={{ border: "none" }}>
             <CardHeader>
               <CardTitle className="text-2xl md:text-3xl lg:text-4xl font-bold text-center">
                 Submit a Complaint
@@ -198,6 +199,8 @@ export function Support() {
                     <label className="block text-sm font-medium mb-1">First Name</label>
                     <Input 
                       name="firstName"
+                      className="shadow-xl"
+                      style={{ border: "none" }}  
                       placeholder="Enter your first name"
                       value={complaintForm.firstName}
                       onChange={handleComplaintInputChange}
@@ -207,6 +210,8 @@ export function Support() {
                     <label className="block text-sm font-medium mb-1">Last Name</label>
                     <Input 
                       name="lastName"
+                      className="shadow-xl"
+                      style={{ border: "none" }}
                       placeholder="Enter your last name"
                       value={complaintForm.lastName}
                       onChange={handleComplaintInputChange}
@@ -221,6 +226,8 @@ export function Support() {
                   <Input 
                     name="email"
                     type="email" 
+                    className="shadow-xl"
+                    style={{ border: "none" }}
                     placeholder="Enter your email" 
                     required 
                     value={complaintForm.email}
@@ -233,7 +240,8 @@ export function Support() {
                   <Textarea 
                     name="complaint"
                     placeholder="Please describe your issue in detail..." 
-                    className="h-[200px]"
+                    className="h-[200px] shadow-xl"
+                    style={{ border: "none" }}
                     value={complaintForm.complaint}
                     onChange={handleComplaintInputChange}
                   />
@@ -241,7 +249,7 @@ export function Support() {
 
                 <Button 
                   type="submit" 
-                  className="w-full bg-blue-500 hover:bg-blue-600 text-white py-2 rounded-lg transition-colors"
+                  className="px-6 py-3 text-lg font-semibold text-white bg-blue-600 hover:bg-blue-500 rounded-lg transition-colors hover:bg-muted shadow-2xl"
                 >
                   Submit Complaint
                 </Button>

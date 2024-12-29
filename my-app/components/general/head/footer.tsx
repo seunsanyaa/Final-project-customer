@@ -43,7 +43,7 @@ export function Footer() {
               <Link href="/FAQ" prefetch={false} className="text-sm hover:text-muted-foreground transition-colors duration-200">
                 FAQ
               </Link>
-              <Link href="#" className="text-sm hover:text-muted-foreground transition-colors duration-200">
+              <Link href="/Rating_Reviews" className="text-sm hover:text-muted-foreground transition-colors duration-200">
                 Ratings and Reviews
               </Link>
               <Link href="/support" className="text-sm hover:text-muted-foreground transition-colors duration-200">
