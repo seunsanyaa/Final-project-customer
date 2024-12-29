@@ -140,7 +140,7 @@ export function Homepage_v2() {
                   <div className="relative w-full max-w-[600px]">
                     <input
                       type="text"
-                      placeholder="Search by make or model (e.g., Toyota prius)"
+                      placeholder="Search by make or model"
                       value={searchTerm}
                       onChange={(e) => setSearchTerm(e.target.value)}
                       className="p-5 border-2 border-gray-800 rounded-lg w-full text-gray-800 placeholder:text-gray-500 shadow-lg focus:ring-4 focus:ring-blue-500 transition-transform ease-in-out duration-300 transform hover:scale-105 h-5"
@@ -394,15 +394,15 @@ export function Homepage_v2() {
                   return (
                     <Card key={review._id} className="bg-muted">
                       <CardContent className="p-6">
-                        <div className="flex items-start gap-4">
-                          <Avatar className="border w-12 h-12">
-                            <AvatarImage src="/placeholder-user.jpg" />
-                            <AvatarFallback>
+                        <div className="flex items-start gap-4 bg-white">
+                          <Avatar className="border border-slate-200 w-12 h-12 rounded-[50%]">
+                            <AvatarImage src="/placeholder-user.jpg" alt="User avatar" className="rounded-[50%] bg-white" />
+                            <AvatarFallback className="rounded-[50%]" style={{ backgroundColor: 'white' }}>
                               {user?.firstName?.[0]}{user?.lastName?.[0]}
                             </AvatarFallback>
                           </Avatar>
                           <div className="space-y-1">
-                            <div className="font-semibold">
+                            <div className="font-bold">
                               {user?.firstName} {user?.lastName}
                             </div>
                             <div className="flex items-center gap-1 text-xs font-medium">

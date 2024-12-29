@@ -211,7 +211,7 @@ export default function AllVehicles() {
             <div className="w-fit grid grid-cols-1 md:grid-cols-4 gap-14 mb-4 mt-4 bg-card rounded-lg shadow-2xl p-4 relative overflow-hidden">
               <Input
                 placeholder="Make"
-                className="shadow-xl w-[350px]"
+                className="shadow-xl w-[300px]"
                 style={{ border: "none" }}  
                 value={inputValues.maker}
                 onChange={(e) => handleInputChange('maker', e.target.value)}
@@ -220,7 +220,7 @@ export default function AllVehicles() {
                 placeholder="Model"
                 value={inputValues.model}
                 onChange={(e) => handleInputChange('model', e.target.value)}
-                className="shadow-xl w-[350px]"
+                className="shadow-xl w-[300px]"
                 style={{ border: "none" }}  
               />
               <div className="flex items-center gap-2">

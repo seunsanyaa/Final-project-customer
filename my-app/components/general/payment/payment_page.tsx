@@ -386,7 +386,7 @@ function PaymentForm({
                   onChange={(e) => setAgreedToTerms(e.target.checked)}
                 />
                 <label htmlFor="terms" className="text-sm">
-                  I agree to the <Link href="/terms" className="text-primary">terms and conditions</Link>.
+                  I agree to the <Link href="/Legal#terms-of-service" className="text-primary">terms and conditions</Link>.
                 </label>
               </div>
               {errorMessage && (
