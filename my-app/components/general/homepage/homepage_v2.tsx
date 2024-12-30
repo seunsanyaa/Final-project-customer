@@ -61,8 +61,6 @@ export function Homepage_v2() {
     .sort(() => Math.random() - 0.5)
     .slice(0, 6);
 
-  const latestOffers = useQuery(api.promotions.getLatestOffers);
-
   useEffect(() => {
     const timer = setTimeout(() => {
       setIsLoading(false);
@@ -172,61 +170,73 @@ export function Homepage_v2() {
             </div>
             <Carousel> 
               <CarouselContent>
-                {latestOffers?.map((offer, index) => (
-                  <CarouselItem key={offer._id} className='h-full'>
-                    <div className="flex flex-col md:flex-row items-center justify-between h-full px-4 md:px-6 lg:px-10">
-                      <div className="space-y-4 md:space-y-6 lg:space-y-8">
-                        <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold">
-                          {offer.promotionTitle}
-                        </h1>
-                        <p className="text-lg md:text-xl lg:text-2xl text-gray-500">
-                          {offer.promotionDescription}
-                        </p>
-                        <Link href="/User_Account/User_Promotions">
-                          <Button className="bg-customyello text-primary-foreground border-2 border-black p-4 shadow-md hover:bg-orange-500 transition">
-                            View Promotions
-                          </Button>
-                        </Link>
-                      </div>
-                      <Image
-                        src={offer.promotionImage}
-                        width={600}
-                        height={500}
-                        alt="Promotion"
-                        className="w-[600px] h-[500px] object-cover"
-                        priority={index === 0}
-                      />
+                <CarouselItem className='h-full'>
+                  <div className="flex flex-col md:flex-row items-center justify-between h-full px-4 md:px-6 lg:px-10">
+                    <div className="space-y-4 md:space-y-6 lg:space-y-8">
+                      <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold"> 
+                        Discover the Perfect Car for Your Next Adventure
+                      </h1>
+                      <p className="text-lg md:text-xl lg:text-2xl text-gray-500"> 
+                        Rent the car of your dreams and explore the wilderness. 15% off for the summer season on choice* cars.
+                      </p>
+                      <Link href="/User_Account/User_Promotions">
+                        <Button className="bg-customyello text-primary-foreground border-2 border-black p-4 shadow-md hover:bg-orange-500 transition"> 
+                          View Promotions
+                        </Button>
+                      </Link>
                     </div>
-                  </CarouselItem>
-                ))}
-                {(!latestOffers || latestOffers.length === 0) && (
-                  // Fallback carousel item when no offers are available
-                  <CarouselItem className='h-full'>
-                    <div className="flex flex-col md:flex-row items-center justify-between h-full px-4 md:px-6 lg:px-10">
-                      <div className="space-y-4 md:space-y-6 lg:space-y-8">
-                        <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold">
-                          Check Back Soon for New Offers!
-                        </h1>
-                        <p className="text-lg md:text-xl lg:text-2xl text-gray-500">
-                          We're always adding new deals and promotions.
-                        </p>
-                        <Link href="/User_Account/User_Promotions">
-                          <Button className="bg-customyello text-primary-foreground border-2 border-black p-4 shadow-md hover:bg-orange-500 transition">
-                            View All Promotions
-                          </Button>
-                        </Link>
-                      </div>
-                      <Image
-                        src="https://res.cloudinary.com/dbsxjsktb/image/upload/v1729195988/1714578868267_yicf3b.avif"
-                        width={600}
-                        height={500}
-                        alt="Car"
-                        className="w-[600px] h-[500px] object-cover"
-                        priority
-                      />
+                    <Image
+                      src="https://res.cloudinary.com/dbsxjsktb/image/upload/v1729195988/1714578868267_yicf3b.avif"
+                      width={600}
+                      height={500}
+                      alt="Car"
+                      className="w-[600px] h-[500px] object-cover"
+                      priority
+                    /> 
+                  </div>
+                </CarouselItem>
+                <CarouselItem>
+                  <div className="flex flex-col md:flex-row items-center justify-between h-full px-4 md:px-6 lg:px-10">
+                    <div className="space-y-4 md:space-y-6 lg:space-y-8">
+                      <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold">Experience the Thrill of Driving</h1>
+                      <p className="text-lg md:text-xl lg:text-2xl text-muted-foreground">
+                        Rent the car of your dreams and experience the bustling nightlife. 10% off on sports cars for a week.
+                      </p>
+                      <Link href="/User_Account/User_Promotions">
+                      <Button className="bg-customyello text-primary-foreground border-2 border-black" >
+                        View Promotions
+                      </Button></Link>
                     </div>
-                  </CarouselItem>
-                )}
+                    <Image
+                      src="https://res.cloudinary.com/dbsxjsktb/image/upload/v1729196318/1727199981315_ixilao.avif"
+                      alt="Car"
+                      width={500}
+                      height={400}
+                      className="w-[500px] h-[400px] object-cover"
+                    />
+                  </div>
+                </CarouselItem>
+                <CarouselItem>
+                  <div className="flex flex-col md:flex-row items-center justify-between h-full px-4 md:px-6 lg:px-10">
+                    <div className="space-y-4 md:space-y-6 lg:space-y-8">
+                      <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold">Elevate Your Travel Experience</h1>
+                      <p className="text-lg md:text-xl lg:text-2xl text-muted-foreground">
+                        Hop in with some friends for the long haul. 20% on travel vans when renting up to a month.
+                      </p>
+                      <Link href="/User_Account/User_Promotions">
+                      <Button className="bg-customyello text-primary-foreground border-2 border-black" >
+                       View Promotions
+                      </Button></Link>
+                    </div>
+                    <Image
+                      src="https://res.cloudinary.com/dbsxjsktb/image/upload/v1729196547/1727199981443_oidgif.avif"
+                      width={500}
+                      height={400}
+                      alt="Car"
+                      className="w-[500px] h-[400px] object-cover"
+                    />
+                  </div>
+                </CarouselItem>
               </CarouselContent>
             </Carousel>
           </div>
