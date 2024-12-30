@@ -5,6 +5,7 @@ import { useUser } from '@clerk/nextjs'
 import { Navi } from '../head/navi'
 import MainPage from './mainPage'  // Importing the MainPage component
 import AllRatings from './all_ratings'  // Importing the AllRatings component
+import { Footer } from '../head/footer'
 
 export function Reviews_Page() {
   const { user } = useUser();
@@ -80,7 +81,9 @@ export function Reviews_Page() {
 
         {/* Main content */}
         {renderActiveView()}
+        
       </div>
+      <Footer />
     </>
   )
 }
