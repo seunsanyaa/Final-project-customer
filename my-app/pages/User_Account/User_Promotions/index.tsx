@@ -138,8 +138,8 @@ export default function UserPromotions() {
             numberOfPieces={200}
             gravity={0.3}
           />
-          <div className="fixed top-20 left-1/2 transform -translate-x-1/2 z-50 bg-green-500 text-white px-6 py-3 rounded-lg shadow-lg animate-bounce">
-            <p className="text-center font-semibold">
+          <div className="fixed top-20 left-[35%] transform -translate-x-1/2 z-50 bg-green-500 text-white px-6 py-3 rounded-lg shadow-lg animate-bounce" style={{ backgroundColor: 'White', color: 'Black' }}>
+            <p className="text-center font-semibold" style={{ backgroundColor: 'White', color: 'Black' }}>
               🎉 Congratulations! You've unlocked "{celebratingPromotion}"! 🎉
             </p>
           </div>
