@@ -1,6 +1,3 @@
-
-
-
 import { v } from 'convex/values';
 import { mutation, query } from './_generated/server';
 import { Promotion } from '../types/Promotion';
@@ -376,6 +373,23 @@ export const deactivatePromo = mutation({
     });
 
     return true;
+  },
+});
+
+// Add this new query after other exports
+export const getLatestOffers = query({
+  handler: async (ctx) => {
+    const currentDate = new Date().toISOString();
+    return await ctx.db
+      .query('promotions')
+      .filter((q) => 
+        q.and(
+          q.eq(q.field('status'), 'active'),
+          q.gte(q.field('promotionEndDate'), currentDate)
+        )
+      )
+      .order('desc')
+      .take(3);
   },
 });
 
