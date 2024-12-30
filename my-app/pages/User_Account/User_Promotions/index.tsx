@@ -93,6 +93,12 @@ export default function UserPromotions() {
               >
                 My Promotions
               </Link>
+              <Link
+                href="/User_Account/Golden_Manage"
+                className="text-muted-foreground hover:text-customyello transition-colors"
+                prefetch={false}>
+                Manage Membership
+              </Link>
             </div>
           </nav>
         </aside>

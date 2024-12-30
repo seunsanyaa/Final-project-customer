@@ -184,14 +184,14 @@ export default function GoldenManage() {
       <Navi />
       <Separator />
       <main className="flex-1 container mx-auto py-8">
-        <Card className="max-w-4xl mx-auto">
+        <Card className="max-w-4xl mx-auto mt-1 rounded-lg p-1 bg-white shadow-xl" style={{ border: "none" }}>
           <CardHeader>
             <CardTitle>Manage Your Golden Membership</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="space-y-6">
-              <div className="border rounded-lg p-4">
-                <h3 className="text-lg font-semibold mb-2">Current Plan</h3>
+              <div className="max-w-4xl mx-auto mt-1 rounded-lg p-1 bg-white shadow-xl" style={{ border: "none" }}>
+                <h3 className="text-lg font-semibold mb-2" >Current Plan</h3>
                 <p className="text-muted-foreground">
                   {plans[customerData.subscriptionPlan as keyof typeof plans]?.name || 'No active plan'}
                 </p>
@@ -201,8 +201,9 @@ export default function GoldenManage() {
                 <h3 className="text-lg font-semibold">Available Plans</h3>
                 <div className="grid md:grid-cols-3 gap-4">
                   {Object.entries(plans).map(([planId, plan]) => (
-                    <Card key={planId} className={`relative ${
-                      customerData.subscriptionPlan === planId ? 'border-2 border-primary' : ''
+                    <Card style={{ border: "none" }}
+                    key={planId} className={`relative ${
+                      customerData.subscriptionPlan === planId ? 'max-w-4xl mx-auto mt-1 rounded-lg p-1 bg-white shadow-xl' : ''
                     }`}>
                       <CardHeader>
                         <CardTitle>{plan.name}</CardTitle>
@@ -219,11 +220,11 @@ export default function GoldenManage() {
                         {customerData.subscriptionPlan !== planId && 
                          plans[planId as keyof typeof plans].tier > (plans[customerData.subscriptionPlan as keyof typeof plans]?.tier || 0) && (
                           <Button
-                            className="w-full"
+                            className="w-full px-6 py-3 text-lg font-semibold text-white bg-blue-600 hover:bg-blue-500 rounded-lg transition-colors hover:bg-muted shadow-2xl"
                             onClick={() => handleUpgrade(planId)}
                             disabled={isLoading}
                           >
-                            {isLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : 'Upgrade'}
+                            {isLoading ? <Loader2 className="h-4 w-4 animate-spin " /> : 'Upgrade'}
                           </Button>
                         )}
                       </CardContent>
@@ -235,6 +236,7 @@ export default function GoldenManage() {
               {customerData.subscriptionPlan && (
                 <div className="flex justify-end">
                   <Button
+                    className="px-6 py-3 text-lg font-semibold text-white bg-blue-600 hover:bg-blue-500 rounded-lg transition-colors hover:bg-muted shadow-2xl"
                     variant="destructive"
                     onClick={handleCancel}
                     disabled={isLoading}
