@@ -9,6 +9,32 @@ import { api } from "@/convex/_generated/api";
 import { useUser } from "@clerk/nextjs";
 import { Badge } from "@/components/ui/badge";
 import { Id } from "../../../convex/_generated/dataModel";
+import dynamic from 'next/dynamic';
+
+// Dynamically import react-confetti to avoid SSR issues
+const ReactConfetti = dynamic(() => import('react-confetti'), {
+  ssr: false
+});
+
+function useWindowSize() {
+  const [size, setSize] = useState({ width: 0, height: 0 });
+
+  useEffect(() => {
+    function updateSize() {
+      setSize({
+        width: window.innerWidth,
+        height: window.innerHeight
+      });
+    }
+    
+    window.addEventListener('resize', updateSize);
+    updateSize();
+    
+    return () => window.removeEventListener('resize', updateSize);
+  }, []);
+
+  return size;
+}
 
 export default function UserPromotions() {
   const { user } = useUser();
@@ -24,6 +50,10 @@ export default function UserPromotions() {
   const rewardPoints = useQuery(api.customers.getRewardPointsByUserId, { 
     userId: user?.id || "" 
   });
+
+  const { width, height } = useWindowSize();
+  const [showConfetti, setShowConfetti] = useState(false);
+  const [celebratingPromotion, setCelebratingPromotion] = useState<string | null>(null);
 
   // Calculate total money spent from bookings with proper rounding
   const totalMoneySpent = useMemo(() => {
@@ -71,8 +101,50 @@ export default function UserPromotions() {
     return userRedeemedPromotions?.some(promo => promo?._id === promotionId) ?? false;
   };
 
+  // Check if any promotion has just become available
+  useEffect(() => {
+    if (!processedPermanentPromotions || !bookings) return;
+
+    processedPermanentPromotions.forEach(promotion => {
+      const isAvailable = (
+        (!promotion.minimumMoneySpent || totalMoneySpent >= promotion.minimumMoneySpent) &&
+        (!promotion.minimumRentals || (bookings?.length || 0) >= promotion.minimumRentals)
+      );
+      
+      const isAlreadyActivated = isPromotionActive(promotion._id);
+      
+      // Show confetti if promotion is available but not yet activated
+      if (isAvailable && !isAlreadyActivated && !celebratingPromotion) {
+        setShowConfetti(true);
+        setCelebratingPromotion(promotion.promotionTitle);
+        
+        // Stop confetti after 5 seconds
+        setTimeout(() => {
+          setShowConfetti(false);
+          setCelebratingPromotion(null);
+        }, 5000);
+      }
+    });
+  }, [processedPermanentPromotions, bookings, totalMoneySpent]);
+
   return (
     <div className="flex flex-col min-h-screen">
+      {showConfetti && (
+        <>
+          <ReactConfetti
+            width={width}
+            height={height}
+            recycle={true}
+            numberOfPieces={200}
+            gravity={0.3}
+          />
+          <div className="fixed top-20 left-1/2 transform -translate-x-1/2 z-50 bg-green-500 text-white px-6 py-3 rounded-lg shadow-lg animate-bounce">
+            <p className="text-center font-semibold">
+              🎉 Congratulations! You've unlocked "{celebratingPromotion}"! 🎉
+            </p>
+          </div>
+        </>
+      )}
       <Navi />
       <Separator />
       <div className="flex flex-row h-full">
