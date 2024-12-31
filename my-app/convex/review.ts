@@ -1,13 +1,27 @@
+
 import { v } from "convex/values";
 import { mutation, query } from "./_generated/server";
 import { Car } from "../types/car";
 import { Booking } from "../types/booking";
 import { Review } from "../types/review";
-/**
- * Helper function to update the average rating of a car.
- * @param ctx - The Convex context.
- * @param carId - The registration number of the car.
- */
+import { Id } from "../convex/_generated/dataModel";
+export const FilterCustomerReviews = mutation({
+	args: {
+		userId: v.string(),
+	},
+	handler: async (ctx, args) => {
+		const { userId } = args;
+		return await ctx.db.query('reviews').filter(q => q.eq(q.field('userId'), userId)).collect();
+	}
+});
+export const SearchReviews = query({
+	args: {
+		userId: v.optional(v.string()),
+	},
+	handler: async (ctx, args) => {
+		return await ctx.db.query('reviews').filter(q => q.eq(q.field('userId'), args.userId)).collect();
+	}
+});
 async function updateCarAverageRating(ctx: any, carId: string) {
   // Get all reviews for this car by:
   // 1. Get all bookings for this car
@@ -120,7 +134,7 @@ export const getReviewsByUserId = query({
     // Enrich each review with car details
     const enrichedReviews = await Promise.all(
       reviews.map(async (review: Review) => {
-        const booking = await ctx.db.get(review.bookingId) as Booking;
+        const booking = await ctx.db.get(review.bookingId as Id<"bookings">) as Booking;
         if (booking) {
           const car = await ctx.db
             .query("cars")

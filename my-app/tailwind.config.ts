@@ -21,6 +21,8 @@ const config = {
         },
       },animation: {
         fadeInUp: 'fadeInUp 1s ease-out forwards',
+        'accordion-down': 'accordion-down 0.2s ease-out',
+        'accordion-up': 'accordion-up 0.2s ease-out',
       },
     },
       colors: {
@@ -58,8 +60,25 @@ const config = {
             "card": {
               "DEFAULT": "hsl(var(--card))",
               "foreground": "hsl(var(--card-foreground))"
-            }
-           
+            },
+            "promotion": {
+              "DEFAULT": "hsl(0 84% 60%)",
+              "hover": "hsl(0 84% 50%)"
+            },
+            "chat": {
+              "user": {
+                "bg": "hsl(214, 100%, 52%)",
+                "hover": "hsl(214, 100%, 45%)",
+                "text": "hsl(0, 0%, 100%)",
+                "timestamp": "hsl(214, 100%, 90%)"
+              },
+              "admin": {
+                "bg": "hsl(220, 13%, 91%)",
+                "hover": "hsl(220, 13%, 85%)",
+                "text": "hsl(220, 9%, 46%)",
+                "timestamp": "hsl(220, 9%, 46%)"
+              }
+            },
           },
       borderRadius: {
             "lg": "var(--radius)",

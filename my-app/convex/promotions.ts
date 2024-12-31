@@ -1,6 +1,19 @@
+
+
+
 import { v } from 'convex/values';
 import { mutation, query } from './_generated/server';
 import { Promotion } from '../types/Promotion';
+import { Id } from '../convex/_generated/dataModel';
+
+export const adminSearchPromotion = query({
+	args: {
+		promotionTitle: v.optional(v.string()),
+	},
+	handler: async (ctx, args) => {
+		return await ctx.db.query('promotions').filter(q => q.eq(q.field('promotionTitle'), args.promotionTitle)).collect();
+	}
+});
 
 // Create a new promotion
 export const createPromotion = mutation({
@@ -33,6 +46,24 @@ export const createPromotion = mutation({
     }
     
     const promotionId = await ctx.db.insert('promotions', args);
+
+    // Get all customers
+    const customers = await ctx.db.query('customers').collect();
+
+    // Create notifications for all customers
+    await Promise.all(
+      customers.map(async (customer) => {
+        await ctx.db.insert('notifications', {
+          userId: customer.userId,
+          message: `New promotion available: ${args.promotionTitle}`,
+          type: 'promotion',
+          isRead: false,
+          createdAt: Date.now(),
+          promotionId: promotionId, // Store the promotion ID in the notification
+        });
+      })
+    );
+
     return promotionId;
   },
 });
@@ -261,7 +292,7 @@ export const getApplicablePromotions = query({
     userId: v.string() 
   },
   handler: async (ctx, { carId, userId }) => {
-    const car = await ctx.db.get(carId);
+    const car = await ctx.db.get(carId as Id<"cars">);
     if (!car) return [];
 
     const customer = await ctx.db

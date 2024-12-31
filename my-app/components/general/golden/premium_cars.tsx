@@ -1,112 +1,132 @@
 'use client'
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
-import { useInView } from 'react-intersection-observer';
 import { Navi } from "../head/navi"
 import { Footer } from "../head/footer"
+import Image from "next/image";
+import { Card, CardContent } from "@/components/ui/card";
+import { useQuery } from "convex/react";
+import { Separator } from "@/components/ui/separator";
+import { api } from "@/convex/_generated/api";
+import { TagIcon } from "lucide-react";
+import { useState, useMemo } from "react";
 
-export function PremiumCars() {
-  const [ref1, inView1] = useInView({ threshold: 0.3, triggerOnce: true });
+const PremiumCars = () => {
+  const [showPromotionsOnly, setShowPromotionsOnly] = useState(false);
+  
+  // Fetch cars with golden field set to true
+  const cars = useQuery(api.car.getFilteredCars, { golden: true });
+  const promotionsMap = useQuery(api.promotions.getAllPromotions);
+
+  // Filter cars based on promotions
+  const displayedCars = useMemo(() => {
+    let filteredCars = cars;
+    
+    if (showPromotionsOnly && promotionsMap) {
+      filteredCars = filteredCars?.filter(car => {
+        const carPromotions = promotionsMap.filter(promo => 
+          promo.specificTarget.some(target => 
+            target === car._id || 
+            (car.categories && car.categories.includes(target))
+          )
+        );
+        return carPromotions.length > 0;
+      });
+    }
+    
+    return filteredCars;
+  }, [cars, showPromotionsOnly, promotionsMap]);
+
+  // Helper function to check if a car has active promotions
+  const hasActivePromotion = (car: any) => {
+    if (!promotionsMap) return false;
+    return promotionsMap.some(promo => 
+      promo.specificTarget.some(target => 
+        target === car._id || 
+        (car.categories && car.categories.includes(target))
+      )
+    );
+  };
+
+  if (!cars) {
+    return (
+      <>
+        <Navi />
+        <Separator />
+        <main className="flex flex-col items-center justify-center min-h-screen">
+          <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-gray-900"></div>
+          <p className="mt-4 text-lg">Loading premium cars...</p>
+        </main>
+        <Separator />
+        <Footer />
+      </>
+    );
+  }
 
   return (
-    <div className="flex flex-col min-h-dvh font-roboto">
-      <Navi className="bg-gradient-to-r from-gray-800 to-gray-600"/>
-      <main className="flex-1">
-        {/* Header Section */}
-        <div className="text-center w-full mx-auto pt-20 pb-10">
-          <h1 className="text-5xl font-bold tracking-tight bg-gradient-to-r from-blue-500 to-teal-500 bg-clip-text text-transparent drop-shadow-xl font-poppins">
-            Premium Collection
-          </h1>
-          <p className="text-gray-600 text-xl mt-4">
-            Experience luxury and performance with our exclusive premium vehicle selection
-          </p>
-        </div>
-
-        {/* Premium Cars Grid - Using the same design as homepage */}
-        <section ref={ref1} className={`relative w-full h-auto overflow-hidden bg-gradient-to-b from-gray-200 to-white ${
-          inView1 ? 'animate-fadeInUp' : "opacity-0"}`}>
-          <div className="grid gap-6 grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-3 mt-10 pl-14 pr-14 ml-14 mr-14 mb-20">
-            {/* Premium Car 1 */}
-            <div className="flex flex-col items-center justify-center gap-4 p-6 transition-transform transform hover:scale-105 hover:shadow-lg bg-card hover:bg-gradient-to-r from-blue-500 to-green-500">
-              <img src="https://res.cloudinary.com/dbsxjsktb/image/upload/w_1000,ar_16:9,c_fill,g_auto,e_sharpen/v1732830903/2020-range-rover-sport-1920x565__1_-removebg_f6qehx.png" alt="Range Rover Sport" className="w-[500px] h-[220px] rounded-lg" />
-              <div className="text-center mb-0 mt-0">
-                <h3 className="text-4xl font-semibold text-black">Range Rover Sport</h3>
-                <p className="text-black font-semibold">Luxury redefined.</p>
-                <p className="text-black">$200/day</p>
-              </div>
-              <Link href="/Search">
-                <Button className="hover:bg-blue-500 hover:shadow-lg transition-all duration-300 rounded-lg hover:bg-muted">Rent Now</Button>
-              </Link>
-            </div>
-
-            {/* Premium Car 2 */}
-            <div className="flex flex-col items-center justify-center gap-4 p-6 transition-transform transform hover:scale-105 hover:shadow-lg bg-card hover:bg-gradient-to-r from-blue-500 to-green-500">
-              <img src="https://res.cloudinary.com/dbsxjsktb/image/upload/w_1000,ar_16:9,c_fill,g_auto,e_sharpen/v1732832958/hero-2018-maserati-granturismo-1920x565-removebg-preview_z2nmmg.png" alt="Maserati GranTurismo" className="w-[500px] h-[220px] rounded-lg" />
-              <div className="text-center mb-0 mt-0">
-                <h3 className="text-4xl font-semibold text-black">Maserati</h3>
-                <p className="text-black font-semibold">Pure performance.</p>
-                <p className="text-black">$300/day</p>
-              </div>
-              <Link href="/Search">
-                <Button className="hover:bg-blue-500 hover:shadow-lg transition-all duration-300 rounded-lg hover:bg-muted">Rent Now</Button>
-              </Link>
-            </div>
-
-            {/* Premium Car 3 */}
-            <div className="flex flex-col items-center justify-center gap-4 p-6 transition-transform transform hover:scale-105 hover:shadow-lg bg-card hover:bg-gradient-to-r from-blue-500 to-green-500" >
-              <img src="https://res.cloudinary.com/dbsxjsktb/image/upload/w_1000,ar_16:9,c_fill,g_auto,e_sharpen/v1732832958/hero-2019-porsche-boxster-1920x565-removebg_hlhjvr.png" className="w-[500px] h-[220px] rounded-lg" />
-              <div className="text-center mb-0 mt-0">
-                <h3 className="text-4xl font-semibold text-black">Porsche Boxster</h3>
-                <p className="text-black font-semibold">Power meets luxury.</p>
-                <p className="text-black">$250/day</p>
-              </div>
-              <Link href="/Search">
-                <Button className="hover:bg-blue-500 hover:shadow-lg transition-all duration-300 rounded-lg hover:bg-muted">Rent Now</Button>
-              </Link>
-            </div>
-
-            {/* Premium Car 4 */}
-            <div className="flex flex-col items-center justify-center gap-4 p-6 transition-transform transform hover:scale-105 hover:shadow-lg bg-card hover:bg-gradient-to-r from-blue-500 to-green-500">
-              <img src="https://res.cloudinary.com/dbsxjsktb/image/upload/w_1000,ar_16:9,c_fill,g_auto,e_sharpen/v1732831937/MERCEDES-BENZ_S-CLASS_LE_upscale_balanced_x4-removebg-preview_sxsbaa.png" alt="MERCEDES BENZ S_CLASS_LE" className="w-[500px] h-[220px] rounded-lg" />
-              <div className="text-center mb-0 mt-0">
-                <h3 className="text-4xl font-semibold text-black">MERCEDES BENZ S_CLASS_LE</h3>
-                <p className="text-black font-semibold">Ultimate SUV experience.</p>
-                <p className="text-black">$280/day</p>
-              </div>
-              <Link href="/Search">
-                <Button className="hover:bg-blue-500 hover:shadow-lg transition-all duration-300 rounded-lg hover:bg-muted">Rent Now</Button>
-              </Link>
-            </div>
-
-            {/* Premium Car 5 */}
-            <div className="flex flex-col items-center justify-center gap-4 p-6 transition-transform transform hover:scale-105 hover:shadow-lg bg-card hover:bg-gradient-to-r from-blue-500 to-green-500">
-              <img src="https://res.cloudinary.com/dbsxjsktb/image/upload/w_1000,ar_16:9,c_fill,g_auto,e_sharpen/v1732833992/BMW_4_Series_LE_upscale_balanced_x4-removebg-preview_pl3neq.png" alt="BMW 4 Series" className="w-[500px] h-[220px] rounded-lg" />
-              <div className="text-center mb-0 mt-0">
-                <h3 className="text-4xl font-semibold text-black">BMW 4 Series</h3>
-                <p className="text-black font-semibold">Elegant reliability.</p>
-                <p className="text-black">$180/day</p>
-              </div>
-              <Link href="/Search">
-                <Button className="hover:bg-blue-500 hover:shadow-lg transition-all duration-300 rounded-lg hover:bg-muted">Rent Now</Button>
-              </Link>
-            </div>
-
-            {/* Premium Car 6 */}
-            <div className="flex flex-col items-center justify-center gap-4 p-6 transition-transform transform hover:scale-105 hover:shadow-lg bg-card hover:bg-gradient-to-r from-blue-500 to-green-500">
-              <img src="https://res.cloudinary.com/dbsxjsktb/image/upload/v1732902424/44f58625f1b602210bb9915901a4374f_ct4lju-removebg-preview_eevibl.png" alt="Mansory Rolls Royce" className="w-[600px] h-[250px] rounded-lg" />
-              <div className="text-center mb-0 mt-0">
-                <h3 className="text-4xl font-semibold text-black">Mansory Rolls Royce</h3>
-                <p className="text-black font-semibold">Group travel in style.</p>
-                <p className="text-black">$220/day</p>
-              </div>
-              <Link href="/Search">
-                <Button className="hover:bg-blue-500 hover:shadow-lg transition-all duration-300 rounded-lg hover:bg-muted">Rent Now</Button>
-              </Link>
-            </div>
+    <>
+      <Navi />
+      <Separator />
+      <main className="flex flex-col items-center gap-4 p-4 md:p-8">
+        <div className="container mx-auto px-4 py-8">
+          <div className="flex justify-between items-center mb-6">
+            <h1 className="text-3xl font-bold">Premium Collection</h1>
+            <Button
+              onClick={() => setShowPromotionsOnly(!showPromotionsOnly)}
+              className="hover:bg-blue-500 hover:shadow-lg transition-all duration-300 rounded-lg hover:bg-muted"
+            >
+              <TagIcon className="w-4 h-4 mr-2" />
+              {showPromotionsOnly ? "Show All" : "Only Promotions"}
+            </Button>
           </div>
-        </section>
+          <section className="relative w-full h-auto overflow-hidden bg-gradient-to-b from-gray-200 to-white">
+            <div className="max-w-full mx-auto h-full">
+              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-3 mt-20 mx-14 mb-20 relative z-0">
+                {(displayedCars ?? []).map((car) => (
+                  <Card
+                    key={car._id}
+                    className="relative flex flex-col items-center justify-center p-0 transition-all duration-300 transform hover:scale-105 hover:shadow-2xl bg-card hover:bg-gradient-to-r from-blue-500 to-green-500 border-none hover:z-50"
+                    style={{ border: "none" }}
+                  >
+                    {hasActivePromotion(car) && (
+                      <div className="absolute top-2 right-2 bg-white/90 hover:bg-white p-2 rounded-full z-10 transition-colors duration-200 items-center justify-center" style={{ width: '64px', height: '64px' }}>
+                        <TagIcon className="w-8 h-8 text-customyello" />
+                      </div>
+                    )}
+                    <Image
+                      src={car.pictures[0]}
+                      alt={`${car.maker} ${car.model}`}
+                      width={400}
+                      height={200}
+                      className="w-[300px] h-[220px] border-none"
+                      style={{ border: "none" }}
+                    />
+                    <CardContent className="p-0 text-center border-none" style={{ border: "none" }}>
+                      <h2 className="text-xl font-semibold mb-2">
+                        {car.maker} {car.model}
+                      </h2>
+                      <p className="text-muted-foreground mb-4">Year: {car.year}</p>
+                      <Link href={`/carinfo?id=${car.registrationNumber}`}>
+                        <Button className="hover:bg-blue-500 hover:shadow-lg transition-all duration-300 rounded-lg mt-0 mb-5 hover:bg-muted">
+                          Book Now
+                        </Button>
+                      </Link>
+                    </CardContent>
+                  </Card>
+                ))}
+                {(displayedCars?.length ?? 0) === 0 && (
+                  <p>No premium cars found.</p>
+                )}
+              </div>
+            </div>
+          </section>
+        </div>
       </main>
+      <Separator />
       <Footer />
-    </div>
-  )
+    </>
+  );
 }
+
+export { PremiumCars };
+export default PremiumCars;

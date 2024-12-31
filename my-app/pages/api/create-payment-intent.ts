@@ -8,7 +8,7 @@ if (!process.env.STRIPE_SECRET_KEY) {
 }
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY, {
-  apiVersion: '2024-10-28.acacia',
+  apiVersion: '2024-09-30.acacia',
 });
 
 export default async function handler(
@@ -20,7 +20,7 @@ export default async function handler(
   }
 
   try {
-    const { amount, sessionId, type, planId, email } = req.body;
+    const { amount, sessionId, email, userId } = req.body;
 
     if (!email) {
       return res.status(400).json({ error: 'Email is required' });
@@ -39,6 +39,7 @@ export default async function handler(
         // Create new customer if none exists
         customer = await stripe.customers.create({
           email: email,
+          metadata: { clerkUserId: userId }
         });
       } else {
         customer = customers.data[0];

@@ -1,6 +1,29 @@
 import { v } from 'convex/values';
 import { mutation, query } from './_generated/server';
 
+export const checkdropoffpickup = query({
+	args: {
+		customerId: v.string(),
+	},
+	handler: async (ctx, args) => {
+		return await ctx.db.query('bookings').filter(q => q.eq(q.field('customerId'), args.customerId)).collect();
+	}
+});
+
+export const adminbookings = query({
+	handler: async (ctx) => {
+		return await ctx.db.query('bookings').collect();
+	}
+});
+
+export const filterBookings = query({
+	args: {
+		customerId: v.string(),
+	},
+	handler: async (ctx, args) => {
+		return await ctx.db.query('bookings').filter(q => q.eq(q.field('customerId'), args.customerId)).collect();
+	}
+});
 // Create a new booking
 export const createBooking = mutation({
 	args: {
@@ -13,11 +36,73 @@ export const createBooking = mutation({
 		status: v.string(),
 		pickupLocation: v.string(),
 		dropoffLocation: v.string(),
-		customerInsurancetype: v.string(),
-		customerInsuranceNumber: v.string(),
+		paymentType: v.optional(v.string()),
+		installmentPlan: v.optional(
+			v.object({
+				frequency: v.string(),
+				totalInstallments: v.number(),
+				amountPerInstallment: v.number(),
+				remainingInstallments: v.number(),
+				nextInstallmentDate: v.string(),
+			})
+		),
+		extras: v.optional(
+			v.object({
+				insurance: v.boolean(),
+				insuranceCost: v.number(),
+				gps: v.boolean(),
+				childSeat: v.boolean(),
+				chauffer: v.boolean(),
+				travelKit: v.boolean()
+			})
+		)
 	},
 	handler: async (ctx, args) => {
+		// 1. Find the car first to get its details
+		const car = await ctx.db
+			.query('cars')
+			.withIndex('by_registrationNumber', q => q.eq('registrationNumber', args.carId))
+			.first();
+
+		if (!car) {
+			throw new Error('Car not found');
+		}
+
+		// 2. Find and update the fleet
+		const fleet = await ctx.db
+			.query('fleets')
+			.filter(q => 
+				q.and(
+					q.eq(q.field('maker'), car.maker),
+					q.eq(q.field('model'), car.model),
+					q.eq(q.field('trim'), car.trim),
+					q.eq(q.field('year'), car.year)
+				)
+			)
+			.first();
+
+		if (!fleet) {
+			throw new Error('Fleet not found');
+		}
+
+		// 3. Update fleet: remove registration number and decrease quantity
+		const updatedRegistrationNumbers = fleet.registrationNumber.filter(
+			reg => reg !== args.carId
+		);
+
+		await ctx.db.patch(fleet._id, {
+			registrationNumber: updatedRegistrationNumbers,
+			quantity: fleet.quantity - 1
+		});
+
+		// 4. Update car availability
+		await ctx.db.patch(car._id, {
+			available: false
+		});
+
+		// 5. Create the booking
 		const bookingId = await ctx.db.insert('bookings', args);
+
 		return bookingId;
 	},
 });
@@ -41,8 +126,8 @@ export const getAllBookings = query({
 export const updateBooking = mutation({
 	args: {
 		id: v.id('bookings'),
-		customerId: v.optional(v.id('customers')),
-		carId: v.optional(v.id('cars')),
+		customerId: v.optional(v.string()),
+		carId: v.optional(v.string()),
 		startDate: v.optional(v.string()),
 		endDate: v.optional(v.string()),
 		totalCost: v.optional(v.number()),
@@ -50,8 +135,26 @@ export const updateBooking = mutation({
 		status: v.optional(v.string()),
 		pickupLocation: v.optional(v.string()),
 		dropoffLocation: v.optional(v.string()),
-		customerInsurancetype: v.optional(v.string()),
-		customerInsuranceNumber: v.optional(v.string()),
+		paymentType: v.optional(v.string()),
+		installmentPlan: v.optional(
+			v.object({
+				frequency: v.string(),
+				totalInstallments: v.number(),
+				amountPerInstallment: v.number(),
+				remainingInstallments: v.number(),
+				nextInstallmentDate: v.string(),
+			})
+		),
+		extras: v.optional(
+			v.object({
+				insurance: v.boolean(),
+				insuranceCost: v.number(),
+				gps: v.boolean(),
+				childSeat: v.boolean(),
+				chauffer: v.boolean(),
+				travelKit: v.boolean()
+			})
+		)
 	},
 	handler: async (ctx, args) => {
 		const { id, ...updates } = args;
@@ -60,23 +163,16 @@ export const updateBooking = mutation({
 	},
 });
 
-// Delete a booking
-export const deleteBooking = mutation({
-	args: { id: v.id('bookings') },
-	handler: async (ctx, args) => {
-		await ctx.db.delete(args.id);
-		return args.id;
-	},
-});
+
 
 // Get bookings by customer ID
 export const getBookingsByCustomer = query({
-	// Validate the customerId argument against the 'bookings' table
-	args: { customerId: v.string() }, // Use string validation for customerId
+	args: { customerId: v.string() },
 	handler: async (ctx, args) => {
 		const bookings = await ctx.db
 			.query('bookings')
 			.withIndex('by_customerId', (q) => q.eq('customerId', args.customerId))
+			.filter(q => q.neq(q.field('status'), 'cancelled'))
 			.collect();
 
 		const today = new Date();
@@ -115,7 +211,7 @@ export const getBookingsByCustomer = query({
 					rewardsPointsUsed: 0,
 					rewardsPointsCredited: 'Not available',
 					cancellationPolicy: 'Standard 24-hour cancellation policy applies',
-					isCurrentBooking: today >= startDate && today <= endDate
+					isCurrentBooking: today >= startDate && today <= endDate,
 				};
 			})
 		);
@@ -241,9 +337,7 @@ export const getCarByCarId = query({
 	},
 });
 
-/**
- * Fetch bookings for a customer that do not have an associated review along with car details.
- */
+
 export const getPendingReviewsByCustomer = query({
 	args: { customerId: v.string() },
 	handler: async (ctx, args) => {
@@ -277,6 +371,7 @@ export const getPendingReviewsByCustomer = query({
 								year: car.year,
 								color: car.color,
 								trim: car.trim,
+								pictures: car.pictures,
 							}
 						: null,
 				};
@@ -284,5 +379,332 @@ export const getPendingReviewsByCustomer = query({
 		);
 
 		return bookingsWithCarDetails;
+	},
+});
+
+// Add this mutation
+export const checkAndUpdateBookingStatus = mutation({
+	args: {
+		bookingId: v.id('bookings'),
+	},
+	handler: async (ctx, args) => {
+		const booking = await ctx.db.get(args.bookingId);
+		if (!booking) {
+			throw new Error('Booking not found');
+		}
+
+		const today = new Date();
+		today.setHours(0, 0, 0, 0);
+
+		const endDate = new Date(booking.endDate);
+		endDate.setHours(0, 0, 0, 0);
+
+		// Check if booking is past and fully paid
+		if (
+			endDate < today &&
+			booking.paidAmount >= booking.totalCost &&
+			booking.status !== 'completed'
+		) {
+			// Update to completed
+			await ctx.db.patch(args.bookingId, {
+				status: 'completed',
+			});
+
+			return {
+				success: true,
+				message: 'Booking marked as completed',
+				status: 'completed',
+			};
+		}
+
+		return {
+			success: false,
+			message: 'Booking not eligible for completion',
+			status: booking.status,
+		};
+	},
+});
+
+// Modify the awardBookingRewardPoints mutation to check payment session
+export const awardBookingRewardPoints = mutation({
+	args: {
+		bookingId: v.id('bookings'),
+		customerId: v.string(),
+	},
+	handler: async (ctx, args) => {
+		// Check if there's a completed payment session for this booking
+		const paymentSession = await ctx.db
+			.query('paymentSessions')
+			.withIndex('by_bookingId', (q) => q.eq('bookingId', args.bookingId))
+			.filter((q) => q.eq(q.field('status'), 'completed'))
+			.first();
+
+		if (!paymentSession) {
+			return {
+				success: false,
+				message: 'No completed payment session found for this booking',
+			};
+		}
+
+		const booking = await ctx.db.get(args.bookingId);
+		if (!booking) {
+			throw new Error('Booking not found');
+		}
+
+		// Calculate points (10% of total cost)
+		const pointsToAward = Math.floor(paymentSession.paidAmount * 0.1);
+
+		// Award points to customer
+		const customer = await ctx.db
+			.query('customers')
+			.withIndex('by_userId', (q) => q.eq('userId', args.customerId))
+			.first();
+
+		if (customer) {
+			const oldPoints = customer.rewardPoints || 0;
+			const newPoints = oldPoints + pointsToAward;
+			
+			await ctx.db.patch(customer._id, {
+				rewardPoints: newPoints,
+			});
+
+			// Call the new notification function
+			await ctx.db.insert('notifications', {
+				userId: args.customerId,
+				message: `You've earned ${pointsToAward} reward points from your recent booking!`,
+				type: 'rewards',
+				isRead: false,
+				createdAt: Date.now(),
+			});
+		}
+
+		return {
+			success: true,
+			message: `Awarded ${pointsToAward} points`,
+			pointsAwarded: pointsToAward,
+		};
+	},
+});
+
+// Add this new query for daily booking statistics
+export const getDailyBookingStats = query({
+	handler: async (ctx) => {
+		const bookings = await ctx.db.query('bookings').collect();
+
+		// Get date 7 days ago
+		const sevenDaysAgo = new Date();
+		sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 6); // -6 to include today
+		sevenDaysAgo.setHours(0, 0, 0, 0);
+
+		// Create a map to store booking counts by day
+		const dailyStats = new Map<string, number>();
+
+		// Initialize all 7 days with 0 bookings
+		for (let i = 0; i < 7; i++) {
+			const date = new Date(sevenDaysAgo);
+			date.setDate(date.getDate() + i);
+			const dayOfWeek = date.toLocaleDateString('en-US', { weekday: 'short' });
+			dailyStats.set(dayOfWeek, 0);
+		}
+
+		// Count bookings for the last 7 days
+		bookings.forEach((booking) => {
+			const bookingDate = new Date(booking.startDate);
+			// Only count bookings from the last 7 days
+			if (bookingDate >= sevenDaysAgo) {
+				const dayOfWeek = bookingDate.toLocaleDateString('en-US', { weekday: 'short' });
+				dailyStats.set(dayOfWeek, (dailyStats.get(dayOfWeek) || 0) + 1);
+			}
+		});
+
+		// Convert to format needed for ResponsiveLine
+		const data = Array.from(dailyStats.entries()).map(([x, y]) => ({
+			x,
+			y,
+		}));
+
+		return data;
+	},
+});
+
+// Add this new query for booking growth statistics
+export const getBookingGrowthStats = query({
+	handler: async (ctx) => {
+		const bookings = await ctx.db.query('bookings').collect();
+		
+		// Create a map to store bookings by date
+		const bookingsByDate = new Map();
+		
+		bookings.forEach((booking) => {
+			// Convert to YYYY-MM-DD format for consistent grouping
+			const bookingDate = new Date(booking.startDate).toISOString().split('T')[0];
+			
+			if (!bookingsByDate.has(bookingDate)) {
+				bookingsByDate.set(bookingDate, {
+					date: bookingDate,
+					count: 0,
+					revenue: 0
+				});
+			}
+			
+			const dateStats = bookingsByDate.get(bookingDate);
+			dateStats.count++;
+			dateStats.revenue += booking.totalCost;
+		});
+		
+		// Convert map to array and sort by date
+		const growthData = Array.from(bookingsByDate.values())
+			.sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+		
+		// Calculate cumulative totals
+		let cumulativeCount = 0;
+		let cumulativeRevenue = 0;
+		
+		const statsWithCumulative = growthData.map(stat => {
+			cumulativeCount += stat.count;
+			cumulativeRevenue += stat.revenue;
+			return {
+				...stat,
+				cumulativeCount,
+				cumulativeRevenue
+			};
+		});
+
+		return statsWithCumulative;
+	},
+});
+
+// Get total active/upcoming bookings
+export const getActiveBookingsCount = query({
+	handler: async (ctx) => {
+		const bookings = await ctx.db.query('bookings').collect();
+		
+		// Get current date and set time to start of day for consistent comparison
+		const today = new Date();
+		today.setHours(0, 0, 0, 0);
+		
+		// Filter bookings where end date is in the future or today
+		const activeBookings = bookings.filter(booking => {
+			const endDate = new Date(booking.endDate);
+			endDate.setHours(0, 0, 0, 0);
+			return endDate >= today;
+		});
+		
+		return {
+			total: activeBookings.length,
+			bookings: activeBookings
+		};
+	},
+});
+
+// Add this new mutation
+export const cancelBooking = mutation({
+	args: {
+		bookingId: v.id('bookings')
+	},
+	handler: async (ctx, args) => {
+		// 1. Get the booking details
+		const booking = await ctx.db.get(args.bookingId);
+		if (!booking) {
+			throw new Error('Booking not found');
+		}
+
+		// 2. Get the car details
+		const car = await ctx.db
+			.query('cars')
+			.withIndex('by_registrationNumber', q => q.eq('registrationNumber', booking.carId))
+			.first();
+
+		if (!car) {
+			throw new Error('Car not found');
+		}
+
+		// 3. Find and update the fleet
+		const fleet = await ctx.db
+			.query('fleets')
+			.filter(q => 
+				q.and(
+					q.eq(q.field('maker'), car.maker),
+					q.eq(q.field('model'), car.model),
+					q.eq(q.field('trim'), car.trim),
+					q.eq(q.field('year'), car.year)
+				)
+			)
+			.first();
+
+		if (!fleet) {
+			throw new Error('Fleet not found');
+		}
+
+		// 4. Update fleet: add registration number back and increase quantity
+		await ctx.db.patch(fleet._id, {
+			registrationNumber: [...fleet.registrationNumber, booking.carId],
+			quantity: fleet.quantity + 1
+		});
+
+		// 5. Update car availability
+		await ctx.db.patch(car._id, {
+			available: true
+		});
+
+		// 6. Update booking status
+		await ctx.db.patch(args.bookingId, {
+			status: 'cancelled'
+		});
+
+		return { success: true };
+	}
+});
+
+// Add this new query for checking upcoming bookings and sending notifications
+export const checkUpcomingBookings = mutation({
+	args: {
+		customerId: v.string(),
+	},
+	handler: async (ctx, args) => {
+		const bookings = await ctx.db
+			.query('bookings')
+			.withIndex('by_customerId', (q) => q.eq('customerId', args.customerId))
+			.filter(q => q.neq(q.field('status'), 'cancelled'))
+			.collect();
+
+		const today = new Date();
+		const threeDaysFromNow = new Date(today);
+		threeDaysFromNow.setDate(today.getDate() + 3);
+
+		for (const booking of bookings) {
+			const startDate = new Date(booking.startDate);
+			const endDate = new Date(booking.endDate);
+
+			// Check for upcoming start date
+			const daysUntilStart = Math.ceil((startDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
+			if (daysUntilStart <= 3 && daysUntilStart > 0) {
+				// Create notification for upcoming booking start
+				await ctx.db.insert('notifications', {
+					userId: args.customerId,
+					bookingId: booking._id.toString(),
+					message: `Your booking starts in ${daysUntilStart} day${daysUntilStart === 1 ? '' : 's'}!`,
+					type: 'reminder',
+					isRead: false,
+					createdAt: Date.now(),
+				});
+			}
+
+			// Check for upcoming end date
+			const daysUntilEnd = Math.ceil((endDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
+			if (daysUntilEnd <= 3 && daysUntilEnd > 0) {
+				// Create notification for upcoming booking end
+				await ctx.db.insert('notifications', {
+					userId: args.customerId,
+					bookingId: booking._id.toString(),
+					message: `Your booking ends in ${daysUntilEnd} day${daysUntilEnd === 1 ? '' : 's'}!`,
+					type: 'reminder',
+					isRead: false,
+					createdAt: Date.now(),
+				});
+			}
+		}
+
+		return { success: true };
 	},
 });

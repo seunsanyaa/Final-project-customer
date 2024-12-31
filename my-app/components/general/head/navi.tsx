@@ -3,19 +3,153 @@ import Link from "next/link"
 import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator } from "@/components/ui/dropdown-menu"
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar"
 import CarIcon from '@/svgs/Caricon'
-import ChevronDownIcon from '@/svgs/ChevronDownIcon'
-import FlagIcon from '@/svgs/FlagIcon'
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { Separator } from "@/components/ui/separator"
 import { SignedIn, SignedOut, SignInButton, SignOutButton, useUser } from "@clerk/nextjs"
+import { useQuery, useMutation } from "convex/react";
+import { api } from "@/convex/_generated/api";
+import { Translate } from './translate'
+import { Button } from "@/components/ui/button"
+import { Bell } from "lucide-react"
+import { useRouter } from 'next/navigation'
 
 interface NaviProps {
   className?: string
 }
 
+interface UserSettings {
+  darkMode: boolean;
+  language: string;
+  currency: string;
+}
+
+// Add type declaration for google translate
+declare global {
+  interface Window {
+    google: any;
+    googleTranslateElementInit: () => void;
+  }
+}
+
 export const Navi: React.FC<NaviProps> = ({ className }) => {
   const [isMenuOpen, setIsMenuOpen] = useState(false)
   const { user } = useUser()
+  const [localSettings, setLocalSettings] = useState<UserSettings>(() => {
+    if (typeof window !== 'undefined') {
+      const saved = localStorage.getItem('userSettings');
+      if (saved) {
+        return JSON.parse(saved);
+      }
+    }
+    return { darkMode: false, language: 'english', currency: 'USD' };
+  });
+
+  const userSettings = useQuery(api.settings.fetchSettings, { 
+    userId: user?.id ?? "" 
+  });
+
+  useEffect(() => {
+    if (user?.id && userSettings) {
+      const newSettings = {
+        darkMode: userSettings.darkMode,
+        language: userSettings.language,
+        currency: localSettings.currency
+      };
+      setLocalSettings(newSettings);
+      localStorage.setItem('userSettings', JSON.stringify(newSettings));
+    }
+  }, [userSettings, user?.id, localSettings.currency]);
+
+  useEffect(() => {
+    if (localSettings.darkMode) {
+      document.body.classList.add('dark');
+    } else {
+      document.body.classList.remove('dark');
+    }
+  }, [localSettings.darkMode]);
+
+  useEffect(() => {
+    if (localSettings.language === 'turkish') {
+      initializeGoogleTranslate();
+    } else {
+      removeGoogleTranslate();
+    }
+  }, [localSettings.language]);
+
+  const updateSettings = (newSettings: Partial<UserSettings>) => {
+    const updatedSettings = { ...localSettings, ...newSettings };
+    setLocalSettings(updatedSettings);
+    localStorage.setItem('userSettings', JSON.stringify(updatedSettings));
+  };
+
+  const handleLanguageChange = (newLanguage: string) => {
+    updateSettings({ language: newLanguage });
+  };
+
+  const handleCurrencyChange = (newCurrency: string) => {
+    updateSettings({ currency: newCurrency });
+  };
+
+  const initializeGoogleTranslate = () => {
+    // Only initialize if not already initialized
+    if (!window.googleTranslateElementInit) {
+      window.googleTranslateElementInit = () => {
+        new window.google.translate.TranslateElement(
+          {
+            pageLanguage: 'en',
+            includedLanguages: 'tr', // Only include Turkish
+            autoDisplay: false,
+            layout: window.google.translate.TranslateElement.InlineLayout.SIMPLE
+          },
+          'google_translate_element'
+        );
+      };
+
+      // Add the Google Translate script
+      const script = document.createElement('script');
+      script.src = '//translate.google.com/translate_a/element.js?cb=googleTranslateElementInit';
+      script.async = true;
+      document.body.appendChild(script);
+    } else {
+      // If already initialized, trigger translation
+      const selectElement = document.querySelector('.goog-te-combo') as HTMLSelectElement;
+      if (selectElement) {
+        selectElement.value = 'tr';
+        selectElement.dispatchEvent(new Event('change'));
+      }
+    }
+  };
+
+  const removeGoogleTranslate = () => {
+    // Remove the Google Translate widget
+    const elements = document.querySelectorAll('.goog-te-banner-frame, .skiptranslate');
+    elements.forEach(el => el.remove());
+
+    // Reset the page content to original language
+    const body = document.body;
+    body.style.top = 'auto';
+    body.classList.remove('translated-ltr');
+    body.classList.remove('translated-rtl');
+
+    // Remove the translate element
+    const translateElement = document.getElementById('google_translate_element');
+    if (translateElement) {
+      translateElement.innerHTML = '';
+    }
+
+    // Reset the page to original language if needed
+    if (document.cookie.includes('googtrans')) {
+      document.cookie = 'googtrans=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';
+      document.cookie = 'googtrans=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/; domain=.' + window.location.hostname;
+      document.cookie = 'googtrans=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/; domain=' + window.location.hostname;
+    }
+  };
+
+  const router = useRouter();
+  const unreadNotifications = useQuery(api.notifications.getUnreadNotifications, { 
+    userId: user?.id ?? "skip" 
+  });
+  const markAsRead = useMutation(api.notifications.markNotificationsAsRead);
 
   return (
     <>
@@ -70,7 +204,7 @@ export const Navi: React.FC<NaviProps> = ({ className }) => {
               Accessibility
             </Link>
             <Link
-              href="/Golden"
+              href="/Golden/GoldenHome"
               className="text-muted-foreground hover:bg-[#000000] rounded-lg py-1 px-1 hover:text-[#FFD700] transition-colors"
             >
               Golden Members
@@ -78,47 +212,125 @@ export const Navi: React.FC<NaviProps> = ({ className }) => {
           </div>
         </nav>
         <div className="flex items-center gap-4">
+          <Translate />
           <DropdownMenu>
-            <DropdownMenuTrigger
-              className="flex items-center gap-1 text-muted-foreground hover:text-primary-foreground transition-colors">
-              <span>Language</span>
-              <ChevronDownIcon className="h-4 w-4" />
+            <DropdownMenuTrigger asChild>
+              <Button variant="ghost" className="text-muted-foreground hover:text-primary-foreground transition-colors flex items-center gap-2">
+                Currency
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  width="16"
+                  height="16"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                >
+                  <path d="m6 9 6 6 6-6"/>
+                </svg>
+              </Button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
-              <DropdownMenuItem>
-                <Link href="#" className="flex items-center gap-2">
-                  <FlagIcon className="h-4 w-4" />
-                  <span>Türkçe</span>
-                </Link>
+            <DropdownMenuContent>
+              <DropdownMenuItem onClick={() => {
+                // Update localStorage
+                const settings = localStorage.getItem('userSettings') || '{}';
+                const parsedSettings = JSON.parse(settings);
+                const newSettings = { ...parsedSettings, currency: 'USD' };
+                localStorage.setItem('userSettings', JSON.stringify(newSettings));
+                
+                // Dispatch custom event
+                window.dispatchEvent(new CustomEvent('currencyChange', {
+                  detail: { currency: 'USD' }
+                }));
+              }}>
+                $ USD
               </DropdownMenuItem>
-              <DropdownMenuItem>
-                <Link href="#" className="flex items-center gap-2">
-                  <FlagIcon className="h-4 w-4" />
-                  <span>English</span>
-                </Link>
-              </DropdownMenuItem>
-              <DropdownMenuItem>
-                <Link href="#" className="flex items-center gap-2">
-                  <FlagIcon className="h-4 w-4" />
-                  <span>العربية</span>
-                </Link>
+              <DropdownMenuItem onClick={() => {
+                // Update localStorage
+                const settings = localStorage.getItem('userSettings') || '{}';
+                const parsedSettings = JSON.parse(settings);
+                const newSettings = { ...parsedSettings, currency: 'TRY' };
+                localStorage.setItem('userSettings', JSON.stringify(newSettings));
+                
+                // Dispatch custom event
+                window.dispatchEvent(new CustomEvent('currencyChange', {
+                  detail: { currency: 'TRY' }
+                }));
+              }}>
+                ₺ TRY
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
           <SignedOut>
-            <Link href="/login" className="text-muted-foreground hover:text-primary-foreground transition-colors">
+            <Link href="/Login" className="text-muted-foreground hover:text-primary-foreground transition-colors">
               Sign In
             </Link>
           </SignedOut>
           <SignedIn>
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Avatar className="h-9 w-9 rounded-xl cursor-pointer">
-                  {/* Display user's avatar if available, otherwise fallback */}
+                <Button variant="ghost" className="relative p-2">
+                  <Bell className="h-5 w-5" />
+                  {unreadNotifications && unreadNotifications.length > 0 && (
+                    <span className="absolute -top-1 -right-1 flex h-5 w-5 items-center justify-center">
+                      <span className="absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75 animate-ping"></span>
+                      <span className="relative inline-flex rounded-full h-5 w-5 bg-red-500 text-white text-xs items-center justify-center">
+                        {unreadNotifications.length}
+                      </span>
+                    </span>
+                  )}
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="w-[300px]">
+                {unreadNotifications && unreadNotifications.length > 0 ? (
+                  unreadNotifications.map((notification) => (
+                    <DropdownMenuItem 
+                      key={notification._id}
+                      onClick={() => {
+                        markAsRead({ userId: user?.id ?? "" });
+                        // Check notification type and redirect accordingly
+                        if (notification.type === 'promotion') {
+                          router.push('/Promotions');
+                        } else {
+                          router.push('/bookings');
+                        }
+                      }}
+                    >
+                      <div className="flex flex-col gap-1">
+                        <p className="font-medium">{notification.message}</p>
+                        <p className="text-sm text-muted-foreground">
+                          {notification.type === 'promotion' 
+                            ? 'Click to view promotion'
+                            : 'Click to view details'
+                          }
+                        </p>
+                      </div>
+                    </DropdownMenuItem>
+                  ))
+                ) : (
+                  <DropdownMenuItem>
+                    <div className="flex flex-col gap-1">
+                      <p className="text-sm text-muted-foreground">No new notifications</p>
+                    </div>
+                  </DropdownMenuItem>
+                )}
+              </DropdownMenuContent>
+            </DropdownMenu>
+            
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Avatar className="h-9 w-9 rounded-full cursor-pointer">
                   {user?.imageUrl ? (
-                    <AvatarImage src={user.imageUrl} alt="User Avatar" className="h-9 w-9 rounded-xl cursor-pointer"/>
+                    <AvatarImage
+                    src={user.imageUrl}
+                    alt="User Avatar"
+                    className="h-9 w-9"
+                    style={{ borderRadius: '9999px' }}
+                  />
                   ) : (
-                    <AvatarFallback>U</AvatarFallback>
+                    <AvatarFallback className="rounded-full">U</AvatarFallback>
                   )}
                   <span className="sr-only">Toggle user menu</span>
                 </Avatar>
@@ -143,6 +355,8 @@ export const Navi: React.FC<NaviProps> = ({ className }) => {
           </SignedIn>
         </div>
       </header>
+
+      <div id="google_translate_element" style={{ display: 'none' }}></div>
 
       <div
         className={`fixed top-0 left-0 h-full w-64 bg-white z-50 shadow-lg transform ${
@@ -189,7 +403,7 @@ export const Navi: React.FC<NaviProps> = ({ className }) => {
               <Link href="/accessibility">Accessibility</Link>
             </li>
             <li className="p-4 text-xl font-semibold">
-              <Link href="/Golden">Golden Members</Link>
+              <Link href="/Golden/GoldenHome">Golden Members</Link>
             </li>
             <li>
               <Separator />

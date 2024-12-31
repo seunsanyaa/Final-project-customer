@@ -33,12 +33,16 @@ http.route({
 			console.log('Webhook result:', result);
 
 			if (result.type === 'user.created') {
+				// Check if email exists in staff table
+				const email = result.data.email_addresses[0]?.email_address ?? '';
+				const isStaff = await ctx.runQuery(api.staff.getStaffByEmail, { email });
+				
 				const userId = await ctx.runMutation(api.users.createUser, {
-					email: result.data.email_addresses[0]?.email_address ?? '',
+					email: email,
 					userId: result.data.id,
 					firstName: result.data.first_name ?? '',
 					lastName: result.data.last_name ?? '',
-					staff: false,
+					staff: isStaff?.email ? true : false,
 				});
 				console.log('Created user:', userId);
 			}

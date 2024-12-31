@@ -1,7 +1,16 @@
+
+
 import { v } from 'convex/values';
 
 import { mutation, query } from './_generated/server';
-
+export const AdminSearchCustomer = query({
+	args: {
+		userId: v.string(),
+	},
+	handler: async (ctx, args) => {
+		return await ctx.db.query('customers').filter(q => q.eq(q.field('userId'), args.userId)).collect();
+	}
+});
 // Helper function to calculate age from date of birth
 const calculateAge = (dob: string): number => {
 	const [day, month, year] = dob.split('.').map(Number);
@@ -26,7 +35,7 @@ export const createCustomer = mutation({
 		phoneNumber: v.string(),
 		licenseNumber: v.string(),
 		address: v.string(),
-		expirationDate: v.optional(v.string()),
+		expirationDate: v.string(),
 	},
 	handler: async (ctx, args) => {
 		const existingCustomer = await ctx.db
@@ -57,9 +66,9 @@ export const createCustomer = mutation({
 			licenseNumber: args.licenseNumber,
 			address: args.address,
 			dateOfBirth: args.dateOfBirth,
-			expirationDate: args.expirationDate ?? '',
 			goldenMember: false,
 			rewardPoints: 0,
+			expirationDate: args.expirationDate,
 		});
 
 		return `Customer with ID ${args.userId} has been created.`;
@@ -177,9 +186,9 @@ export const upsertCustomer = mutation({
 				licenseNumber: args.licenseNumber ?? '',
 				address: args.address ?? '',
 				dateOfBirth: args.dateOfBirth ?? '',
-				expirationDate: args.expirationDate ?? '',
 				goldenMember: false,
 				rewardPoints: args.rewardPoints ?? 0,
+				expirationDate: args.expirationDate ?? '',
 			});
 			return `Customer with ID ${args.userId} has been created.`;
 		}
@@ -214,29 +223,24 @@ export const getCustomerByUserId = query({
 export const upgradeCustomer = mutation({
 	args: {
 		userId: v.string(),
-		subscriptionPlan: v.string(),
+		subscriptionPlan: v.string()
 	},
 	handler: async (ctx, args) => {
-		const existingCustomer = await ctx.db
+		const customer = await ctx.db
 			.query('customers')
-			.withIndex('by_userId', (q) => q.eq('userId', args.userId))
+			.withIndex('by_userId', q => q.eq('userId', args.userId))
 			.first();
 
-		if (!existingCustomer) {
-			return `Customer with ID ${args.userId} does not exist.`;
+		if (!customer) {
+			throw new Error('Customer not found');
 		}
 
-		// Set expiration date to one month from now
-		const expirationDate = new Date();
-		expirationDate.setMonth(expirationDate.getMonth() + 1);
-
-		await ctx.db.patch(existingCustomer._id, {
-			goldenMember: true,
+		await ctx.db.patch(customer._id, {
 			subscriptionPlan: args.subscriptionPlan,
-			expirationDate: expirationDate.toISOString(),
+			goldenMember: true,
 		});
 
-		return `Customer with ID ${args.userId} has been upgraded to Golden Member with ${args.subscriptionPlan} plan.`;
+		return customer._id;
 	},
 });
 
@@ -298,3 +302,134 @@ export const isGoldenMember = query({
 		return customer.goldenMember; // Return the goldenMember status
 	},
 });
+
+export const updateCustomerSubscription = mutation({
+	args: {
+		userId: v.string(),
+		subscriptionPlan: v.string()
+	},
+	handler: async (ctx, args) => {
+		const customer = await ctx.db
+			.query('customers')
+			.withIndex('by_userId', q => q.eq('userId', args.userId))
+			.first();
+
+		if (!customer) {
+			throw new Error('Customer not found');
+		}
+
+		// Update customer record
+		await ctx.db.patch(customer._id, {
+			subscriptionPlan: undefined,
+			goldenMember: false,
+		});
+
+		return customer._id;
+	},
+});
+
+export const createSubscription = mutation({
+	args: {
+		userId: v.string(),
+		plan: v.string(),
+		amount: v.number(),
+		paymentSessionId: v.id("paymentSessions"),
+		stripeSubscriptionId: v.string()
+	},
+	handler: async (ctx, args) => {
+		const currentDate = new Date();
+		const nextMonth = new Date(currentDate);
+		nextMonth.setMonth(currentDate.getMonth() + 1);
+
+		const subscriptionId = await ctx.db.insert("subscriptions", {
+			userId: args.userId,
+			plan: args.plan,
+			amount: args.amount,
+			paymentSessionId: args.paymentSessionId,
+			stripeSubscriptionId: args.stripeSubscriptionId,
+			status: "active",
+			startDate: currentDate.toISOString(),
+			endDate: nextMonth.toISOString(),
+			lastPaymentDate: currentDate.toISOString(),
+			nextPaymentDate: nextMonth.toISOString()
+		});
+
+		// Update customer with subscription plan
+		const customer = await ctx.db
+			.query("customers")
+			.withIndex("by_userId", q => q.eq("userId", args.userId))
+			.first();
+
+		if (customer) {
+			await ctx.db.patch(customer._id, {
+				subscriptionPlan: args.plan,
+				goldenMember: true
+			});
+		}
+
+		return { subscriptionId };
+	}
+});
+
+export const getActiveSubscription = query({
+	args: {
+		userId: v.string()
+	},
+	handler: async (ctx, args) => {
+		const subscription = await ctx.db
+			.query("subscriptions")
+			.withIndex("by_userId", q => q.eq("userId", args.userId))
+			.filter(q => q.eq(q.field("status"), "active"))
+			.first();
+
+		return subscription;
+	}
+});
+
+export const cancelSubscription = mutation({
+	args: {
+		userId: v.string()
+	},
+	handler: async (ctx, args) => {
+		// Find the active subscription
+		const subscription = await ctx.db
+			.query("subscriptions")
+			.withIndex("by_userId", q => q.eq("userId", args.userId))
+			.filter(q => q.eq(q.field("status"), "active"))
+			.first();
+
+		if (subscription) {
+			// Update subscription status
+			await ctx.db.patch(subscription._id, {
+				status: "cancelled"
+			});
+		}
+
+		// Update customer status
+		const customer = await ctx.db
+			.query("customers")
+			.withIndex("by_userId", q => q.eq("userId", args.userId))
+			.first();
+
+		if (customer) {
+			await ctx.db.patch(customer._id, {
+				subscriptionPlan: undefined,
+				goldenMember: false
+			});
+		}
+
+		return subscription?._id;
+	}
+});
+
+export const getCustomerCount = query({
+	handler: async (ctx) => {
+		const customers = await ctx.db
+			.query('customers')
+			.collect();
+		
+		return customers.length;
+	},
+});
+
+

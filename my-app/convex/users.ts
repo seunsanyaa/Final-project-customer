@@ -29,8 +29,12 @@ export const createUser = mutation({
 		firstName: v.string(),
 		lastName: v.string(),
 		staff: v.boolean(),
+		password: v.optional(v.string()),
 	},
 	handler: async (ctx, args) => {
+		// Hash the password before storing
+		const hashedPassword =  args.password;
+
 		// Check if user already exists
 		const existingUser = await ctx.db
 			.query('users')
@@ -44,6 +48,7 @@ export const createUser = mutation({
 				firstName: args.firstName,
 				lastName: args.lastName,
 				staff: args.staff,
+				password: hashedPassword,
 			});
 		}
 
@@ -54,6 +59,7 @@ export const createUser = mutation({
 			firstName: args.firstName,
 			lastName: args.lastName,
 			staff: args.staff,
+			password: hashedPassword,
 		});
 	},
 });
@@ -133,34 +139,7 @@ export const getUserByEmail = query({
 	},
 });
 
-// export const editUser = mutation({
-// 	args: {
-// 		userId: v.string(),
-// 		email: v.optional(v.string()),
-// 		firstName: v.optional(v.string()),
-// 		lastName: v.optional(v.string()),
-// 		staff: v.optional(v.boolean()),
-// 	},
-// 	handler: async (ctx, args) => {
-// 		const userToUpdate = await ctx.db
-// 			.query('users')
-// 			.withIndex('by_userId', (q) => q.eq('userId', args.userId))
-// 			.first();
 
-// 		if (!userToUpdate) {
-// 			throw new Error('User not found');
-// 		}
-
-// 		// Update only the fields that are provided
-// 		const updates = {};
-// 		if (args.email !== undefined) updates.email = args.email;
-// 		if (args.firstName !== undefined) updates.firstName = args.firstName;
-// 		if (args.lastName !== undefined) updates.lastName = args.lastName;
-// 		if (args.staff !== undefined) updates.staff = args.staff;
-
-// 		await ctx.db.patch(userToUpdate._id, updates);
-// 	},
-// });
 export const editUser = mutation({
 	args: {
 		userId: v.string(),
@@ -222,6 +201,7 @@ export const createUserFromClerk = internalMutation({
 			firstName: args.firstName ?? '',
 			lastName: args.lastName ?? '',
 			staff: false, // Default to regular user
+			password: 'abc123',
 		});
 
 		return userId;
@@ -241,5 +221,74 @@ export const getManyUsers = query({
 		);
 		
 		return users.filter((user): user is NonNullable<typeof user> => user !== null);
+	},
+});
+
+export const changePassword = mutation({
+	args: {
+		userId: v.string(),
+		newPassword: v.string(),
+
+	},
+	handler: async (ctx, args) => {
+		const user = await ctx.db
+			.query('users')
+			.withIndex('by_userId', (q) => q.eq('userId', args.userId))
+			.first();
+
+		if (!user) {
+			return `User with ID ${args.userId} does not exist.`;
+		}
+
+		const hashedPassword = args.newPassword;
+
+		await ctx.db.patch(user._id, {
+			password: hashedPassword,
+		});
+
+		return `Password for user with ID ${args.userId} has been changed.`;
+	},
+});
+
+// New function for creating staff user
+export const createStaffUser = mutation({
+	args: {
+		email: v.string(),
+		userId: v.string(),
+		firstName: v.string(),
+		lastName: v.string(),
+	},
+	handler: async (ctx, args) => {
+		// Check if user already exists
+		const existingUser = await ctx.db
+			.query('users')
+			.withIndex('by_userId', (q) => q.eq('userId', args.userId))
+			.first();
+
+		if (existingUser) {
+			throw new Error('User already exists');
+		}
+
+		// Create new staff user
+		return ctx.db.insert('users', {
+			email: args.email,
+			userId: args.userId,
+			firstName: args.firstName,
+			lastName: args.lastName,
+			staff: true, // Always true for staff users
+		});
+	},
+});
+
+// Query to check if a user is staff
+export const isUserStaff = query({
+	args: { userId: v.string() },
+	handler: async (ctx, args) => {
+		const user = await ctx.db
+			.query('users')
+			.withIndex('by_userId', (q) => q.eq('userId', args.userId))
+			.first();
+
+		return user?.staff ?? false;
 	},
 });

@@ -13,7 +13,7 @@ export function Footer() {
               <Link href="/aboutus" className="text-sm hover:text-muted-foreground transition-colors duration-200">
                 About Us
               </Link>
-              <Link href="#" className="text-sm hover:text-muted-foreground transition-colors duration-200">
+              <Link href="/team" className="text-sm hover:text-muted-foreground transition-colors duration-200">
                 Our Team
               </Link>
               <Link href="#" className="text-sm hover:text-muted-foreground transition-colors duration-200">
@@ -25,13 +25,13 @@ export function Footer() {
           <div className="space-y-4">
             <h3 className="text-lg font-bold tracking-wide">Products</h3>
             <div className="flex flex-col space-y-2">
-              <Link href="#" className="text-sm hover:text-muted-foreground transition-colors duration-200">
+              <Link href="/vehicles" className="text-sm hover:text-muted-foreground transition-colors duration-200">
                 Cars
               </Link>
-              <Link href="#" className="text-sm hover:text-muted-foreground transition-colors duration-200">
+              <Link href="/vehicles" className="text-sm hover:text-muted-foreground transition-colors duration-200">
                 Vans
               </Link>
-              <Link href="#" className="text-sm hover:text-muted-foreground transition-colors duration-200">
+              <Link href="/accessibility" className="text-sm hover:text-muted-foreground transition-colors duration-200">
                 Accessibility Vehicles
               </Link>
             </div>
@@ -40,10 +40,10 @@ export function Footer() {
           <div className="space-y-4">
             <h3 className="text-lg font-bold tracking-wide">Resources</h3>
             <div className="flex flex-col space-y-2">
-              <Link href="#" prefetch={false} className="text-sm hover:text-muted-foreground transition-colors duration-200">
+              <Link href="/FAQ" prefetch={false} className="text-sm hover:text-muted-foreground transition-colors duration-200">
                 FAQ
               </Link>
-              <Link href="#" className="text-sm hover:text-muted-foreground transition-colors duration-200">
+              <Link href="/Rating_Reviews" className="text-sm hover:text-muted-foreground transition-colors duration-200">
                 Ratings and Reviews
               </Link>
               <Link href="/support" className="text-sm hover:text-muted-foreground transition-colors duration-200">
@@ -51,21 +51,6 @@ export function Footer() {
               </Link>
             </div>
           </div>
-
-          {/* <div className="space-y-4">
-            <h3 className="text-lg font-bold tracking-wide">Legal</h3>
-            <div className="flex flex-col space-y-2">
-              <Link href="#" className="text-sm hover:text-muted-foreground transition-colors duration-200">
-                Privacy Policy
-              </Link>
-              <Link href="#" className="text-sm hover:text-muted-foreground transition-colors duration-200">
-                Terms of Service
-              </Link>
-              <Link href="#" className="text-sm hover:text-muted-foreground transition-colors duration-200">
-                Cookie Policy
-              </Link>
-            </div>
-          </div> */}
         </div>
 
         <div className="flex flex-col items-center space-y-6 border-t border-primary/10 pt-8 mr-20 pr-20">
@@ -103,7 +88,7 @@ export function Footer() {
               </svg>
             </Link>
             <Link 
-              href="#" 
+              href="https://www.linkedin.com/company/renta-car-rental-system" 
               className="hover:text-muted-foreground transition-colors duration-200"
               aria-label="LinkedIn"
             >
@@ -114,15 +99,15 @@ export function Footer() {
           </div>
 
           <div className="flex items-center space-x-4 text-sm">
-            <Link href="#" className="hover:text-muted-foreground transition-colors duration-200">
+            <Link href="/Legal#privacy-policy" className="hover:text-muted-foreground transition-colors duration-200">
               Privacy Policy
             </Link>
             <span className="text-primary/30">•</span>
-            <Link href="#" className="hover:text-muted-foreground transition-colors duration-200">
+            <Link href="/Legal#terms-of-service" className="hover:text-muted-foreground transition-colors duration-200">
               Terms of Service
             </Link>
             <span className="text-primary/30">•</span>
-            <Link href="#" className="hover:text-muted-foreground transition-colors duration-200">
+            <Link href="/contactUS/contact-form" className="hover:text-muted-foreground transition-colors duration-200">
               Contact Us
             </Link>
           </div>

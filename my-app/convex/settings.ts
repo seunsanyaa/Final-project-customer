@@ -7,34 +7,45 @@ export const saveSettings = mutation({
     userId: v.string(),
     darkMode: v.optional(v.boolean()),
     language: v.optional(v.string()),
+    notificationPreferences: v.optional(v.object({
+      booking: v.boolean(),
+      promotion: v.boolean(),
+      payment: v.boolean(),
+      rewards: v.boolean(),
+      reminder: v.boolean(),
+    })),
   },
   
   async handler(ctx, args) {
-    // Set default values
     const darkMode = args.darkMode ?? false;
     const language = args.language ?? 'english';
+    const notificationPreferences = args.notificationPreferences ?? {
+      booking: true,
+      promotion: true,
+      payment: true,
+      rewards: true,
+      reminder: true,
+    };
 
-    // Check if user already has settings
     const existingSettings = await ctx.db
       .query('settings')
       .withIndex('by_userId', q => q.eq('userId', args.userId))
       .first();
 
     if (existingSettings) {
-      // Update existing settings
       await ctx.db.patch(existingSettings._id, {
         darkMode,
         language,
+        notificationPreferences,
       });
       return existingSettings._id;
     } else {
-      // Create new settings
-      const newSettingsId = await ctx.db.insert('settings', {
+      return await ctx.db.insert('settings', {
         userId: args.userId,
         darkMode,
         language,
+        notificationPreferences,
       });
-      return newSettingsId;
     }
   },
 });
@@ -55,6 +66,13 @@ export const fetchSettings = query({
       return {
         darkMode: false,
         language: 'english',
+        notificationPreferences: {
+          booking: true,
+          promotion: true,
+          payment: true,
+          rewards: true,
+          reminder: true,
+        }
       };
     }
     

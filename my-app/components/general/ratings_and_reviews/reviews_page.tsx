@@ -5,6 +5,7 @@ import { useUser } from '@clerk/nextjs'
 import { Navi } from '../head/navi'
 import MainPage from './mainPage'  // Importing the MainPage component
 import AllRatings from './all_ratings'  // Importing the AllRatings component
+import { Footer } from '../head/footer'
 
 export function Reviews_Page() {
   const { user } = useUser();
@@ -38,7 +39,7 @@ export function Reviews_Page() {
       <div className="flex min-h-screen">
         
         {/* Sidebar */}
-        <div className="w-25 p-4 border-r bg-primary">
+        <div className="sticky top-0 h-screen w-25 p-4 border-r bg-primary">
           <div className="space-y-2">
             <div>
               <button
@@ -80,7 +81,9 @@ export function Reviews_Page() {
 
         {/* Main content */}
         {renderActiveView()}
+        
       </div>
+      <Footer />
     </>
   )
 }

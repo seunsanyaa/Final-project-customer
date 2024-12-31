@@ -12,13 +12,53 @@ import { useQuery } from 'convex/react';
 import { api } from '../../../convex/_generated/api';
 import { useParams } from 'next/navigation';
 import { Id } from '../../../convex/_generated/dataModel';
+import Link from 'next/link';
+import { Loader2 } from "lucide-react";
+import { useAuth } from "@clerk/nextjs";
+
+const useCurrency = () => {
+  const [currency, setCurrency] = useState<string>('USD');
+
+  useEffect(() => {
+    // Only listen for currency changes, not language
+    const settings = localStorage.getItem('userSettings');
+    if (settings) {
+      const parsedSettings = JSON.parse(settings);
+      if (parsedSettings.currency) {
+        setCurrency(parsedSettings.currency);
+      }
+    }
+
+    const handleCurrencyChange = (e: Event) => {
+      const customEvent = e as CustomEvent;
+      setCurrency(customEvent.detail.currency);
+    };
+
+    window.addEventListener('currencyChange', handleCurrencyChange);
+    return () => {
+      window.removeEventListener('currencyChange', handleCurrencyChange);
+    };
+  }, []);
+
+  return currency;
+};
+
+// Add this type definition
+type SavedPaymentMethod = {
+  id: string;
+  card: {
+    brand: string;
+    last4: string;
+    exp_month: number;
+    exp_year: number;
+  };
+};
 
 export function Payment_Page() {
   const params = useParams();
   const searchParams = useSearchParams();
   const sessionId = params.sessionId as Id<"paymentSessions">;
   const email = searchParams.get('email');
-  const router = useRouter();
 
   // Fetch payment session details
   const paymentSession = useQuery(api.payment.getPaymentSession, {
@@ -29,14 +69,28 @@ export function Payment_Page() {
   const [clientSecret, setClientSecret] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [savedPaymentMethods, setSavedPaymentMethods] = useState<SavedPaymentMethod[]>([]);
+  const [selectedPaymentMethod, setSelectedPaymentMethod] = useState<string | null>(null);
+  const [isLoadingPaymentMethods, setIsLoadingPaymentMethods] = useState(true);
 
-  const total = paymentSession?.totalAmount || 0;
   const paidAmount = paymentSession?.paidAmount || 0;
-  const paymentType = paymentSession?.paymentType;
 
   const stripePromise = loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY!);
 
+  // Add currency state
+  const currency = useCurrency();
+  
+  // Add formatPrice helper function
+  const formatPrice = (amount: number) => {
+    if (!amount) return '';
+    if (currency === 'TRY') {
+      return `₺${(amount * 34).toFixed(2)}`;
+    }
+    return `$${amount.toFixed(2)}`;
+  };
+  const userId = useAuth().userId;
   useEffect(() => {
+    
     if (paidAmount > 0 && email) {
       setIsLoading(true);
       fetch("/api/create-payment-intent", {
@@ -48,6 +102,8 @@ export function Payment_Page() {
           amount: paidAmount,
           sessionId,
           email,
+          userId,
+          currency, // Add currency to the request
         }),
       })
         .then((res) => res.json())
@@ -64,7 +120,32 @@ export function Payment_Page() {
         })
         .finally(() => setIsLoading(false));
     }
-  }, [paidAmount, sessionId, email]);
+  }, [paidAmount, sessionId, email, currency, userId]); // Add currency to dependencies
+
+  useEffect(() => {
+    const fetchPaymentMethods = async () => {
+      try {
+        const response = await fetch(`/api/payment-methods?userId=${userId}`);
+        const data = await response.json();
+        
+        if (response.ok) {
+          setSavedPaymentMethods(data.paymentMethods);
+          // If there's a default payment method, select it
+          if (data.defaultPaymentMethod) {
+            setSelectedPaymentMethod(data.defaultPaymentMethod);
+          }
+        }
+      } catch (error) {
+        console.error('Error fetching payment methods:', error);
+      } finally {
+        setIsLoadingPaymentMethods(false);
+      }
+    };
+
+    if (email) {
+      fetchPaymentMethods();
+    }
+  }, [email, userId]);
 
   const appearance: Appearance = {
     theme: 'stripe',
@@ -93,6 +174,12 @@ export function Payment_Page() {
             setAgreedToTerms={setAgreedToTerms} 
             total={paidAmount}
             sessionId={sessionId}
+            currency={currency}
+            savedPaymentMethods={savedPaymentMethods}
+            selectedPaymentMethod={selectedPaymentMethod}
+            setSelectedPaymentMethod={setSelectedPaymentMethod}
+            isLoadingPaymentMethods={isLoadingPaymentMethods}
+            clientSecret={clientSecret}
           />
         </Elements>
       ) : (
@@ -108,12 +195,24 @@ function PaymentForm({
   agreedToTerms, 
   setAgreedToTerms, 
   total,
-  sessionId
+  sessionId,
+  currency,
+  savedPaymentMethods,
+  selectedPaymentMethod,
+  setSelectedPaymentMethod,
+  isLoadingPaymentMethods,
+  clientSecret,
 }: { 
   agreedToTerms: boolean, 
   setAgreedToTerms: (agreed: boolean) => void, 
   total: number,
-  sessionId: Id<"paymentSessions">
+  sessionId: Id<"paymentSessions">,
+  currency: string,
+  savedPaymentMethods: SavedPaymentMethod[];
+  selectedPaymentMethod: string | null;
+  setSelectedPaymentMethod: (id: string | null) => void;
+  isLoadingPaymentMethods: boolean;
+  clientSecret: string | null;
 }) {
   const stripe = useStripe();
   const elements = useElements();
@@ -122,18 +221,27 @@ function PaymentForm({
 
   const paymentSession = useQuery(api.payment.getPaymentSession, { sessionId });
   const booking = useQuery(api.bookings.getBooking, { 
-    id: paymentSession?.bookingId 
+    id: paymentSession?.bookingId as Id<"bookings">
   });
   const car = useQuery(api.car.getCar, { 
-    registrationNumber: booking?.carId 
+    registrationNumber: booking?.carId as string
   });
 
   const rentalDuration = booking ? 
     Math.ceil((new Date(booking.endDate).getTime() - new Date(booking.startDate).getTime()) / (1000 * 60 * 60 * 24)) 
     : 0;
 
+  // Add formatPrice helper function
+  const formatPrice = (amount: number) => {
+    if (!amount) return '';
+    if (currency === 'TRY') {
+      return `₺${(amount * 34).toFixed(2)}`;
+    }
+    return `$${amount.toFixed(2)}`;
+  };
+
   const handleSubmit = async () => {
-    if (!stripe || !elements) {
+    if (!stripe) {
       return;
     }
 
@@ -141,12 +249,27 @@ function PaymentForm({
     setErrorMessage(null);
 
     try {
-      const result = await stripe.confirmPayment({
-        elements,
-        confirmParams: {
-          return_url: `${window.location.origin}/bookings/currentbooking/success?session_id=${sessionId}`,
-        },
-      });
+      let result;
+      
+      if (selectedPaymentMethod) {
+        // Use saved payment method without elements
+        result = await stripe.confirmPayment({
+          clientSecret: clientSecret!,
+          confirmParams: {
+            payment_method: selectedPaymentMethod,
+            return_url: `${window.location.origin}/bookings/currentbooking/success?session_id=${sessionId}`,
+          },
+        });
+      } else {
+        // Use new payment method with elements
+        if (!elements) return;
+        result = await stripe.confirmPayment({
+          elements,
+          confirmParams: {
+            return_url: `${window.location.origin}/bookings/currentbooking/success?session_id=${sessionId}`,
+          },
+        });
+      }
 
       if (result.error) {
         setErrorMessage(result.error.message || "Something went wrong with your payment.");
@@ -179,7 +302,73 @@ function PaymentForm({
                   <CardTitle>Payment Method</CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <PaymentElement />
+                  {isLoadingPaymentMethods ? (
+                    <div className="flex items-center justify-center py-4">
+                      <Loader2 className="h-6 w-6 animate-spin" />
+                    </div>
+                  ) : (
+                    <div className="space-y-4">
+                      {savedPaymentMethods.length > 0 && (
+                        <div className="space-y-4">
+                          <h3 className="text-sm font-medium">Saved Payment Methods</h3>
+                          {savedPaymentMethods.map((method) => (
+                            <div
+                              key={method.id}
+                              className={`p-4 border rounded-lg cursor-pointer ${
+                                selectedPaymentMethod === method.id ? 'border-primary' : 'border-gray-200'
+                              }`}
+                              onClick={() => setSelectedPaymentMethod(method.id)}
+                            >
+                              <div className="flex items-center justify-between">
+                                <div>
+                                  <p className="font-medium capitalize">
+                                    {method.card.brand} •••• {method.card.last4}
+                                  </p>
+                                  <p className="text-sm text-muted-foreground">
+                                    Expires {method.card.exp_month}/{method.card.exp_year}
+                                  </p>
+                                </div>
+                                <input
+                                  type="radio"
+                                  checked={selectedPaymentMethod === method.id}
+                                  onChange={() => setSelectedPaymentMethod(method.id)}
+                                />
+                              </div>
+                            </div>
+                          ))}
+                          <div className="flex items-center">
+                            <Separator className="flex-1" />
+                            <span className="px-3 text-sm text-muted-foreground">Or</span>
+                            <Separator className="flex-1" />
+                          </div>
+                        </div>
+                      )}
+                      <div>
+                        {selectedPaymentMethod ? (
+                          <div className="space-y-4">
+                            <h3 className="text-sm font-medium mb-4">Selected Payment Method</h3>
+                            <Button 
+                              variant="outline" 
+                              onClick={() => setSelectedPaymentMethod(null)}
+                              className="w-full"
+                            >
+                              Change Payment Method
+                            </Button>
+                            <div className="hidden">
+                              <PaymentElement />
+                            </div>
+                          </div>
+                        ) : (
+                          <>
+                            <h3 className="text-sm font-medium mb-4">
+                              {savedPaymentMethods.length > 0 ? 'Use a new payment method' : 'Enter payment details'}
+                            </h3>
+                            <PaymentElement onChange={() => setSelectedPaymentMethod(null)} />
+                          </>
+                        )}
+                      </div>
+                    </div>
+                  )}
                 </CardContent>
               </Card>
               <div className="flex items-center gap-2">
@@ -197,7 +386,7 @@ function PaymentForm({
                   onChange={(e) => setAgreedToTerms(e.target.checked)}
                 />
                 <label htmlFor="terms" className="text-sm">
-                  I agree to the <a href="/terms" className="text-primary">terms and conditions</a>.
+                  I agree to the <Link href="/Legal#terms-of-service" className="text-primary">terms and conditions</Link>.
                 </label>
               </div>
               {errorMessage && (
@@ -223,7 +412,7 @@ function PaymentForm({
                   <CarIcon className="w-12 h-12 text-primary" />
                   <div>
                     <h3 className="text-lg font-semibold">
-                      {car ? `${car.maker} ${car.model} ${car.year}` : 'Loading...'}
+                      {car && typeof car !== 'string' ? `${car.maker} ${car.model} ${car.year}` : 'Loading...'}
                     </h3>
                     <p className="text-muted-foreground">
                       {rentalDuration} {rentalDuration === 1 ? 'Day' : 'Days'} Rental
@@ -245,17 +434,18 @@ function PaymentForm({
                   <CardTitle>Price Breakdown</CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-2">
-                  <div className="flex justify-between">
-                    <span>Base Price:</span>
-                    <span>${total ? (total-total*0.2).toFixed(2) : '0.00'}</span>
+                  <div className="flex items-center justify-between">
+                    <p>Total Price</p>
+                    <p className="font-semibold">{formatPrice(total)}</p>
                   </div>
-                  <div className="flex justify-between">
-                    <span>Taxes & Fees:</span>
-                    <span>${total ? ((total-total*0.2)*0.2).toFixed(2) : '0.00'}</span>
+                  <div className="flex items-center justify-between text-green-600">
+                    <p>Taxes & Fees</p>
+                    <p className="font-semibold">Free</p>
                   </div>
-                  <div className="flex justify-between">
-                    <span>Total Price:</span>
-                    <span className="font-bold">${total ? (total).toFixed(2) : '0.00'}</span>
+                  <Separator />
+                  <div className="flex items-center justify-between">
+                    <p className="text-lg font-semibold">Final Total</p>
+                    <p className="text-lg font-semibold">{formatPrice(total)}</p>
                   </div>
                 </CardContent>
               </Card>

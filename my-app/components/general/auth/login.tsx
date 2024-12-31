@@ -1,14 +1,12 @@
-
 import { useRouter } from "next/router";
 import { InputForm } from "./form/auth";
 import { SignInOAuthButtons } from "./social_buttons";
 export default function LoginComponent() {
   const router = useRouter();
 
- 
   const renderContent = (pathname: string) => {
     switch (pathname) {
-      case "/login":
+      case "/Login":
         return (
           <>
             <h2 className="paragraph-color pt-8 text-2xl font-semibold">
@@ -51,7 +49,7 @@ export default function LoginComponent() {
               Verify your email address
             </h2>
             <p className="paragraph-muted pb-4 text-base font-normal">
-              We've sent a code to {router.query.email}.
+              We&apos;ve sent a code to {router.query.email}.
             </p>
           </>
         );
@@ -76,7 +74,7 @@ export default function LoginComponent() {
 
       {renderContent(router.pathname)}
 
-      {router.pathname === "/login" || router.pathname === "/create-account" ? (
+      {router.pathname === "/Login" || router.pathname === "/create-account" ? (
         <>
           <SignInOAuthButtons />
 

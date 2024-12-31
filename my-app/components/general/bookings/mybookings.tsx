@@ -11,24 +11,62 @@ import { api } from "@/convex/_generated/api";
 import { useQuery, useMutation } from "convex/react";
 import {useUser} from "@clerk/nextjs"
 import { useRef } from "react"
-import Lottie, { LottieRefCurrentProps } from "lottie-react"
-import loadingAnimation from "@/public/animations/loadingAnimation.json"
+import dynamic from 'next/dynamic';
+import loadingAnimation from "@/public/animations/loadingAnimation.json";
 import { Redirection } from "@/components/ui/redirection";
+import { LottieRefCurrentProps } from "lottie-react"
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
+import { useToast } from "@/hooks/use-toast"
+import { Id } from "@/convex/_generated/dataModel"
+
+
+// Add dynamic import for Lottie
+const Lottie = dynamic(() => import('lottie-react'), {
+  ssr: false,
+});
 
 interface Booking {
-  _id: string;
+  _id: Id<"bookings">;
   make: string;
   model: string;
   color: string;
   startDate: string;
   endDate: string;
   totalCost: number;
-  licensePlate: string;
   pickupLocation: string;
   dropoffLocation: string;
   carId: string;
   trim: string; // Added trim field
+
 }
+
+// Add this custom hook near the top of the file
+const useCurrency = () => {
+  const [currency, setCurrency] = useState<string>('USD');
+
+  useEffect(() => {
+    // Only listen for currency changes, not language
+    const settings = localStorage.getItem('userSettings');
+    if (settings) {
+      const parsedSettings = JSON.parse(settings);
+      if (parsedSettings.currency) {
+        setCurrency(parsedSettings.currency);
+      }
+    }
+
+    const handleCurrencyChange = (e: Event) => {
+      const customEvent = e as CustomEvent;
+      setCurrency(customEvent.detail.currency);
+    };
+
+    window.addEventListener('currencyChange', handleCurrencyChange);
+    return () => {
+      window.removeEventListener('currencyChange', handleCurrencyChange);
+    };
+  }, []);
+
+  return currency;
+};
 
 export function Mybookings() {
   const { user } = useUser();
@@ -42,10 +80,17 @@ export function Mybookings() {
   const [loading, setLoading] = useState(true);
   const lottieRef = useRef<LottieRefCurrentProps>(null);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [showCancelDialog, setShowCancelDialog] = useState(false);
+  const { toast } = useToast()
 
   const customerId = user?.id || "";
   
-  // Always call useQuery, but pass "skip" if customerId is empty
+  // Get current booking using getCurrentBooking
+  const currentBooking = useQuery(api.analytics.getCurrentBooking, {
+    customerId: user?.id ?? "skip"
+  });
+
+  // Get all bookings for the customer
   const bookings = useQuery(api.bookings.getBookingsByCustomer, 
     customerId ? { customerId } : "skip"
   );
@@ -66,7 +111,7 @@ export function Mybookings() {
     // Create a promise for fetching bookings
     const fetchBookings = new Promise<void>((resolve) => {
       if (bookings) {
-        setFilteredBookings(bookings as Booking[]);
+        setFilteredBookings(bookings);
       }
       resolve();
     });
@@ -114,26 +159,90 @@ export function Mybookings() {
     setIsDialogOpen(true);
   }
 
+  // Add currency state
+  const currency = useCurrency();
   
-  // if (loading) {
-  //   return (
-  //     <div className="flex items-center justify-center h-screen">
-  //       <Lottie
-  //         lottieRef={lottieRef}
-  //         animationData={loadingAnimation}
-  //         loop={false} // Disable looping
-  //         autoplay={true} // Ensure autoplay is enabled
-  //         className="w-48 h-48"
-  //       />
-  //     </div>
-  //   );
-  // }
+  // Add formatPrice helper function
+  const formatPrice = (amount: number) => {
+    if (!amount) return '';
+    if (currency === 'TRY') {
+      return `₺${(amount * 34).toFixed(2)}`;
+    }
+    return `$${amount.toFixed(2)}`;
+  };
+
+  // Add this function to handle cancellation
+  const handleCancelBooking = (booking: Booking) => {
+    setSelectedBooking(booking);
+    setShowCancelDialog(true);
+  };
+
+  // Add the mutation
+  const cancelBookingMutation = useMutation(api.bookings.cancelBooking);
+
+  // Update the processCancellation function
+  const processCancellation = async () => {
+    if (!selectedBooking || !user) return;
+
+    try {
+      // 1. Call the refund API
+      const refundResponse = await fetch('/api/refund', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          bookingId: selectedBooking._id,
+          userId: user.id,
+        }),
+      });
+
+      if (!refundResponse.ok) {
+        const error = await refundResponse.json();
+        throw new Error(error.message || 'Failed to process refund');
+      }
+
+      // 2. Cancel the booking
+      await cancelBookingMutation({
+        bookingId: selectedBooking._id
+      });
+
+      // 3. Close dialogs and show success message
+      setShowCancelDialog(false);
+      setIsDialogOpen(false);
+      toast({
+        title: "Booking Cancelled",
+        description: "Your refund has been processed and will be credited to your original payment method.",
+      });
+
+    } catch (error) {
+      console.error('Cancellation error:', error);
+      toast({
+        title: "Error",
+        description: error instanceof Error ? error.message : "Failed to cancel booking",
+        variant: "destructive",
+      });
+    }
+  };
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center h-screen">
+        <Lottie
+          lottieRef={lottieRef}
+          animationData={loadingAnimation}
+          loop={false}
+          autoplay={true}
+          className="w-48 h-48"
+        />
+      </div>
+    );
+  }
 
   if (customerId === "") {
     return <Redirection />;
   }
 
-  const currentBooking = bookings && bookings.length > 0 ? bookings[0] : null;
   const pastBookings = bookings?.filter(booking => new Date(booking.startDate) < new Date());
 
   // Add these helper functions at the top of your component
@@ -168,8 +277,8 @@ export function Mybookings() {
       <div className="max-w-6xl mx-auto px-4 py-8 sm:px-6 md:py-12">
         <h1 className="text-3xl font-bold mb-8">Your Car Bookings</h1>
          
-        {/* Current Booking Section */}
-        {bookings?.filter(booking => isBookingCurrent(booking.startDate, booking.endDate))[0] && (
+        {/* Current/Upcoming Booking Section */}
+        {currentBooking && (
           <Link 
             href={`/bookings/currentbooking`} 
             className='hover:cursor-pointer mb-8 block'
@@ -177,36 +286,40 @@ export function Mybookings() {
             <div className="w-full mx-auto mt-1 rounded-lg p-6 bg-white shadow-2xl" style={{ border: "none" }}>
               <div className="flex items-center justify-between">
                 <div>
-                  <h2 className="text-2xl font-semibold">Current Booking</h2>
-      <p className="text-muted-foreground">Rental Dates: {currentBooking.startDate} - {currentBooking.endDate}</p>
-      </div>
-          <div className="text-right">
-            <h3 className="text-3xl font-bold">${currentBooking ? currentBooking.totalCost : 0}</h3>
-            <p className="text-muted-foreground">Total Cost</p>
-          </div>
-        </div>
-        <Separator className="my-6" />
-        <div className="grid sm:grid-cols-2 gap-4">
-          <div>
-            <h3 className="text-lg font-semibold">Car Model</h3>
-            <p>{carDetails ? `${carDetails.maker} ${carDetails.model}` : 'N/A'}</p>
-          </div>
-          <div>
-            <h3 className="text-lg font-semibold">Trim</h3>
-            <p>{carDetails ? carDetails.trim : 'N/A'}</p>
-          </div>
-          <div>
-            <h3 className="text-lg font-semibold">Pickup Location</h3>
-            <p>{currentBooking ? currentBooking.pickupLocation : 'N/A'}</p>
-          </div>
-          <div>
-            <h3 className="text-lg font-semibold">Return Location</h3>
-            <p>{currentBooking ? currentBooking.dropoffLocation : 'N/A'}</p>
-          </div>
-        </div>
-        </div>
-        </Link>
-                )}
+                  <h2 className="text-2xl font-semibold">{currentBooking.status} Booking</h2>
+                  <p className="text-muted-foreground">Rental Dates: {currentBooking.startDate} - {currentBooking.endDate}</p>
+                </div>
+                <div className="text-right">
+                  <h3 className="text-3xl font-bold">{formatPrice(currentBooking.totalCost)}</h3>
+                  <p className="text-muted-foreground">Total Cost</p>
+                </div>
+              </div>
+              <Separator className="my-6" />
+              <div className="grid sm:grid-cols-2 gap-4">
+                <div>
+                  <h3 className="text-lg font-semibold">Car Model</h3>
+                  <p>{currentBooking.carDetails ? `${currentBooking.carDetails.maker} ${currentBooking.carDetails.model}` : 'N/A'}</p>
+                </div>
+                <div>
+                  <h3 className="text-lg font-semibold">Trim</h3>
+                  <p>{currentBooking.carDetails ? currentBooking.carDetails.trim : 'N/A'}</p>
+                </div>
+                <div>
+                  <h3 className="text-lg font-semibold">Pickup Location</h3>
+                  <p>{currentBooking.pickupLocation}</p>
+                </div>
+                <div>
+                  <h3 className="text-lg font-semibold">Return Location</h3>
+                  <p>{currentBooking.dropoffLocation}</p>
+                </div>
+                <div>
+                  <h3 className="text-lg font-semibold">{currentBooking.status === 'Current' ? 'Days Remaining' : 'Days Until Start'}</h3>
+                  <p>{currentBooking.daysRemaining} days</p>
+                </div>
+              </div>
+            </div>
+          </Link>
+        )}
 
         <Separator className="my-8" />
 
@@ -308,7 +421,7 @@ export function Mybookings() {
                       </div>
                       <div>
                         <div className="text-sm font-medium">Total Cost</div>
-                        <div>${booking.totalCost.toFixed(2)}</div>
+                        <div>{formatPrice(booking.totalCost)}</div>
                       </div>
                     </div>
                   </CardContent>
@@ -352,7 +465,7 @@ export function Mybookings() {
                       </div>
                       <div>
                         <div className="text-sm font-medium">Total Cost</div>
-                        <div>${booking.totalCost.toFixed(2)}</div>
+                        <div>{formatPrice(booking.totalCost)}</div>
                       </div>
                     </div>
                   </CardContent>
@@ -395,7 +508,7 @@ export function Mybookings() {
                       </div>
                       <div>
                         <div className="text-sm font-medium">Total Cost</div>
-                        <div>${booking.totalCost.toFixed(2)}</div>
+                        <div>{formatPrice(booking.totalCost)}</div>
                       </div>
                     </div>
                   </CardContent>
@@ -429,7 +542,7 @@ export function Mybookings() {
                 </div>
                 <div>
                   <h3 className="font-semibold">Total Cost</h3>
-                  <p>${selectedBooking.totalCost.toFixed(2)}</p>
+                  <p>{formatPrice(selectedBooking.totalCost)}</p>
                 </div>
               </div>
               
@@ -454,10 +567,49 @@ export function Mybookings() {
                   <p>{selectedBooking.dropoffLocation}</p>
                 </div>
               </div>
+              
+              {/* Add this button for upcoming bookings */}
+              {isUpcomingBooking(selectedBooking.startDate) && (
+                <Button 
+                  onClick={() => handleCancelBooking(selectedBooking)}
+                  variant="destructive"
+                  className="w-full mt-4"
+                >
+                  Cancel Booking
+                </Button>
+              )}
             </div>
           )}
         </DialogContent>
       </Dialog>
+
+      {/* Add the Cancel Confirmation Dialog */}
+      <AlertDialog open={showCancelDialog} onOpenChange={setShowCancelDialog}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Cancel Booking</AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to cancel this booking? This action cannot be undone.
+              {selectedBooking && (
+                <div className="mt-4 p-4 bg-muted rounded-lg">
+                  <p><strong>Vehicle:</strong> {selectedBooking.make} {selectedBooking.model}</p>
+                  <p><strong>Dates:</strong> {selectedBooking.startDate} - {selectedBooking.endDate}</p>
+                  <p><strong>Total Cost:</strong> {formatPrice(selectedBooking.totalCost)}</p>
+                </div>
+              )}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Keep Booking</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={processCancellation}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              Yes, Cancel Booking
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </>
   );
 }

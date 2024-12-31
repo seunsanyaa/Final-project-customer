@@ -175,7 +175,7 @@ export function InputForm({
 
     setIsSubmitting(true);
     try {
-      if (router.pathname === "/login") {
+      if (router.pathname === "/Login") {
         await signInWithEmail({
           emailAddress: data.email,
           password: data.password,
@@ -222,12 +222,12 @@ export function InputForm({
   onSubmit={(event) => authForm.handleSubmit(onSubmit)(event)}
         className="relative mt-4 w-full space-y-6  pt-2"
         style={
-          router.pathname === "/login" || router.pathname === "/create-account"
+          router.pathname === "/Login" || router.pathname === "/create-account"
             ? {}
             : { borderTop: "none" }
         }
       >
-        {router.pathname === "/login" ||
+        {router.pathname === "/Login" ||
         router.pathname === "/create-account" ? (
           <div
             className="absolute left-0 right-0 flex justify-center "
@@ -270,7 +270,7 @@ export function InputForm({
                   <div className="flex items-center justify-between">
                     <span>Password </span>
 
-                    {router.pathname === "/login" ? (
+                    {router.pathname === "/Login" ? (
                       <Link href={"/reset-password"}>
                         <p className="paragraph-color text-right text-sm font-normal underline">
                           Forgot password?
@@ -328,7 +328,7 @@ export function InputForm({
 
         {showOption ? (
           <>
-            {router.pathname === "/login" ? (
+            {router.pathname === "/Login" ? (
               <p className="text-center text-sm font-normal">
                 {" "}
                 Don’t have an account?
@@ -343,7 +343,7 @@ export function InputForm({
               <p className="text-center text-sm font-normal">
                 {" "}
                 Already have an account?{" "}
-                <Link href={"/login"}>
+                <Link href={"/Login"}>
                   <span className="text-brand text-sm font-medium">
                     {" "}
                     Sign in{" "}

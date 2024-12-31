@@ -5,6 +5,8 @@ import { api } from '@/convex/_generated/api';
 import { ChevronUp, ChevronDown, Star } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/card";
 import { Textarea } from "@/components/ui/textarea";
+import { Id } from '../../../convex/_generated/dataModel'
+import Image from "next/image";
 
 type BookingWithCarDetails = {
   _id: string;
@@ -30,6 +32,7 @@ type CarDetails = {
   year: number;
   color: string;
   trim: string;
+  pictures: string[];
 };
 
 const PreviousBookings: React.FC<{ customerId: string }> = ({ customerId }) => {
@@ -52,7 +55,7 @@ const PreviousBookings: React.FC<{ customerId: string }> = ({ customerId }) => {
     setError(null);
     try {
       await createReview({
-        bookingId: bookingId as Id<'bookings'>,
+        bookingId: bookingId as   Id<'bookings'>,
         rating: newRating,
         userId: customerId,
         comment: newReview,
@@ -85,32 +88,56 @@ const PreviousBookings: React.FC<{ customerId: string }> = ({ customerId }) => {
           {pendingBookings.map((booking) => {
             const car = booking.carDetails;
             const isExpanded = expandedBooking === booking._id;
+            const bookingEndDate = new Date(booking.endDate);
+            const currentDate = new Date();
+            const isBookingEnded = currentDate > bookingEndDate;
 
             return (
               <Card key={booking._id} className="w-full mx-auto mt-1 rounded-lg p-1 bg-white shadow-2xl" style={{ border: "none" }}>
-                <CardHeader>
-                  <CardTitle>{car ? `${car.maker} ${car.model} (${car.year})` : 'Car Details Not Available'}</CardTitle>
-                  <CardDescription>{new Date(booking.startDate).toLocaleDateString()} to {new Date(booking.endDate).toLocaleDateString()}</CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <p><strong>Total Cost:</strong> ${booking.totalCost.toFixed(2)}</p>
-                  <p><strong>Status:</strong> {booking.status}</p>
-                  {booking.reviewed ? (
-                    <p className="text-green-600">You've already reviewed this booking.</p>
-                  ) : (
-                    <Button onClick={() => handleExpandBooking(booking._id)}>
-                      Leave a Review
-                      {isExpanded ? <ChevronUp className="ml-2 h-4 w-4" /> : <ChevronDown className="ml-2 h-4 w-4" />}
-                    </Button>
-                  )}
-                </CardContent>
-                {isExpanded && (
+                <div className="flex flex-row">
+                  <div className="flex-1">
+                    <CardHeader>
+                      <CardTitle>{car ? `${car.maker} ${car.model} (${car.year})` : 'Car Details Not Available'}</CardTitle>
+                      <CardDescription>{new Date(booking.startDate).toLocaleDateString()} to {new Date(booking.endDate).toLocaleDateString()}</CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                      <p><strong>Total Cost:</strong> ${booking.totalCost.toFixed(2)}</p>
+                      <p><strong>Status:</strong> {booking.status}</p>
+                      {booking.reviewId ? (
+                        <p className="text-green-600">You&apos;ve already reviewed this booking.</p>
+                      ) : !isBookingEnded ? (
+                        <p className="text-yellow-600">You can review this booking after {bookingEndDate.toLocaleDateString()}</p>
+                      ) : (
+                        <Button onClick={() => handleExpandBooking(booking._id)}>
+                          Leave a Review
+                          {isExpanded ? <ChevronUp className="ml-2 h-4 w-4" /> : <ChevronDown className="ml-2 h-4 w-4" />}
+                        </Button>
+                      )}
+                    </CardContent>
+                  </div>
+                  <div className="w-64 h-48">
+                    {car?.pictures ? (
+                      <Image 
+                        src={car.pictures[0]} 
+                        alt={`${car.maker} ${car.model}`} 
+                        width={400}
+                        height={300}
+                        className="w-full h-full object-cover rounded-r-lg" 
+                      />
+                    ) : (
+                      <div className="w-full h-full bg-muted flex items-center justify-center rounded-r-lg">
+                        No image available
+                      </div>
+                    )}
+                  </div>
+                </div>
+                {isExpanded && isBookingEnded && (
                   <CardFooter className="flex flex-col items-start">
                     <div className="flex items-center mb-4">
                       {[...Array(5)].map((_, i) => (
                         <Star
                           key={i}
-                          className={`w-6 h-6 cursor-pointer ${i < newRating ? 'text-foreground fill-foreground' : 'text-gray-300'}`}
+                          className={`w-6 h-6 cursor-pointer ${i < newRating ? 'text-customyello fill-customyello' : 'text-gray-300'}`}
                           onClick={() => setNewRating(i + 1)}
                         />
                       ))}

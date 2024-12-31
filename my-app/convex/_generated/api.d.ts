@@ -21,6 +21,8 @@ import type * as chat from "../chat.js";
 import type * as clerk from "../clerk.js";
 import type * as customers from "../customers.js";
 import type * as http from "../http.js";
+import type * as migrations from "../migrations.js";
+import type * as notifications from "../notifications.js";
 import type * as payment from "../payment.js";
 import type * as promotions from "../promotions.js";
 import type * as review from "../review.js";
@@ -28,6 +30,7 @@ import type * as settings from "../settings.js";
 import type * as staff from "../staff.js";
 import type * as users from "../users.js";
 import type * as util from "../util.js";
+import type * as verify from "../verify.js";
 
 /**
  * A utility for referencing Convex functions in your app's API.
@@ -45,6 +48,8 @@ declare const fullApi: ApiFromModules<{
   clerk: typeof clerk;
   customers: typeof customers;
   http: typeof http;
+  migrations: typeof migrations;
+  notifications: typeof notifications;
   payment: typeof payment;
   promotions: typeof promotions;
   review: typeof review;
@@ -52,6 +57,7 @@ declare const fullApi: ApiFromModules<{
   staff: typeof staff;
   users: typeof users;
   util: typeof util;
+  verify: typeof verify;
 }>;
 export declare const api: FilterApi<
   typeof fullApi,

@@ -12,6 +12,8 @@ export interface Car {
   disabled: boolean;
   pricePerDay: number;
   averageRating: number;
+  golden: boolean;
+  categories: string[];
 }
 
 export interface Specifications {

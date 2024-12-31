@@ -2,6 +2,24 @@ import { v } from 'convex/values';
 import { mutation, query, action } from './_generated/server';
 import { api } from './_generated/api';
 
+
+export const getSimilarCar = query({
+	args: {
+		registrationNumber: v.string(),
+	},
+	handler: async (ctx, args) => {
+		return await ctx.db.query('cars').filter(q => q.eq(q.field('registrationNumber'), args.registrationNumber)).collect();
+	}
+});
+
+export const AdminSearchCar = query({
+	args: {
+		registrationNumber: v.string(),
+	},
+	handler: async (ctx, args) => {
+		return await ctx.db.query('cars').filter(q => q.eq(q.field('registrationNumber'), args.registrationNumber)).collect();
+	}
+});
 // Action to fetch and store car specifications
 export const fetchAndStoreCarSpecifications = action({
 	args: {
@@ -88,19 +106,19 @@ export const addSpecification = mutation({
 export const createCar = mutation({
 	args: {
 		model: v.string(),
-		color: v.string(),
-		maker: v.string(),
-		trim: v.string(),
-		lastMaintenanceDate: v.string(),
-		available: v.boolean(),
-		year: v.number(),
-		registrationNumber: v.string(),
-		pictures: v.array(v.string()),
-		pricePerDay: v.number(),
-		averageRating: v.optional(v.number()),
-		categories: 	v.optional(v.array(v.string())),
-		disabled: v.boolean(),
-		golden: v.boolean(),
+    color: v.string(),
+    maker: v.string(),
+    trim: v.string(),
+    lastMaintenanceDate: v.string(),
+    available: v.boolean(),
+    disabled: v.boolean(),
+    golden: v.boolean(),
+    year: v.number(),
+    registrationNumber: v.string(),
+    pictures: v.array(v.string()),
+    pricePerDay: v.number(),
+    averageRating: v.optional(v.number()),
+    categories: v.optional(v.array(v.string())),
 	},
 	handler: async (ctx, args) => {
 		const existingCar = await ctx.db
@@ -116,7 +134,7 @@ export const createCar = mutation({
 
 		const carId = await ctx.db.insert('cars', {
 			...args,
-			disabled: false,
+
 		});
 
 		// Fetch and return the newly created car
@@ -156,10 +174,11 @@ export const updateCar = mutation({
 		trim: v.optional(v.string()),
 		lastMaintenanceDate: v.optional(v.string()),
 		available: v.optional(v.boolean()),
+		disabled: v.optional(v.boolean()),
+		golden: v.optional(v.boolean()),
 		year: v.optional(v.number()),
 		pictures: v.optional(v.array(v.string())),
-		disabled: v.optional(v.boolean()),
-		pricePerDay: v.optional(v.number()), // Add price here
+		pricePerDay: v.optional(v.number()),
 	},
 	handler: async (ctx, args) => {
 		const existingCar = await ctx.db
@@ -185,32 +204,60 @@ export const updateCar = mutation({
 });
 
 export const getCar = query({
-	args: {
-		registrationNumber: v.string(),
-	},
+	args: { registrationNumber: v.string() },
 	handler: async (ctx, args) => {
 		const car = await ctx.db
-			.query('cars')
-			.withIndex('by_registrationNumber', (q) =>
-				q.eq('registrationNumber', args.registrationNumber)
+			.query("cars")
+			.withIndex("by_registrationNumber", (q) => 
+				q.eq("registrationNumber", args.registrationNumber)
 			)
 			.first();
 
 		if (!car) {
-			return `Car with registration number ${args.registrationNumber} does not exist.`;
+			throw new Error(`Car with registration number ${args.registrationNumber} not found`);
 		}
 
 		return car;
-	},
+	}
 });
 
 export const getAllCars = query({
-	handler: async (ctx) => {
-		const cars = await ctx.db
-			.query('cars')
-			.filter((q) => q.eq(q.field('disabled'), false))
+	args: {
+		golden: v.optional(v.boolean()),
+		disabled: v.optional(v.boolean()),
+		onlyAvailable: v.optional(v.boolean()),
+	},
+	handler: async (ctx, args) => {
+		// If no filters are provided, return all cars
+		if (args.disabled === undefined && args.golden === undefined && args.onlyAvailable === undefined) {
+			return await ctx.db.query("cars").collect();
+		}
+
+		// If any filter is provided, build the filter condition
+		return await ctx.db
+			.query("cars")
+			.filter((q) => {
+				let filter = q.eq(q.field('disabled'), args.disabled ?? false); // Start with a base condition
+
+				// Only add golden filter if it's provided
+				if (args.golden !== undefined) {
+					filter = q.and(
+						filter,
+						q.eq(q.field('golden'), args.golden)
+					);
+				}
+
+				// Only add available filter if it's provided
+				if (args.onlyAvailable !== undefined) {
+					filter = q.and(
+						filter,
+						q.eq(q.field('available'), args.onlyAvailable)
+					);
+				}
+
+				return filter;
+			})
 			.collect();
-		return cars;
 	},
 });
 
@@ -269,12 +316,34 @@ export const getFilteredCars = query({
 		drive: v.optional(v.string()),
 		doors: v.optional(v.string()),
 		engineHorsepower: v.optional(v.string()),
+		golden: v.optional(v.boolean()),
+		disabled: v.optional(v.boolean()),
+		categories: v.optional(v.array(v.string())),
 	},
 	handler: async (ctx, args) => {
+		// First get all non-disabled cars
 		const cars = await ctx.db
 			.query("cars")
-			.filter((q) => q.eq(q.field('disabled'), false))
+			.filter((q) => {
+				// Start with the disabled check
+				let filter = q.eq(q.field('disabled'), args.disabled ?? false);
+				filter = q.and(
+					filter,
+					q.eq(q.field('available'), true)
+				);
+				
+				// If golden filter is provided, add it to the query
+				if (args.golden !== undefined) {
+					filter = q.and(
+						filter,
+						q.eq(q.field('golden'), args.golden)
+					);
+				}
+				
+				return filter;
+			})
 			.collect();
+
 		const specs = await ctx.db.query("specifications").collect();
 
 		const specsMap = specs.reduce((acc, spec) => {
@@ -285,13 +354,20 @@ export const getFilteredCars = query({
 		return cars.filter((car) => {
 			const carSpecs = specsMap[car.registrationNumber];
 			
-			// Basic car filters
+			// Apply other filters
 			if (args.maker && !car.maker.toLowerCase().includes(args.maker.toLowerCase())) return false;
 			if (args.model && !car.model.toLowerCase().includes(args.model.toLowerCase())) return false;
 			if (args.year && car.year !== args.year) return false;
 
-			// Specification filters - only apply if specs exist and filter is provided
-			if (!carSpecs) return true; // Show cars without specs unless specifically filtering for specs
+			// Category filter
+			if (args.categories && args.categories.length > 0) {
+				if (!car.categories) return false;
+				// Check if any of the searched categories match the car's categories
+				if (!args.categories.some(category => car.categories?.includes(category))) return false;
+			}
+
+			// Specification filters
+			if (!carSpecs) return true;
 
 			if (args.engineType && !carSpecs.engineType.toLowerCase().includes(args.engineType.toLowerCase())) return false;
 			if (args.engineCylinders && !carSpecs.engineCylinders.toLowerCase().includes(args.engineCylinders.toLowerCase())) return false;
@@ -300,6 +376,7 @@ export const getFilteredCars = query({
 			if (args.drive && !carSpecs.drive.toLowerCase().includes(args.drive.toLowerCase())) return false;
 			if (args.doors && !carSpecs.doors.toLowerCase().includes(args.doors.toLowerCase())) return false;
 			if (args.engineHorsepower && !carSpecs.engineHorsepower.toLowerCase().includes(args.engineHorsepower.toLowerCase())) return false;
+			
 			return true;
 		});
 	},
@@ -455,23 +532,108 @@ export const getSimilarCars = query({
 		maker: v.optional(v.string()),
 		model: v.optional(v.string()),
 		excludeId: v.string(),
-		limit: v.optional(v.number())
+		limit: v.optional(v.number()),
+		userId: v.optional(v.string()),
+		categories: v.optional(v.array(v.string()))
 	},
 	handler: async (ctx, args) => {
 		const limit = args.limit ?? 3;
+		const recommendations: any[] = [];
 		
-		return await ctx.db
-			.query("cars")
-			.filter(q => 
-				q.and(
-					q.neq(q.field("registrationNumber"), args.excludeId),
-					q.or(
-						q.eq(q.field("maker"), args.maker),
-						q.eq(q.field("model"), args.model)
+		// 1. Get previously rented cars if userId is provided
+		if (args.userId) {
+			const bookings = await ctx.db
+				.query("bookings")
+				.withIndex("by_customerId", q => q.eq("customerId", args.userId as string))
+				.collect();
+
+			for (const booking of bookings) {
+				if (!booking.carId) continue;
+				const rentedCar = await ctx.db
+					.query("cars")
+					.withIndex("by_registrationNumber", q => q.eq("registrationNumber", booking.carId))
+					.filter(q => 
+						q.and(
+							q.neq(q.field("registrationNumber"), args.excludeId),
+							q.eq(q.field('available'), true)
+						)
+					)
+					.first();
+				
+				if (rentedCar && !recommendations.some(car => car.registrationNumber === rentedCar.registrationNumber)) {
+					recommendations.push(rentedCar);
+					if (recommendations.length >= Math.floor(limit / 3)) break;
+				}
+			}
+		}
+
+		// 2. Get cars with similar categories
+		if (args.categories && args.categories.length > 0) {
+			const similarCategoryCars = await ctx.db
+				.query("cars")
+				.filter(q => 
+					q.and(
+						q.neq(q.field("registrationNumber"), args.excludeId),
+						q.eq(q.field('available'), true)
 					)
 				)
-			)
-			.take(limit);
+				.collect();
+
+			const categoryCars = similarCategoryCars
+				.filter(car => 
+					car.categories?.some(category => args.categories?.includes(category)) &&
+					!recommendations.some(rec => rec.registrationNumber === car.registrationNumber)
+				)
+				.slice(0, Math.floor(limit / 3));
+
+			recommendations.push(...categoryCars);
+		}
+
+		// 3. Get cars with similar make/model
+		if (args.maker || args.model) {
+			const similarMakeModelCars = await ctx.db
+				.query("cars")
+				.filter(q => 
+					q.and(
+						q.neq(q.field("registrationNumber"), args.excludeId),
+						q.eq(q.field('available'), true),
+						args.maker ? q.eq(q.field("maker"), args.maker) :
+						args.model ? q.eq(q.field("model"), args.model) :
+						q.eq(q.field("available"), true)
+					)
+				)
+				.collect();
+
+			const filteredMakeModelCars = similarMakeModelCars
+				.filter(car => !recommendations.some(rec => rec.registrationNumber === car.registrationNumber))
+				.slice(0, limit - recommendations.length);
+
+			recommendations.push(...filteredMakeModelCars);
+		}
+
+		// If we still haven't reached the limit, add random available cars
+		if (recommendations.length < limit) {
+			const remainingCount = limit - recommendations.length;
+			const randomCars = await ctx.db
+				.query("cars")
+				.filter(q => 
+					q.and(
+						q.neq(q.field("registrationNumber"), args.excludeId),
+						q.eq(q.field('available'), true)
+					)
+				)
+				.collect();
+
+			const filteredRandomCars = randomCars
+				.filter(car => !recommendations.some(rec => rec.registrationNumber === car.registrationNumber))
+				.slice(0, remainingCount);
+
+			recommendations.push(...filteredRandomCars);
+		}
+
+		// Shuffle the recommendations to mix the different types
+		const shuffled = recommendations.sort(() => Math.random() - 0.5);
+		return shuffled.slice(0, limit);
 	},
 });
 
@@ -479,18 +641,29 @@ export const getSimilarCars = query({
 export const getCarsByCategory = query({
 	args: {
 		category: v.optional(v.string()),
+		disabled: v.optional(v.boolean()),
 	},
 	handler: async (ctx, args) => {
 		if (!args.category || args.category === "all") {
 			return ctx.db
 				.query("cars")
-				.filter((q) => q.eq(q.field('disabled'), false))
+				.filter((q) => 
+					q.and(
+						q.eq(q.field('disabled'), args.disabled ?? false),
+						q.eq(q.field('available'), true)
+					)
+				)
 				.collect();
 		}
 
 		const cars = await ctx.db
 			.query("cars")
-			.filter((q) => q.eq(q.field('disabled'), false))
+			.filter((q) => 
+				q.and(
+					q.eq(q.field('disabled'), args.disabled ?? false),
+					q.eq(q.field('available'), true)
+				)
+			)
 			.collect();
 
 		// Filter cars that have the category in their categories array
@@ -499,3 +672,13 @@ export const getCarsByCategory = query({
 		);
 	},
 });
+
+export const getNumberOfCars = query({
+	handler: async (ctx): Promise<number> => {
+		const cars = await ctx.db
+			.query('cars')
+			.collect();
+		return cars.length;
+	},
+});
+

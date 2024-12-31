@@ -8,6 +8,33 @@ import { useQuery, useMutation } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import { useUser } from "@clerk/nextjs";
 import { Badge } from "@/components/ui/badge";
+import { Id } from "../../../convex/_generated/dataModel";
+import dynamic from 'next/dynamic';
+
+// Dynamically import react-confetti to avoid SSR issues
+const ReactConfetti = dynamic(() => import('react-confetti'), {
+  ssr: false
+});
+
+function useWindowSize() {
+  const [size, setSize] = useState({ width: 0, height: 0 });
+
+  useEffect(() => {
+    function updateSize() {
+      setSize({
+        width: window.innerWidth,
+        height: window.innerHeight
+      });
+    }
+    
+    window.addEventListener('resize', updateSize);
+    updateSize();
+    
+    return () => window.removeEventListener('resize', updateSize);
+  }, []);
+
+  return size;
+}
 
 export default function UserPromotions() {
   const { user } = useUser();
@@ -24,13 +51,17 @@ export default function UserPromotions() {
     userId: user?.id || "" 
   });
 
+  const { width, height } = useWindowSize();
+  const [showConfetti, setShowConfetti] = useState(false);
+  const [celebratingPromotion, setCelebratingPromotion] = useState<string | null>(null);
+
   // Calculate total money spent from bookings with proper rounding
   const totalMoneySpent = useMemo(() => {
     const total = bookings?.reduce((total, booking) => total + booking.totalCost, 0) || 0;
     return Math.ceil(total * 100) / 100; // Round up to 2 decimal places
   }, [bookings]);
 
-  const handleClaimReward = async (promotionId: string) => {
+  const handleClaimReward = async (promotionId: Id<"promotions">) => {
     if (!user?.id) return;
     try {
       await redeemPromo({
@@ -47,7 +78,7 @@ export default function UserPromotions() {
     try {
       await deactivatePromo({
         userId: user.id,
-        promotionId,
+        promotionId: promotionId as Id<"promotions">,
       });
     } catch (error) {
       console.error('Error deactivating promotion:', error);
@@ -59,26 +90,65 @@ export default function UserPromotions() {
     if (!permanentPromotions || !bookings) return [];
 
     return permanentPromotions.filter(promotion => {
-      // Skip promotions that have both minimums as 0 or undefined
-      if ((!promotion.minimumRentals || promotion.minimumRentals === 0) && 
-          (!promotion.minimumMoneySpent || promotion.minimumMoneySpent === 0)) {
-        return false;
-      }
-      return true;
+      // Keep promotions that have at least one non-zero minimum
+      return (promotion.minimumRentals && promotion.minimumRentals > 0) || 
+             (promotion.minimumMoneySpent && promotion.minimumMoneySpent > 0);
     });
   }, [permanentPromotions, bookings]);
 
   // Check if a promotion is active
-  const isPromotionActive = (promotionId: string) => {
-    return userRedeemedPromotions?.some(promo => promo._id === promotionId) ?? false;
+  const isPromotionActive = (promotionId: Id<"promotions">) => {
+    return userRedeemedPromotions?.some(promo => promo?._id === promotionId) ?? false;
   };
+
+  // Check if any promotion has just become available
+  useEffect(() => {
+    if (!processedPermanentPromotions || !bookings) return;
+
+    processedPermanentPromotions.forEach(promotion => {
+      const isAvailable = (
+        (!promotion.minimumMoneySpent || totalMoneySpent >= promotion.minimumMoneySpent) &&
+        (!promotion.minimumRentals || (bookings?.length || 0) >= promotion.minimumRentals)
+      );
+      
+      const isAlreadyActivated = isPromotionActive(promotion._id);
+      
+      // Show confetti if promotion is available but not yet activated
+      if (isAvailable && !isAlreadyActivated && !celebratingPromotion) {
+        setShowConfetti(true);
+        setCelebratingPromotion(promotion.promotionTitle);
+        
+        // Stop confetti after 5 seconds
+        setTimeout(() => {
+          setShowConfetti(false);
+          setCelebratingPromotion(null);
+        }, 5000);
+      }
+    });
+  }, [processedPermanentPromotions, bookings, totalMoneySpent]);
 
   return (
     <div className="flex flex-col min-h-screen">
+      {showConfetti && (
+        <>
+          <ReactConfetti
+            width={width}
+            height={height}
+            recycle={true}
+            numberOfPieces={200}
+            gravity={0.3}
+          />
+          <div className="fixed top-20 left-[35%] transform -translate-x-1/2 z-50 bg-green-500 text-white px-6 py-3 rounded-lg shadow-lg animate-bounce" style={{ backgroundColor: 'White', color: 'Black' }}>
+            <p className="text-center font-semibold" style={{ backgroundColor: 'White', color: 'Black' }}>
+              🎉 Congratulations! You've unlocked "{celebratingPromotion}"! 🎉
+            </p>
+          </div>
+        </>
+      )}
       <Navi />
       <Separator />
       <div className="flex flex-row h-full">
-        <aside className="flex flex-col items-left justify-between w-fit px-4 md:px-6 border-b bg-primary text-primary-foreground py-2 md:py-12">
+        <aside className="flex flex-col items-left w-fit px-4 md:px-6 border-b bg-primary text-primary-foreground py-2 md:py-12 min-h-[calc(95.5vh-65px)]">
           <nav className="flex flex-col items-left justify-between h-fit w-fit gap-4 sm:gap-6">
             <div className="flex flex-col md:flex items-left gap-4 w-fit">
               <Link
@@ -96,11 +166,10 @@ export default function UserPromotions() {
                 My Promotions
               </Link>
               <Link
-                href="/User_Account/User_Bookings"
+                href="/User_Account/Golden_Manage"
                 className="text-muted-foreground hover:text-customyello transition-colors"
-                prefetch={false}
-              >
-                Previous Bookings
+                prefetch={false}>
+                Manage Membership
               </Link>
             </div>
           </nav>
@@ -127,8 +196,8 @@ export default function UserPromotions() {
                     <CardContent>
                       <p className="text-muted-foreground mb-4">{promotion.promotionDescription}</p>
                       <div className="space-y-6">
-                        {/* Show Money Spent Progress Bar only for the last card */}
-                        {index === processedPermanentPromotions.length - 1 ? (
+                        {/* Show Money Spent Progress Bar if minimumMoneySpent is set and greater than 0 */}
+                        {promotion.minimumMoneySpent && promotion.minimumMoneySpent > 0 && (
                           <div className="mb-6">
                             <div className="flex justify-between items-center mb-2">
                               <span className="text-sm font-medium">Spending Progress</span>
@@ -149,11 +218,12 @@ export default function UserPromotions() {
                               />
                             </div>
                             <p className="text-sm text-muted-foreground mt-2">
-                              ${Math.max(0, Math.ceil((promotion.minimumMoneySpent - totalMoneySpent) * 100) / 100)} more to unlock
+                              ${Math.max(0, Math.ceil(((promotion.minimumMoneySpent ?? 0) - totalMoneySpent) * 100) / 100)} more to unlock
                             </p>
                           </div>
-                        ) : (
-                          /* Show Bookings Progress Bar for first two cards */
+                        )}
+                        {/* Show Bookings Progress Bar if minimumRentals is set and greater than 0 */}
+                        {promotion.minimumRentals && promotion.minimumRentals > 0 && (
                           <div className="mb-6">
                             <div className="flex justify-between items-center mb-2">
                               <span className="text-sm font-medium">Rental Progress</span>
@@ -190,10 +260,10 @@ export default function UserPromotions() {
                           <div className="flex justify-center">
                             <Button
                               className="px-6 py-3 text-sm font-semibold text-white bg-blue-600 hover:bg-blue-500 rounded-lg transition-colors hover:bg-muted shadow-2xl"
-                              disabled={
+                              disabled={Boolean(
                                 (promotion.minimumMoneySpent && promotion.minimumMoneySpent > 0 && totalMoneySpent < promotion.minimumMoneySpent) || 
                                 (promotion.minimumRentals && promotion.minimumRentals > 0 && (bookings?.length || 0) < promotion.minimumRentals)
-                              }
+                              )}
                               onClick={() => handleClaimReward(promotion._id)}
                             >
                               {((!promotion.minimumMoneySpent || totalMoneySpent >= promotion.minimumMoneySpent) && 
@@ -209,34 +279,27 @@ export default function UserPromotions() {
                 ))}
 
                 {/* Active Benefits Section */}
-                {userRedeemedPromotions && userRedeemedPromotions.length > 0 && (
-                  <div className="mt-8">
-                    <h3 className="text-xl font-semibold mb-4">Your Active Benefits</h3>
-                    <div className="grid gap-4">
-                      {userRedeemedPromotions.map((promotion) => (
-                        <Card key={promotion._id} className="bg-gray-50">
-                          <CardContent className="p-4">
-                            <div className="flex justify-between items-start">
-                              <div>
-                                <h4 className="font-semibold">{promotion.promotionTitle}</h4>
-                                <p className="text-sm text-muted-foreground">{promotion.promotionDescription}</p>
-                                <Badge className="mt-2">Active</Badge>
-                              </div>
-                              <Button
-                                variant="outline"
-                                size="sm"
-                                className="text-red-500 hover:text-red-700"
-                                onClick={() => handleDeactivate(promotion._id)}
-                              >
-                                Deactivate
-                              </Button>
-                            </div>
-                          </CardContent>
-                        </Card>
-                      ))}
-                    </div>
-                  </div>
-                )}
+                {userRedeemedPromotions?.filter(promotion => promotion !== null).map((promotion) => (
+                  <Card key={promotion!._id} className="bg-gray-50">
+                    <CardContent className="p-4">
+                      <div className="flex justify-between items-start">
+                        <div>
+                          <h4 className="font-semibold">{promotion!.promotionTitle}</h4>
+                          <p className="text-sm text-muted-foreground">{promotion!.promotionDescription}</p>
+                          <Badge className="mt-2">Active</Badge>
+                        </div>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          className="text-red-500 hover:text-red-700"
+                          onClick={() => handleDeactivate(promotion!._id)}
+                        >
+                          Deactivate
+                        </Button>
+                      </div>
+                    </CardContent>
+                  </Card>
+                ))}
               </CardContent>
             </Card>
           </div>

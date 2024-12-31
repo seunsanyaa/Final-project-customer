@@ -65,7 +65,7 @@ export function ChangeForm({ }) {
 
   const [isButtonDisabled, setIsButtonDisabled] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const resetPassword = useMutation(api.auth.resetPassword);
+  const resetPassword = useMutation(api.users.changePassword);
   async function onSendChangePassword(data: z.infer<typeof ChangeFormSchema>) {
     setIsSubmitting(true);
 
@@ -82,11 +82,11 @@ export function ChangeForm({ }) {
   
 
       resetPassword({
+        userId: router.query.userId as string,
         newPassword: data.password,
-        token:router.query.token as string
       })
         .then(() => {
-         void router.push("/login");
+         void router.push("/Login");
         })
         .catch(() => {
           toast({

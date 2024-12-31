@@ -3,14 +3,14 @@ import { mutation, query } from './_generated/server';
 
 export const sendMessage = mutation({
   args: {
-    customerId: v.string(),
+    userId: v.string(),
     message: v.string(),
     isAdmin: v.boolean(),
     timestamp: v.string(),
   },
   handler: async (ctx, args) => {
     return await ctx.db.insert('messages', {
-      customerId: args.customerId,
+      userId: args.userId,
       message: args.message,
       isAdmin: args.isAdmin,
       timestamp: args.timestamp,
@@ -19,11 +19,11 @@ export const sendMessage = mutation({
 });
 
 export const getMessagesByCustomerId = query({
-  args: { customerId: v.string() },
+  args: { userId: v.string() },
   handler: async (ctx, args) => {
     return await ctx.db
       .query('messages')
-      .withIndex('by_customerId', q => q.eq('customerId', args.customerId))
+      .withIndex('by_userId', q => q.eq('userId', args.userId))
       .order('desc')
       .collect();
   },

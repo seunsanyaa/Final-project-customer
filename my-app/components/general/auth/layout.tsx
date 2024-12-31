@@ -16,7 +16,7 @@ export default function AuthLayout() {
   useEffect(() => {
     if (!isLoaded) return; // Wait for auth to load
 
-    if (router.pathname === "/login" && userId) {
+    if (router.pathname === "/Login" && userId) {
       const redirectPath = sessionStorage.getItem('redirectAfterLogin');
       if (redirectPath) {
         sessionStorage.removeItem('redirectAfterLogin'); // Clear the stored path
@@ -32,7 +32,7 @@ export default function AuthLayout() {
         <Image
           className="h-full w-full rounded-xl object-cover"
           alt="Authentication background"
-          src="https://res.cloudinary.com/seunsanyaa/image/upload/v1727820662/unnamed_1_u3udcb.png"
+          src="https://res.cloudinary.com/dbsxjsktb/image/upload/v1735153779/d78cee61-0e64-4488-af14-9562b8652ffd_cklkmf.png"
           width={686}
           height={992}
         />
