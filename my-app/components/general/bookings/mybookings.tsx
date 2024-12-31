@@ -197,9 +197,10 @@ export function Mybookings() {
         }),
       });
 
-      if (!refundResponse.ok) {
-        const error = await refundResponse.json();
-        throw new Error(error.message || 'Failed to process refund');
+      const refundData = await refundResponse.json();
+
+      if (!refundResponse.ok && refundResponse.status !== 202) {
+        throw new Error(refundData.message || 'Failed to process refund');
       }
 
       // 2. Cancel the booking
@@ -210,10 +211,19 @@ export function Mybookings() {
       // 3. Close dialogs and show success message
       setShowCancelDialog(false);
       setIsDialogOpen(false);
-      toast({
-        title: "Booking Cancelled",
-        description: "Your refund has been processed and will be credited to your original payment method.",
-      });
+
+      // Show appropriate toast message based on whether payment was found
+      if (refundData.message === 'no_payment_found') {
+        toast({
+          title: "Booking Cancelled",
+          description: "No payment found, cancelled booking.",
+        });
+      } else {
+        toast({
+          title: "Booking Cancelled",
+          description: "Your refund has been processed and will be credited to your original payment method.",
+        });
+      }
 
     } catch (error) {
       console.error('Cancellation error:', error);

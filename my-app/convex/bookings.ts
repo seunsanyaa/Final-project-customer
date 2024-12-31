@@ -68,32 +68,8 @@ export const createBooking = mutation({
 			throw new Error('Car not found');
 		}
 
-		// 2. Find and update the fleet
-		const fleet = await ctx.db
-			.query('fleets')
-			.filter(q => 
-				q.and(
-					q.eq(q.field('maker'), car.maker),
-					q.eq(q.field('model'), car.model),
-					q.eq(q.field('trim'), car.trim),
-					q.eq(q.field('year'), car.year)
-				)
-			)
-			.first();
-
-		if (!fleet) {
-			throw new Error('Fleet not found');
-		}
-
-		// 3. Update fleet: remove registration number and decrease quantity
-		const updatedRegistrationNumbers = fleet.registrationNumber.filter(
-			reg => reg !== args.carId
-		);
-
-		await ctx.db.patch(fleet._id, {
-			registrationNumber: updatedRegistrationNumbers,
-			quantity: fleet.quantity - 1
-		});
+		
+	
 
 		// 4. Update car availability
 		await ctx.db.patch(car._id, {
@@ -619,29 +595,8 @@ export const cancelBooking = mutation({
 			throw new Error('Car not found');
 		}
 
-		// 3. Find and update the fleet
-		const fleet = await ctx.db
-			.query('fleets')
-			.filter(q => 
-				q.and(
-					q.eq(q.field('maker'), car.maker),
-					q.eq(q.field('model'), car.model),
-					q.eq(q.field('trim'), car.trim),
-					q.eq(q.field('year'), car.year)
-				)
-			)
-			.first();
 
-		if (!fleet) {
-			throw new Error('Fleet not found');
-		}
-
-		// 4. Update fleet: add registration number back and increase quantity
-		await ctx.db.patch(fleet._id, {
-			registrationNumber: [...fleet.registrationNumber, booking.carId],
-			quantity: fleet.quantity + 1
-		});
-
+	
 		// 5. Update car availability
 		await ctx.db.patch(car._id, {
 			available: true

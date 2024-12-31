@@ -30,32 +30,44 @@ export default async function handler(
       const payments = await convex.query(api.payment.getAllPaymentsByBookingId, { bookingId: bookingId as Id<"bookings"> });
       console.log('Found payments:', payments);
 
+      // If no payments found, return a specific status code
       if (!payments || payments.length === 0) {
-        return res.status(404).json({ error: 'No payments found for this booking' });
+        return res.status(202).json({ 
+          message: 'no_payment_found',
+          success: true 
+        });
       }
 
       // 2. Process refunds for each payment that has a paymentIntentId
-      const refundPromises = payments
-        .filter((payment: any) => payment.paymentIntentId)
-        .map(async (payment: any) => {
-          try {
-            const refund = await stripe.refunds.create({
-              payment_intent: payment.paymentIntentId,
-              reason: 'requested_by_customer',
-            });
-            console.log('Refund processed:', refund);
-            
-            // Call the RefundPayment mutation for each payment
-            await convex.mutation(api.payment.RefundPayment, { 
-              receiptNumber: payment.receiptNumber 
-            });
-            
-            return refund;
-          } catch (refundError) {
-            console.error('Error processing individual refund:', refundError);
-            throw refundError;
-          }
+      const validPayments = payments.filter((payment: any) => payment.paymentIntentId);
+
+      // If no valid payment intents found, return the same status
+      if (validPayments.length === 0) {
+        return res.status(202).json({ 
+          message: 'no_payment_found',
+          success: true 
         });
+      }
+
+      const refundPromises = validPayments.map(async (payment: any) => {
+        try {
+          const refund = await stripe.refunds.create({
+            payment_intent: payment.paymentIntentId,
+            reason: 'requested_by_customer',
+          });
+          console.log('Refund processed:', refund);
+          
+          // Call the RefundPayment mutation for each payment
+          await convex.mutation(api.payment.RefundPayment, { 
+            receiptNumber: payment.receiptNumber 
+          });
+          
+          return refund;
+        } catch (refundError) {
+          console.error('Error processing individual refund:', refundError);
+          throw refundError;
+        }
+      });
 
       const refunds = await Promise.all(refundPromises);
 

@@ -225,39 +225,31 @@ export const getAllCars = query({
 	args: {
 		golden: v.optional(v.boolean()),
 		disabled: v.optional(v.boolean()),
-		onlyAvailable: v.optional(v.boolean()),
 	},
 	handler: async (ctx, args) => {
-		// If no filters are provided, return all cars
-		if (args.disabled === undefined && args.golden === undefined && args.onlyAvailable === undefined) {
+		// If no filters are provided, return all cars (including disabled ones)
+		if (args.disabled === undefined && args.golden === undefined) {
 			return await ctx.db.query("cars").collect();
 		}
 
-		// If any filter is provided, build the filter condition
-		return await ctx.db
-			.query("cars")
-			.filter((q) => {
-				let filter = q.eq(q.field('disabled'), args.disabled ?? false); // Start with a base condition
+		// If golden filter is provided
+		if (args.golden !== undefined) {
+			return await ctx.db
+				.query("cars")
+				.filter((q) => q.eq(q.field('golden'), args.golden))
+				.collect();
+		}
 
-				// Only add golden filter if it's provided
-				if (args.golden !== undefined) {
-					filter = q.and(
-						filter,
-						q.eq(q.field('golden'), args.golden)
-					);
-				}
+		// If disabled filter is provided
+		if (args.disabled !== undefined) {
+			return await ctx.db
+				.query("cars")
+				.filter((q) => q.eq(q.field('disabled'), args.disabled))
+				.collect();
+		}
 
-				// Only add available filter if it's provided
-				if (args.onlyAvailable !== undefined) {
-					filter = q.and(
-						filter,
-						q.eq(q.field('available'), args.onlyAvailable)
-					);
-				}
-
-				return filter;
-			})
-			.collect();
+		// Fallback (should never reach here due to the first condition)
+		return await ctx.db.query("cars").collect();
 	},
 });
 
