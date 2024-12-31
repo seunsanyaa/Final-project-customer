@@ -216,7 +216,7 @@ export const Navi: React.FC<NaviProps> = ({ className }) => {
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button variant="ghost" className="text-muted-foreground hover:text-primary-foreground transition-colors flex items-center gap-2">
-                Currency
+                {localSettings.currency === 'USD' ? '$ USD' : '₺ TRY'}
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
                   width="16"
@@ -239,6 +239,7 @@ export const Navi: React.FC<NaviProps> = ({ className }) => {
                 const parsedSettings = JSON.parse(settings);
                 const newSettings = { ...parsedSettings, currency: 'USD' };
                 localStorage.setItem('userSettings', JSON.stringify(newSettings));
+                setLocalSettings(newSettings);
                 
                 // Dispatch custom event
                 window.dispatchEvent(new CustomEvent('currencyChange', {
@@ -253,6 +254,7 @@ export const Navi: React.FC<NaviProps> = ({ className }) => {
                 const parsedSettings = JSON.parse(settings);
                 const newSettings = { ...parsedSettings, currency: 'TRY' };
                 localStorage.setItem('userSettings', JSON.stringify(newSettings));
+                setLocalSettings(newSettings);
                 
                 // Dispatch custom event
                 window.dispatchEvent(new CustomEvent('currencyChange', {
