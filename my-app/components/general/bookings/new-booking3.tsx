@@ -48,12 +48,20 @@ const MapComponent = dynamic(
 // Add these types at the top of the file
 type Promotion = {
   _id: Id<"promotions">;
+  _creationTime: number;
   promotionType: 'discount' | 'offer' | 'upgrade' | 'permenant';
   promotionValue: number;
   promotionTitle: string;
   promotionDescription: string;
-  specificTarget: string[];
+  promotionImage: string;
+  promotionStartDate?: string;
+  promotionEndDate?: string;
+  status: 'active' | 'inactive' | 'expired' | 'scheduled';
+  goldenMembersOnly: boolean;
   target: 'all' | 'specific' | 'none';
+  specificTarget: string[];
+  minimumRentals?: number;
+  minimumMoneySpent?: number;
 };
 
 // Add this near your other type definitions
@@ -179,10 +187,31 @@ export function NewBooking3() {
     }
   ], []);
 
+  // Add golden member promotion to applicable promotions
   const applicablePromotions = useMemo(() => {
     if (!promotions || !carDetails || !userPromotions) return [];
     
-    const regularPromotions = promotions.filter(promo => {
+    let allPromotions = [...promotions];
+
+    // Add golden member discount if user is a golden member
+    if (isGoldenMember) {
+      const goldenDiscount: Promotion = {
+        _id: 'golden_discount' as Id<"promotions">,
+        _creationTime: Date.now(),
+        promotionType: 'discount',
+        promotionValue: 10,
+        promotionTitle: 'Golden Member Discount',
+        promotionDescription: 'Exclusive 10% discount for our valued Golden Members',
+        promotionImage: '',
+        status: 'active',
+        goldenMembersOnly: true,
+        specificTarget: [],
+        target: 'all'
+      };
+      allPromotions = [goldenDiscount, ...allPromotions];
+    }
+    
+    const regularPromotions = allPromotions.filter(promo => {
       if (promo.promotionType !== 'discount') return false;
       if (promo.target === 'all') return true;
       if (typeof carDetails === 'string') return false;
@@ -199,7 +228,7 @@ export function NewBooking3() {
       );
     
     return [...regularPromotions, ...permanentPromotions];
-  }, [promotions, carDetails, userPromotions]);
+  }, [promotions, carDetails, userPromotions, isGoldenMember]);
 
   // 7. All useEffect hooks
   useEffect(() => {
