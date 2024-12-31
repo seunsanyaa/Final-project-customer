@@ -1,16 +1,17 @@
-import React, { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
-import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
-import { Label } from "@/components/ui/label";
-import Link from "next/link";
-import { Navi } from "../head/navi";
-import { Separator } from "@/components/ui/separator";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
-import { createWorker, OEM, LoggerMessage } from 'tesseract.js';
-import { useMutation, useQuery } from "convex/react";
-import { api } from "@/convex/_generated/api";
-import { useUser } from "@clerk/nextjs";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Separator } from "@/components/ui/separator";
+import { api } from "@/convex/_generated/api";
+import { Id } from "@/convex/_generated/dataModel";
+import { useUser } from "@clerk/nextjs";
+import { useMutation, useQuery } from "convex/react";
+import Link from "next/link";
+import React, { useEffect, useState } from "react";
+import { createWorker, LoggerMessage, OEM } from 'tesseract.js';
+import { Navi } from "../head/navi";
 
 interface PersonalInfo {
   fullName: string;
@@ -32,6 +33,21 @@ interface ExtractedInfo {
   expirationDate: string;
 }
 
+interface UserData {
+  _id: Id<"users">;
+  _creationTime: number;
+  firstName: string;
+  lastName: string;
+  email: string;
+  userId: string;
+  password?: string;
+  staff?: boolean;
+}
+
+function isUserData(data: any): data is UserData {
+  return typeof data === 'object' && 'firstName' in data && 'lastName' in data;
+}
+
 export function User_page() {
   const { user } = useUser();
   const userData = useQuery(api.users.getFullUser, { userId: user?.id ?? "" });
@@ -43,7 +59,9 @@ export function User_page() {
 
   // Update state initialization to use loaded data
   const [personalInfo, setPersonalInfo] = useState<PersonalInfo>({
-    fullName: userData ? `${userData.firstName} ${userData.lastName}` : "",
+    fullName: userData && isUserData(userData)
+      ? `${userData.firstName} ${userData.lastName}`
+      : "",
     dob: customerData?.dateOfBirth ?? "",
     license: customerData?.licenseNumber ?? "",
     nationality: customerData?.nationality ?? "",
@@ -52,7 +70,7 @@ export function User_page() {
   });
 
   const [contactInfo, setContactInfo] = useState<ContactInfo>({
-    email: userData?.email ?? "",
+    email: userData && isUserData(userData) ? userData.email : "",
     phone: customerData?.phoneNumber ?? "",
   });
 
@@ -88,8 +106,16 @@ export function User_page() {
 
     if (isEditing) {
       try {
+        setErrorMessage(""); // Clear any previous error messages
+
         if (isLicenseExpired(personalInfo.expirationDate)) {
           setErrorMessage("License has expired. Please update the expiration date.");
+          return;
+        }
+
+        // Validate required fields
+        if (!personalInfo.fullName || !personalInfo.license) {
+          setErrorMessage("Full name and license number are required.");
           return;
         }
 
@@ -114,6 +140,7 @@ export function User_page() {
 
       } catch (error) {
         console.error('Error updating user data:', error);
+        setErrorMessage("Failed to update user data. Please try again.");
       }
     }
     setIsEditing((prev) => !prev);
@@ -214,14 +241,20 @@ export function User_page() {
     if (!license) {
       const licenseLine = lines.find(line => line.match(/SMITH\d{9,}/));
       if (licenseLine) {
-        license = licenseLine.match(/SMITH\d{9,}/)[0];
+        const match = licenseLine.match(/SMITH\d{9,}/);
+        if (match) {
+          license = match[0];
+        }
       }
     }
 
     if (!expirationDate) {
       const expLine = lines.find(line => line.includes('07.11.2046'));
       if (expLine) {
-        expirationDate = expLine.match(/(\d{2}\.\d{2}\.\d{4})/)[1];
+        const match = expLine.match(/(\d{2}\.\d{2}\.\d{4})/);
+        if (match) {
+          expirationDate = match[1];
+        }
       }
     }
 
@@ -230,6 +263,18 @@ export function User_page() {
       license,
       expirationDate,
     };
+  };
+
+  const formatDateForInput = (dateString: string) => {
+    if (!dateString) return '';
+    const [day, month, year] = dateString.split('.');
+    return `${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}`;
+  };
+
+  const formatDateForDisplay = (dateString: string) => {
+    if (!dateString) return '';
+    const [year, month, day] = dateString.split('-');
+    return `${day}.${month}.${year}`;
   };
 
   // Optional: Update state when data loads
@@ -293,13 +338,12 @@ export function User_page() {
                   <div className="grid gap-2">
                     <Label className="text-black">Full Name</Label>
                     {isEditing ? (
-                      <input
-                        aria-label="Full Name"
-                        value={personalInfo.fullName || extractedInfo.fullName} // Show extracted name if available
+                      <Input
+                        value={personalInfo.fullName || extractedInfo.fullName}
                         onChange={(e) => setPersonalInfo({ ...personalInfo, fullName: e.target.value })}
                       />
                     ) : (
-                      <div className="text-black">{personalInfo.fullName || extractedInfo.fullName}</div> // Show extracted name if available
+                      <div className="text-black">{personalInfo.fullName || extractedInfo.fullName}</div>
                     )}
                   </div>
                   <div className="grid gap-2">
@@ -307,13 +351,11 @@ export function User_page() {
                     {isEditing ? (
                       <Input
                         type="date"
-                        value={personalInfo.dob ? personalInfo.dob.split('.').reverse().join('-') : ''}
+                        value={formatDateForInput(personalInfo.dob)}
                         onChange={(e) => {
-                          const date = e.target.value;
-                          const [year, month, day] = date.split('-');
                           setPersonalInfo({ 
                             ...personalInfo, 
-                            dob: `${day}.${month}.${year}`
+                            dob: formatDateForDisplay(e.target.value)
                           });
                         }}
                       />
@@ -324,18 +366,18 @@ export function User_page() {
                   <div className="grid gap-2">
                     <Label className="text-black">Driver&apos;s License:</Label>
                     {isEditing ? (
-                      <input
-                        value={personalInfo.license || extractedInfo.license} // Show extracted license if available
+                      <Input
+                        value={personalInfo.license || extractedInfo.license}
                         onChange={(e) => setPersonalInfo({ ...personalInfo, license: e.target.value })}
                       />
                     ) : (
-                      <div className="text-black">{personalInfo.license || extractedInfo.license}</div> // Show extracted license if available
+                      <div className="text-black">{personalInfo.license || extractedInfo.license}</div>
                     )}
                   </div>
                   <div className="grid gap-2">
                     <Label className="text-black">Nationality</Label>
                     {isEditing ? (
-                      <input
+                      <Input
                         value={personalInfo.nationality}
                         onChange={(e) => setPersonalInfo({ ...personalInfo, nationality: e.target.value })}
                       />
@@ -346,7 +388,7 @@ export function User_page() {
                   <div className="grid gap-2">
                     <Label className="text-black">Email</Label>
                     {isEditing ? (
-                      <input
+                      <Input
                         value={contactInfo.email}
                         onChange={(e) => setContactInfo({ ...contactInfo, email: e.target.value })}
                       />
@@ -357,7 +399,7 @@ export function User_page() {
                   <div className="grid gap-2">
                     <Label className="text-black">Phone</Label>
                     {isEditing ? (
-                      <input
+                      <Input
                         value={contactInfo.phone}
                         onChange={(e) => setContactInfo({ ...contactInfo, phone: e.target.value })}
                       />
@@ -370,13 +412,11 @@ export function User_page() {
                     {isEditing ? (
                       <Input
                         type="date"
-                        value={personalInfo.expirationDate ? personalInfo.expirationDate.split('.').reverse().join('-') : ''}
+                        value={formatDateForInput(personalInfo.expirationDate)}
                         onChange={(e) => {
-                          const date = e.target.value;
-                          const [year, month, day] = date.split('-');
                           setPersonalInfo({ 
                             ...personalInfo, 
-                            expirationDate: `${day}.${month}.${year}`
+                            expirationDate: formatDateForDisplay(e.target.value)
                           });
                         }}
                       />
@@ -387,12 +427,12 @@ export function User_page() {
                   <div className="grid gap-2">
                     <Label className="text-black">Address</Label>
                     {isEditing ? (
-                      <input
-                        value={personalInfo.address || extractedInfo.address} // Show extracted address if available
+                      <Input
+                        value={personalInfo.address}
                         onChange={(e) => setPersonalInfo({ ...personalInfo, address: e.target.value })}
                       />
                     ) : (
-                      <div className="text-black">{personalInfo.address || extractedInfo.address}</div> // Show extracted address if available
+                      <div className="text-black">{personalInfo.address}</div>
                     )}
                   </div>
                 </div>

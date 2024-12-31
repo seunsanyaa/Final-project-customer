@@ -1,12 +1,13 @@
-import { useEffect, useState } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
-import { PaymentElement, Elements } from "@stripe/react-stripe-js";
-import { loadStripe } from "@stripe/stripe-js";
-import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Navi } from "@/components/general/head/navi";
 import { Footer } from "@/components/general/head/footer";
+import { Navi } from "@/components/general/head/navi";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Elements, PaymentElement, useStripe, useElements } from "@stripe/react-stripe-js";
+import { loadStripe } from "@stripe/stripe-js";
 import { Loader2 } from "lucide-react";
+import { useSearchParams } from "next/navigation";
+import { useRouter } from "next/router";
+import { useEffect, useState } from "react";
 
 const stripePromise = loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY!);
 
@@ -16,6 +17,8 @@ export default function SubscriptionPayment() {
   const planId = searchParams?.get('plan');
   const [clientSecret, setClientSecret] = useState("");
   const [isLoading, setIsLoading] = useState(true);
+  const stripe = useStripe();
+  const elements = useElements();
 
   const plans = {
     silver_elite: {
@@ -43,7 +46,7 @@ export default function SubscriptionPayment() {
             'Content-Type': 'application/json',
           },
           body: JSON.stringify({
-            sessionId: router.query.sessionId,
+            sessionId: router?.query?.sessionId,
           }),
         });
         const data = await response.json();
@@ -55,10 +58,10 @@ export default function SubscriptionPayment() {
       }
     };
 
-    if (router.query.sessionId) {
+    if (router?.query?.sessionId) {
       fetchClientSecret();
     }
-  }, [router.query.sessionId]);
+  }, [router?.query?.sessionId]);
 
   if (isLoading || !selectedPlan) {
     return (
@@ -97,6 +100,7 @@ export default function SubscriptionPayment() {
                   <Button 
                     className="w-full mt-6"
                     onClick={() => {
+                      if (!stripe || !elements) return;
                       stripe.confirmPayment({
                         elements,
                         confirmParams: {

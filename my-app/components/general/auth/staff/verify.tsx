@@ -22,7 +22,7 @@ export default function StaffVerifyComponent() {
           Verify Staff Email
         </h2>
         <p className="paragraph-muted pb-4 text-base font-normal">
-          We've sent a verification code to {email}
+          We&apos;ve sent a verification code to {email}
         </p>
 
         <StaffOTPForm />

@@ -16,7 +16,7 @@ export default function Legal() {
                 <div>
                   <h2 className="text-2xl font-semibold text-gray-900 mb-4">Information Collection</h2>
                   <p className="leading-relaxed">
-                    At Renta, we collect various types of information to provide you with the best car rental experience. This includes personal information such as your name, contact details, driver's license information, payment details, and rental history. We may also collect information about your vehicle preferences and usage patterns to improve our services.
+                    At Renta, we collect various types of information to provide you with the best car rental experience. This includes personal information such as your name, contact details, driver&apos;s license information, payment details, and rental history. We may also collect information about your vehicle preferences and usage patterns to improve our services.
                   </p>
                 </div>
 
@@ -58,14 +58,14 @@ export default function Legal() {
                 <div>
                   <h2 className="text-2xl font-semibold text-gray-900 mb-4">Agreement to Terms</h2>
                   <p className="leading-relaxed">
-                    By using Renta's services, you agree to these terms and conditions. We reserve the right to modify these terms at any time, and your continued use of our services constitutes acceptance of any modifications. We will notify you of significant changes to these terms.
+                    By using Renta&apos;s services, you agree to these terms and conditions. We reserve the right to modify these terms at any time, and your continued use of our services constitutes acceptance of any modifications. We will notify you of significant changes to these terms.
                   </p>
                 </div>
 
                 <div>
                   <h2 className="text-2xl font-semibold text-gray-900 mb-4">Rental Requirements</h2>
                   <p className="leading-relaxed">
-                    To rent a vehicle, you must be at least 21 years old, possess a valid driver's license, and have a valid form of payment. Additional requirements may apply based on the vehicle type and rental location. We reserve the right to refuse service to anyone who doesn't meet these requirements.
+                    To rent a vehicle, you must be at least 21 years old, possess a valid driver&apos;s license, and have a valid form of payment. Additional requirements may apply based on the vehicle type and rental location. We reserve the right to refuse service to anyone who doesn&apos;t meet these requirements.
                   </p>
                 </div>
 
