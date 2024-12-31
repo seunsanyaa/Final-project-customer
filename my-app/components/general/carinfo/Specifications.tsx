@@ -1,6 +1,7 @@
 import React from 'react';
 import { useQuery } from 'convex/react';
 import { api } from '@/convex/_generated/api';
+import { AlertCircle } from 'lucide-react';
 
 interface SpecificationsProps {
   registrationNumber: string;
@@ -8,12 +9,26 @@ interface SpecificationsProps {
 
 const Specifications: React.FC<SpecificationsProps> = ({ registrationNumber }) => {
   const getCarSpecifications = useQuery(api.car.getCarSpecifications, { registrationNumber });
-  const [loading, setLoading] = React.useState(false);
-  const [error, setError] = React.useState<string | null>(null);
 
-  if (getCarSpecifications === undefined) return <div>Loading specifications...</div>;
-  if (error) return <div>Error: {error}</div>;
-  if (!getCarSpecifications) return <div>No specifications available</div>;
+  if (getCarSpecifications === undefined) {
+    return (
+      <div className="flex items-center justify-center py-8">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900"></div>
+      </div>
+    );
+  }
+
+  if (!getCarSpecifications) {
+    return (
+      <div className="py-8">
+        <h2 className="text-2xl font-bold mb-4">Specifications</h2>
+        <div className="flex items-center gap-2 text-muted-foreground">
+          <AlertCircle className="h-5 w-5" />
+          <p>No specifications available for this vehicle.</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div>

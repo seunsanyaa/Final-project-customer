@@ -98,7 +98,10 @@ export const getPayment = query({
 
 export const getAllPayments = query({
 	handler: async (ctx) => {
-		const payments = await ctx.db.query('payments').collect();
+		const payments = await ctx.db
+			.query('payments')
+			.order('desc')
+			.collect();
 		return payments;
 	},
 });

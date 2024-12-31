@@ -662,3 +662,53 @@ export const getMinPricesByCategory = query({
 		return minPrices;
 	},
 });
+
+export const deleteBooking = mutation({
+	args: {
+		bookingId: v.id('bookings'),
+	},
+	handler: async (ctx, args) => {
+		return await ctx.db.delete(args.bookingId);
+	},
+});
+
+export const getAllFleets = query({
+  handler: async (ctx) => {
+    // Get all fleets
+    const fleets = await ctx.db.query("fleets").collect();
+
+    // Get all cars to determine fleet types and availability
+    const cars = await ctx.db.query("cars").collect();
+
+    // Process fleets to include car information
+    const processedFleets = fleets.map(fleet => {
+      // Find all cars in this fleet
+      const fleetCars = cars.filter(car => 
+        fleet.registrationNumber.includes(car.registrationNumber)
+      );
+
+      // Count active and inactive cars
+      const activeCars = fleetCars.filter(car => car.available);
+      const inactiveCars = fleetCars.filter(car => !car.available);
+
+      // Determine fleet type based on cars
+      let type = 'normal';
+      if (fleetCars.some(car => car.golden)) {
+        type = 'golden';
+      } else if (fleetCars.some(car => car.disabled)) {
+        type = 'accessibility';
+      }
+
+      return {
+        ...fleet,
+        type,
+        totalCars: fleetCars.length,
+        activeCars: activeCars.length,
+        inactiveCars: inactiveCars.length,
+        cars: fleetCars
+      };
+    });
+
+    return processedFleets;
+  },
+});

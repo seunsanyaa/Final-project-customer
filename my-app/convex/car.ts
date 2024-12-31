@@ -132,17 +132,47 @@ export const createCar = mutation({
 			return `Car with registration number ${args.registrationNumber} already exists.`;
 		}
 
+		// Create the car
 		const carId = await ctx.db.insert('cars', {
 			...args,
-
 		});
+
+		// Check if a fleet exists for this car model/maker/year/trim combination
+		const existingFleet = await ctx.db
+			.query("fleets")
+			.filter(q => 
+				q.and(
+					q.eq(q.field("maker"), args.maker),
+					q.eq(q.field("model"), args.model),
+					q.eq(q.field("year"), args.year),
+					q.eq(q.field("trim"), args.trim)
+				)
+			)
+			.first();
+
+		if (existingFleet) {
+			// Add the car to the existing fleet
+			await ctx.db.patch(existingFleet._id, {
+				registrationNumber: [...existingFleet.registrationNumber, args.registrationNumber],
+				quantity: existingFleet.quantity + 1
+			});
+		} else {
+			// Create a new fleet
+			await ctx.db.insert("fleets", {
+				model: args.model,
+				maker: args.maker,
+				year: args.year,
+				trim: args.trim,
+				registrationNumber: [args.registrationNumber],
+				quantity: 1
+			});
+		}
 
 		// Fetch and return the newly created car
 		const newCar = await ctx.db.get(carId);
 		return newCar;
 	},
 });
-
 // Existing mutations, queries, and actions...
 export const deleteCar = mutation({
 	args: {

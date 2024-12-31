@@ -33,11 +33,11 @@ interface Booking {
   startDate: string;
   endDate: string;
   totalCost: number;
+  paidAmount: number;
   pickupLocation: string;
   dropoffLocation: string;
   carId: string;
-  trim: string; // Added trim field
-
+  trim: string;
 }
 
 // Add this custom hook near the top of the file
@@ -551,8 +551,9 @@ export function Mybookings() {
                   <p className="text-sm text-muted-foreground">{selectedBooking.trim}</p>
                 </div>
                 <div>
-                  <h3 className="font-semibold">Total Cost</h3>
-                  <p>{formatPrice(selectedBooking.totalCost)}</p>
+                  <h3 className="font-semibold">Payment</h3>
+                  <p>Total Cost: {formatPrice(selectedBooking.totalCost)}</p>
+                  <p className="text-sm text-muted-foreground">Paid: {formatPrice(selectedBooking.paidAmount)}</p>
                 </div>
               </div>
               

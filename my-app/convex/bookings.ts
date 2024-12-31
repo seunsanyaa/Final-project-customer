@@ -12,7 +12,7 @@ export const checkdropoffpickup = query({
 
 export const adminbookings = query({
 	handler: async (ctx) => {
-		return await ctx.db.query('bookings').collect();
+		return await ctx.db.query('bookings').order('desc').collect();
 	}
 });
 
@@ -94,7 +94,7 @@ export const getBooking = query({
 // Read all bookings
 export const getAllBookings = query({
 	handler: async (ctx) => {
-		return await ctx.db.query('bookings').collect();
+		return await ctx.db.query('bookings').order('desc').collect();
 	},
 });
 
