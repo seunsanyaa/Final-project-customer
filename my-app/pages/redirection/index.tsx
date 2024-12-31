@@ -26,7 +26,7 @@ const RedirectionPage = () => {
         try {
           await updateStaffUserId({ email: email!, userId: user.id });
           const token = await generateToken({ email: email! });
-          router.push(`http://localhost:3000?token=${token.token}&&email=${email}`);
+          router.push(`https://car-rental-fullstack.vercel.app?token=${token.token}&&email=${email}`);
         } catch (error) {
           console.error('Error during staff redirect:', error);
           router.push('/');
