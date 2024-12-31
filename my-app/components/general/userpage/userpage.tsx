@@ -12,7 +12,7 @@ import Link from "next/link";
 import React, { useEffect, useState } from "react";
 import { createWorker, LoggerMessage, OEM } from 'tesseract.js';
 import { Navi } from "../head/navi";
-
+import { User } from "@/types/user";
 interface PersonalInfo {
   fullName: string;
   dob: string;
@@ -33,24 +33,15 @@ interface ExtractedInfo {
   expirationDate: string;
 }
 
-interface UserData {
-  _id: Id<"users">;
-  _creationTime: number;
-  firstName: string;
-  lastName: string;
-  email: string;
-  userId: string;
-  password?: string;
-  staff?: boolean;
-}
 
-function isUserData(data: any): data is UserData {
+
+function isUserData(data: any): data is User {
   return typeof data === 'object' && 'firstName' in data && 'lastName' in data;
 }
 
 export function User_page() {
   const { user } = useUser();
-  const userData = useQuery(api.users.getFullUser, { userId: user?.id ?? "" });
+  const userData = useQuery(api.users.getFullUser, { userId: user?.id ?? "" }) as User;
   const customerData = useQuery(api.customers.getCustomerByUserId, { userId: user?.id ?? "" });
 
   // State to manage edit mode and input values
