@@ -1,5 +1,4 @@
 'use client';
-
 import React from "react";
 import Link from "next/link";
 import { useInView } from 'react-intersection-observer';
@@ -163,30 +162,6 @@ export function GoldenLanding() {
               width={800}
               height={400}
               className="w-[800px] h-[400px] object-cover"
-            />
-          </div>
-        </CarouselItem>
-        <CarouselItem>
-          <div className="flex flex-col md:flex-row items-center justify-between h-full px-4 md:px-6 lg:px-10">
-            <div className="space-y-4 md:space-y-6 lg:space-y-8">
-              <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold">Luxury Sedan Collection</h1>
-              <p className="text-lg md:text-xl lg:text-2xl text-gray-600">
-              Enjoy unmatched comfort with the Rolls-Royce Ghost and Mercedes-Maybach, exclusive for Gold members.              
-              </p>
-              {isGoldenMember && (
-                <Link href="/PremiumPackages">
-                  <Button className="bg-customyello text-primary-foreground border-2 border-black p-4 shadow-md hover:bg-orange-500 transition">
-                    Learn More
-                  </Button>
-                </Link>
-              )}
-            </div>
-            <Image
-              src="https://res.cloudinary.com/dbsxjsktb/image/upload/v1732833989/Rolls_Royce_Ghost__Mercedez_Benz_Maybach_or_similar_LE_upscale_balanced_x4-removebg-preview_lltkyb.png"
-              alt="Sports Car"
-              width={800}
-              height={400}
-              className="w-[1000px] h-[500px] object-cover"
             />
           </div>
         </CarouselItem>
