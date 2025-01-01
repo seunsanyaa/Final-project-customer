@@ -52,7 +52,7 @@ export function Access1() {
                   Driving with Confidence, Accessible Rentals for All
                 </p>
                 <p className="text-muted-foreground mt-4">
-                  Discover Renta's accessible fleet, designed for comfort and ease. With spacious interiors and advanced features, our wheelchair-accessible vehicles make travel simple and enjoyable for everyone. Let us provide you with a seamless, comfortable journey wherever your destination awaits.
+                  Discover Renta&apos;s accessible fleet, designed for comfort and ease. With spacious interiors and advanced features, our wheelchair-accessible vehicles make travel simple and enjoyable for everyone. Let us provide you with a seamless, comfortable journey wherever your destination awaits.
                 </p>
               </div>
               <Image
@@ -123,7 +123,7 @@ export function Access1() {
                 stress-free rental experience.
               </p>
               <p className="text-muted-foreground">
-                If you have any questions or need additional support, please don't hesitate to contact our accessibility
+                If you have any questions or need additional support, please don&apos;t hesitate to contact our accessibility
                 team. We are here to help you every step of the way.
               </p>
             </div>
