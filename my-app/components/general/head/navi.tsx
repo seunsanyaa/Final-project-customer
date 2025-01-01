@@ -223,7 +223,7 @@ export const Navi: React.FC<NaviProps> = ({ className }) => {
                         markAsRead({ userId: user?.id ?? "" });
                         // Check notification type and redirect accordingly
                         if (notification.type === 'promotion') {
-                          router.push('/Promotions');
+                          router.push('/User_Account/User_Promotions');
                         } else {
                           router.push('/bookings');
                         }
