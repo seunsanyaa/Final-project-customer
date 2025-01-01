@@ -17,7 +17,7 @@ export default function AuthLayout() {
     if (!isLoaded) return; // Wait for auth to load
 
     if (router.pathname === "/Login" && userId) {
-      const redirectPath = sessionStorage.getItem('redirectAfterLogin');
+      const redirectPath = "/redirection";
       if (redirectPath) {
         sessionStorage.removeItem('redirectAfterLogin'); // Clear the stored path
         router.push(redirectPath);
