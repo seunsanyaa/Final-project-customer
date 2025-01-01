@@ -1,166 +1,242 @@
-import { useState } from "react";
-import { ResetForm } from "./form/reset";
-import { OTPForm } from "./form/otp";
 import { useSignIn } from "@clerk/nextjs";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { ReloadIcon } from "@radix-ui/react-icons";
 import { useRouter } from "next/router";
+import { useState } from "react";
+import { useForm } from "react-hook-form";
+import { z } from "zod";
+import { Button } from "../../ui/button";
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "../../ui/form";
+import { Input } from "../../ui/input";
 import { useToast } from "@/hooks/use-toast";
+import { OTPForm } from "./form/otp";
 
-export default function ResetComponent() {
-  const [emailSent, setEmailSent] = useState(false);
-  const [email, setEmail] = useState('');
-  const { signIn } = useSignIn();
+const EmailSchema = z.object({
+  email: z.string().email({
+    message: "Invalid email address.",
+  }),
+});
+
+const PasswordSchema = z.object({
+  password: z.string()
+    .min(6, { message: "Password must be at least 6 characters." })
+    .regex(/[a-z]/, {
+      message: "Password must contain at least one lowercase letter.",
+    })
+    .regex(/[A-Z]/, {
+      message: "Password must contain at least one uppercase letter.",
+    })
+    .regex(/[0-9]/, { message: "Password must contain at least one number." })
+    .regex(/[^a-zA-Z0-9]/, {
+      message: "Password must contain at least one special character.",
+    }),
+});
+
+export default function PasswordResetComponent() {
+  const [successfulCreation, setSuccessfulCreation] = useState(false);
+  const [secondFactor, setSecondFactor] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [email, setEmail] = useState("");
   const router = useRouter();
   const { toast } = useToast();
+  const { isLoaded, signIn, setActive } = useSignIn();
 
-  const handleEmail = async (email: string) => {
+  const emailForm = useForm<z.infer<typeof EmailSchema>>({
+    resolver: zodResolver(EmailSchema),
+    defaultValues: {
+      email: "",
+    },
+  });
+
+  const passwordForm = useForm<z.infer<typeof PasswordSchema>>({
+    resolver: zodResolver(PasswordSchema),
+    defaultValues: {
+      password: "",
+    },
+  });
+
+  // Send the password reset code to the user's email
+  async function create(data: z.infer<typeof EmailSchema>) {
+    if (!isLoaded) return;
+    
+    setIsSubmitting(true);
     try {
-      if (!signIn) return;
-      
-      // Clear any existing sign-in attempts
-      await signIn.create({
+      await signIn?.create({
         strategy: "reset_password_email_code",
-        identifier: email,
+        identifier: data.email,
       });
-
-      setEmail(email);
-      setEmailSent(true);
+      
+      setEmail(data.email);
+      setSuccessfulCreation(true);
+      passwordForm.reset();
+      
+      toast({
+        title: "Code sent!",
+        description: "Check your email for the password reset code",
+        variant: "default",
+      });
     } catch (err: any) {
-      console.error("Error sending reset email:", err);
+      console.error("error", err?.errors?.[0]?.longMessage);
       toast({
         title: "Error",
-        description: err?.errors?.[0]?.message || "Failed to send reset email. Please try again.",
+        description: err?.errors?.[0]?.longMessage || "An error occurred",
         variant: "destructive",
       });
+    } finally {
+      setIsSubmitting(false);
     }
-  };
+  }
 
+  // Handle verification code submission
   const handleVerification = async (code: string) => {
-    try {
-      if (!signIn) {
-        toast({
-          title: "Error",
-          description: "Please request a new verification code.",
-          variant: "destructive",
-        });
-        setEmailSent(false);
-        return;
-      }
-
-      // Create a new sign-in attempt for verification
-      const signInAttempt = await signIn.create({
-        strategy: "reset_password_email_code",
-        identifier: email,
+    const password = passwordForm.getValues().password;
+    if (!password) {
+      toast({
+        title: "Error",
+        description: "Please enter a new password",
+        variant: "destructive",
       });
+      return;
+    }
 
-      // Attempt verification with the code
-      const verification = await signInAttempt.attemptFirstFactor({
+    setIsSubmitting(true);
+    try {
+      const result = await signIn?.attemptFirstFactor({
         strategy: "reset_password_email_code",
         code,
+        password,
       });
 
-      if (verification.status === "complete") {
-        router.push("/change-password");
-      } else {
+      if (result?.status === "needs_second_factor") {
+        setSecondFactor(true);
         toast({
-          title: "Error",
-          description: "Invalid verification code. Please try again.",
-          variant: "destructive",
+          title: "2FA Required",
+          description: "Two-factor authentication is required for this account",
+          variant: "default",
+        });
+      } else if (result?.status === "complete") {
+        await setActive?.({ session: result.createdSessionId });
+        router.push("/");
+        toast({
+          title: "Success!",
+          description: "Your password has been reset successfully",
+          variant: "default",
         });
       }
     } catch (err: any) {
-      console.error("Error verifying code:", err);
-      const errorCode = err?.errors?.[0]?.code;
-      
-      if (errorCode === "form_code_incorrect") {
-        toast({
-          title: "Error",
-          description: "Incorrect verification code. Please try again.",
-          variant: "destructive",
-        });
-      } else if (errorCode === "form_code_expired") {
-        toast({
-          title: "Error",
-          description: "Verification code has expired. Please request a new one.",
-          variant: "destructive",
-        });
-        setEmailSent(false);
-      } else {
-        toast({
-          title: "Error",
-          description: err?.errors?.[0]?.message || "Failed to verify code. Please try again.",
-          variant: "destructive",
-        });
-        setEmailSent(false);
-      }
-    }
-  };
-
-  const requestNewCode = async () => {
-    try {
-      if (!signIn || !email) return;
-      
-      // Request a new code with a fresh sign-in attempt
-      await signIn.create({
-        strategy: "reset_password_email_code",
-        identifier: email,
-      });
-
-      toast({
-        title: "Success",
-        description: "A new verification code has been sent to your email.",
-      });
-    } catch (err: any) {
-      console.error("Error requesting new code:", err);
+      console.error("error", err?.errors?.[0]?.longMessage);
       toast({
         title: "Error",
-        description: "Failed to send new code. Please try again.",
+        description: err?.errors?.[0]?.longMessage || "An error occurred",
         variant: "destructive",
       });
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
-  return (
-    <div className="flex basis-1/2 flex-col px-20 pt-24">
-      <svg
-        width="52"
-        height="51"
-        viewBox="0 0 52 51"
-        fill="none"
-        xmlns="http://www.w3.org/2000/svg"
-      >
-        {/* ... (SVG content remains unchanged) ... */}
-      </svg>
+  if (!isLoaded) {
+    return null;
+  }
 
-      {emailSent ? (
-        <>
-          <h2 className="paragraph-color pt-8 text-2xl font-semibold">
-            Enter verification code
-          </h2>
-          <p className="paragraph-muted mt-2 pb-4 text-base font-normal">
-            We sent a verification code to <b>{email}</b>. Please enter it below to reset your password.
-          </p>
-          <OTPForm 
-            onVerify={handleVerification}
-            mode="reset"
-            buttonText="Verify Code"
-          />
-          <button
-            onClick={requestNewCode}
-            className="mt-4 text-sm text-blue-600 hover:underline"
-          >
-            Request new code
-          </button>
-        </>
+  return (
+    <div className="flex basis-1/2 flex-col px-32 pt-24">
+      <h2 className="paragraph-color pt-8 text-2xl font-semibold">
+        Reset Password
+      </h2>
+      <p className="paragraph-muted pb-4 text-base font-normal">
+        {!successfulCreation
+          ? "Enter your email address and we'll send you a code to reset your password."
+          : `Enter the code sent to ${email} and your new password.`}
+      </p>
+
+      {!successfulCreation ? (
+        <Form {...emailForm}>
+          <form onSubmit={emailForm.handleSubmit(create)} className="space-y-6">
+            <FormField
+              control={emailForm.control}
+              name="email"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Email</FormLabel>
+                  <FormControl>
+                    <Input placeholder="Enter your email" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <Button
+              type="submit"
+              className="w-full"
+              disabled={isSubmitting}
+            >
+              {isSubmitting ? (
+                <ReloadIcon className="mr-2 h-4 w-4 animate-spin" />
+              ) : (
+                "Send Reset Code"
+              )}
+            </Button>
+          </form>
+        </Form>
       ) : (
-        <>
-          <h2 className="paragraph-color pt-8 text-2xl font-semibold">
-            Reset Password
-          </h2>
-          <p className="paragraph-muted pb-4 text-base font-normal">
-            Enter your user account&apos;s verified email address and we will send you a password reset link.
-          </p>
-          <ResetForm func={handleEmail} />
-        </>
+        <div className="space-y-6">
+          <Form {...passwordForm}>
+            <form className="space-y-6">
+              <FormField
+                control={passwordForm.control}
+                name="password"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>New Password</FormLabel>
+                    <FormControl>
+                      <Input 
+                        type="password" 
+                        placeholder="Enter your new password"
+                        {...field} 
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </form>
+          </Form>
+
+          <OTPForm
+            mode="reset"
+            onVerify={handleVerification}
+            buttonText="Reset Password"
+          />
+
+          <Button
+            type="button"
+            variant="outline"
+            className="w-full"
+            onClick={() => {
+              setSuccessfulCreation(false);
+              setEmail("");
+              emailForm.reset();
+              passwordForm.reset();
+            }}
+          >
+            Back to Email Entry
+          </Button>
+        </div>
+      )}
+
+      {secondFactor && (
+        <p className="mt-4 text-center text-sm text-red-500">
+          2FA is required for this account. Please use the regular login flow.
+        </p>
       )}
     </div>
   );

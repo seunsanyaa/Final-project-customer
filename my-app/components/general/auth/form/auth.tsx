@@ -145,7 +145,7 @@ export function InputForm({
           session: result?.createdSessionId ?? "defaultSessionId",
         });
 
-        // await router.push("/");
+        await router.push("/redirection");
       } else {
         return;
       }
