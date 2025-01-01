@@ -1,6 +1,13 @@
 import Link from "next/link"
+import { useRouter } from "next/navigation";
 
 export function Footer() {
+  const router = useRouter();
+
+  const handleCategoryClick = (category: string) => {
+    router.push(`/vehicles?category=${category}`);
+  };
+
   return (
     <footer className="border-t bg-primary text-primary-foreground">
       <div className="container mx-auto px-4 py-8 mr-5">
@@ -28,7 +35,7 @@ export function Footer() {
               <Link href="/vehicles" className="text-sm hover:text-muted-foreground transition-colors duration-200">
                 Cars
               </Link>
-              <Link href="/vehicles" className="text-sm hover:text-muted-foreground transition-colors duration-200">
+              <Link href="/vehicles" onClick={() => handleCategoryClick("Van")} className="text-sm hover:text-muted-foreground transition-colors duration-200">
                 Vans
               </Link>
               <Link href="/accessibility" className="text-sm hover:text-muted-foreground transition-colors duration-200">
