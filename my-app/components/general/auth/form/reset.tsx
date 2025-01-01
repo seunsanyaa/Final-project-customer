@@ -17,21 +17,6 @@ import {
 } from "../../../ui/form";
 import { Input } from "../../../ui/input";
 
-
-const passwordValidation = z
-  .string()
-  .min(6, { message: "Password must be at least 6 characters." })
-  .regex(/[a-z]/, {
-    message: "Password must contain at least one lowercase letter.",
-  })
-  .regex(/[A-Z]/, {
-    message: "Password must contain at least one uppercase letter.",
-  })
-  .regex(/[0-9]/, { message: "Password must contain at least one number." })
-  .regex(/[^a-zA-Z0-9]/, {
-    message: "Password must contain at least one special character.",
-  });
-
 const ResetFormSchema = z.object({
   email: z.string().email({
     message: "Invalid email address.",
@@ -43,7 +28,8 @@ type ResetFormProps = {
 };
 
 export function ResetForm({ func }: ResetFormProps) {
-  const {toast} = useToast()
+  const { toast } = useToast();
+  
   const resetForm = useForm<z.infer<typeof ResetFormSchema>>({
     resolver: zodResolver(ResetFormSchema),
     defaultValues: {
@@ -57,27 +43,15 @@ export function ResetForm({ func }: ResetFormProps) {
 
   async function onSendResetEmail(data: z.infer<typeof ResetFormSchema>) {
     setIsSubmitting(true);
-
     try {
-      const response = await fetch("/api/email/send", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ email: data.email }),
-      });
-
-      if (response.ok) {
-        func(data.email);
-      } else {
-        toast({
-          title: "Uh oh! Something went wrong.",
-          description: "This email is not in our database",
-          variant: "destructive",
-        });
-      }
+      func(data.email);
     } catch (err) {
-      console.log("Error:", JSON.stringify(err, null, 2));
+      console.error("Error:", err);
+      toast({
+        title: "Error",
+        description: "Failed to send reset password email. Please try again.",
+        variant: "destructive",
+      });
     } finally {
       setIsSubmitting(false);
     }
@@ -85,7 +59,7 @@ export function ResetForm({ func }: ResetFormProps) {
 
   useEffect(() => {
     setIsButtonDisabled(!resetWatchedValues.email);
-  }, [, resetWatchedValues]);
+  }, [resetWatchedValues]);
 
   return (
     <>
@@ -111,7 +85,6 @@ export function ResetForm({ func }: ResetFormProps) {
                         style={{ outline: "none" }}
                       />
                     </FormControl>
-
                     <FormMessage />
                   </FormItem>
                 </>
@@ -127,7 +100,7 @@ export function ResetForm({ func }: ResetFormProps) {
             {isSubmitting ? (
               <>
                 <ReloadIcon className="mr-2 h-4 w-4 animate-spin" />
-
+                Sending...
               </>
             ) : (
               "Reset password"
