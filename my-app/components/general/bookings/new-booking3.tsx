@@ -307,7 +307,10 @@ export function NewBooking3() {
 
     // Apply promotion if selected
     if (selectedPromotion && promotions) {
-      const promotion = promotions.find(p => p._id === selectedPromotion);
+      const promotion = selectedPromotion === 'golden_discount' ?
+        { promotionValue: 10 } : // Golden member discount
+        promotions.find(p => p._id === selectedPromotion);
+        
       if (promotion) {
         const discount = (totalPrice * promotion.promotionValue) / 100;
         totalPrice -= discount;
@@ -375,27 +378,30 @@ export function NewBooking3() {
           travelKit: extras.travelKit
         }
       });
-      if (selectedPromotion) {
+
+      // Handle promotion marking
+      if (selectedPromotion && selectedPromotion !== 'golden_discount') {
         await markPromotionAsUsed({
           promotionId: selectedPromotion as Id<"promotions">,
           userId: user.id,
         });
       }
-      if (paymentMethod === 'full'||paymentMethod === 'installment') {
-      const { sessionId } = await createPaymentSession({
-        bookingId,
-        totalAmount: parseFloat(totalAmount),
-        paidAmount: paidAmount,
-        userId: user.id,
-        status: 'pending',
-        isSubscription: false,
-        subscriptionPlan: undefined // optional field from schema
-      });
-      router.push(`/Newbooking/payment/${sessionId}?email=${encodeURIComponent(user.emailAddresses[0].emailAddress)}`);
-    }
-    else if (paymentMethod === 'cash') {
-      router.push(`/bookings`);
-    }
+
+      // Handle payment
+      if (paymentMethod === 'full' || paymentMethod === 'installment') {
+        const { sessionId } = await createPaymentSession({
+          bookingId,
+          totalAmount: parseFloat(totalAmount),
+          paidAmount: paidAmount,
+          userId: user.id,
+          status: 'pending',
+          isSubscription: false,
+          subscriptionPlan: undefined
+        });
+        router.push(`/Newbooking/payment/${sessionId}?email=${encodeURIComponent(user.emailAddresses[0].emailAddress)}`);
+      } else if (paymentMethod === 'cash') {
+        router.push(`/bookings`);
+      }
       
     } catch (error) {
       console.error('Error creating booking:', error);
@@ -613,7 +619,10 @@ export function NewBooking3() {
 
     // Apply promotion if selected
     if (selectedPromotion && promotions) {
-      const promotion = promotions.find(p => p._id === selectedPromotion);
+      const promotion = selectedPromotion === 'golden_discount' ?
+        { promotionValue: 10 } : // Golden member discount
+        promotions.find(p => p._id === selectedPromotion);
+        
       if (promotion) {
         const discount = (totalPrice * promotion.promotionValue) / 100;
         totalPrice -= discount;
