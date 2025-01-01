@@ -129,7 +129,7 @@ export function Carinfo() {
       <Separator />
       <div className="flex flex-col items-center justify-center min-h-screen bg-background text-foreground">
         <main className="container max-w-5xl px-4 py-12 sm:px-6 lg:px-8">
-          {activeBookingsCount && activeBookingsCount >= 3 && (
+          {activeBookingsCount !== undefined && activeBookingsCount >= 3 && (
             <Alert variant="destructive" className="mb-6">
               <AlertCircle className="h-4 w-4" />
               <AlertTitle>Booking Limit Reached</AlertTitle>
