@@ -23,9 +23,6 @@ export function Footer() {
               <Link href="/team" className="text-sm hover:text-muted-foreground transition-colors duration-200">
                 Our Team
               </Link>
-              <Link href="#" className="text-sm hover:text-muted-foreground transition-colors duration-200">
-                Careers
-              </Link>
             </div>
           </div>
 
