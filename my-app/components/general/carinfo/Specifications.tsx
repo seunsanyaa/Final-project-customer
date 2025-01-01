@@ -7,9 +7,21 @@ interface SpecificationsProps {
   registrationNumber: string;
 }
 
-const Specifications: React.FC<SpecificationsProps> = ({ registrationNumber }) => {
-  const getCarSpecifications = useQuery(api.car.getCarSpecifications, { registrationNumber });
+interface CarSpecifications {
+  engineType: string;
+  engineCylinders: string;
+  engineHorsepower: string;
+  fuelType: string;
+  transmission: string;
+  drive: string;
+  doors: string;
+  bodyType: string;
+}
 
+const Specifications: React.FC<SpecificationsProps> = ({ registrationNumber }) => {
+  const getCarSpecifications = useQuery(api.car.getCarSpecifications, { registrationNumber }) as CarSpecifications | null | undefined;
+
+  // Show loading state while fetching
   if (getCarSpecifications === undefined) {
     return (
       <div className="flex items-center justify-center py-8">
@@ -18,7 +30,8 @@ const Specifications: React.FC<SpecificationsProps> = ({ registrationNumber }) =
     );
   }
 
-  if (!getCarSpecifications) {
+  // Show no specifications message when data is null
+  if (getCarSpecifications === null) {
     return (
       <div className="py-8">
         <h2 className="text-2xl font-bold mb-4">Specifications</h2>

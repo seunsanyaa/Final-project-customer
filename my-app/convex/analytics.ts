@@ -676,22 +676,25 @@ export const getAllFleets = query({
   handler: async (ctx) => {
     // Get all fleets
     const fleets = await ctx.db.query("fleets").collect();
-
-    // Get all cars to determine fleet types and availability
     const cars = await ctx.db.query("cars").collect();
+    const processedFleets = [];
+    const emptyFleetIds = [];
 
     // Process fleets to include car information
-    const processedFleets = fleets.map(fleet => {
-      // Find all cars in this fleet
+    for (const fleet of fleets) {
       const fleetCars = cars.filter(car => 
         fleet.registrationNumber.includes(car.registrationNumber)
       );
 
-      // Count active and inactive cars
+      // Track empty fleets for deletion
+      if (fleetCars.length === 0) {
+        emptyFleetIds.push(fleet._id);
+        continue;
+      }
+
       const activeCars = fleetCars.filter(car => car.available);
       const inactiveCars = fleetCars.filter(car => !car.available);
 
-      // Determine fleet type based on cars
       let type = 'normal';
       if (fleetCars.some(car => car.golden)) {
         type = 'golden';
@@ -699,16 +702,350 @@ export const getAllFleets = query({
         type = 'accessibility';
       }
 
-      return {
+      processedFleets.push({
         ...fleet,
         type,
         totalCars: fleetCars.length,
         activeCars: activeCars.length,
         inactiveCars: inactiveCars.length,
-        cars: fleetCars
-      };
-    });
+        cars: fleetCars,
+        isEmpty: fleetCars.length === 0,
+        emptyFleetIds
+      });
+    }
 
     return processedFleets;
   },
+});
+
+// Add this mutation to handle empty fleet deletion
+export const deleteEmptyFleets = mutation({
+  args: {
+    fleetIds: v.array(v.id("fleets"))
+  },
+  handler: async (ctx, args) => {
+    for (const fleetId of args.fleetIds) {
+      await ctx.db.delete(fleetId);
+    }
+    return { success: true };
+  },
+});
+
+// Add this after getAllFleets query
+export const cleanupEmptyFleets = mutation({
+  handler: async (ctx) => {
+    // Get all fleets
+    const fleets = await ctx.db.query("fleets").collect();
+    // Get all cars
+    const cars = await ctx.db.query("cars").collect();
+
+    let deletedCount = 0;
+    
+    // Check each fleet
+    for (const fleet of fleets) {
+      // Find cars in this fleet
+      const fleetCars = cars.filter(car => 
+        fleet.registrationNumber.includes(car.registrationNumber)
+      );
+
+      // If no cars found, delete the fleet
+      if (fleetCars.length === 0) {
+        await ctx.db.delete(fleet._id);
+        deletedCount++;
+      }
+    }
+
+    return `Deleted ${deletedCount} empty fleets`;
+  },
+});
+
+
+// Chat Analytics
+export const getUnreadMessageCount = query({
+  args: { userId: v.string(), lastReadTimestamp: v.string() },
+  handler: async (ctx, args) => {
+    const messages = await ctx.db
+      .query('messages')
+      .withIndex('by_userId', q => q.eq('userId', args.userId))
+      .filter(q => 
+        q.and(
+          q.eq(q.field('isAdmin'), false),
+          q.gt(q.field('timestamp'), args.lastReadTimestamp)
+        )
+      )
+      .collect();
+    return messages.length;
+  },
+});
+
+export const getLastMessage = query({
+  args: { userId: v.string() },
+  handler: async (ctx, args) => {
+    const messages = await ctx.db
+      .query('messages')
+      .withIndex('by_userId', q => q.eq('userId', args.userId))
+      .order('desc')
+      .take(1);
+    return messages[0];
+  },
+});
+
+export const getChatAnalytics = query({
+  args: {},
+  handler: async (ctx) => {
+    const messages = await ctx.db.query('messages').collect();
+    const customers = await ctx.db.query('customers').collect();
+
+    const totalMessages = messages.length;
+    const activeChats = new Set(messages.map(m => m.userId)).size;
+    const goldenMemberChats = customers
+      .filter(c => c.goldenMember)
+      .filter(c => messages.some(m => m.userId === c.userId))
+      .length;
+
+    const lastWeek = new Date();
+    lastWeek.setDate(lastWeek.getDate() - 7);
+    const recentMessages = messages.filter(
+      m => new Date(m.timestamp) > lastWeek
+    ).length;
+
+    return {
+      totalMessages,
+      activeChats,
+      goldenMemberChats,
+      recentMessages,
+    };
+  },
+});
+
+// Helper function to get date range
+function getDateRange(period: 'week' | 'month' | 'quarter' | 'year', endDate: Date = new Date()) {
+  const startDate = new Date(endDate);
+  
+  switch (period) {
+    case 'week':
+      // Set to Monday of current week
+      startDate.setDate(endDate.getDate() - endDate.getDay() + 1);
+      break;
+    case 'month':
+      startDate.setDate(1);
+      break;
+    case 'quarter':
+      const quarterMonth = Math.floor(endDate.getMonth() / 3) * 3;
+      startDate.setMonth(quarterMonth, 1);
+      break;
+    case 'year':
+      startDate.setMonth(0, 1);
+      break;
+  }
+  
+  startDate.setHours(0, 0, 0, 0);
+  return {
+    startDate: startDate.toISOString(),
+    endDate: endDate.toISOString()
+  };
+}
+
+// Helper function to generate sample data based on period
+function generateSampleData(period: 'week' | 'month' | 'quarter' | 'year') {
+  const data: Record<string, number> = {};
+  const now = new Date();
+  let days = 7;
+  
+  switch (period) {
+    case 'week':
+      days = 7;
+      break;
+    case 'month':
+      days = 30;
+      break;
+    case 'quarter':
+      days = 90;
+      break;
+    case 'year':
+      days = 365;
+      break;
+  }
+
+  for (let i = 0; i < days; i++) {
+    const date = new Date(now);
+    date.setDate(date.getDate() - i);
+    data[date.toISOString().split('T')[0]] = Math.floor(Math.random() * 10000) + 1000;
+  }
+
+  return data;
+}
+
+// Revenue Analytics
+export const getRevenueSummary = query({
+  args: {
+    period: v.union(
+      v.literal('week'),
+      v.literal('month'),
+      v.literal('quarter'),
+      v.literal('year')
+    ),
+  },
+  handler: async (ctx, args) => {
+    const dailyRevenue = generateSampleData(args.period);
+    const totalRevenue = Object.values(dailyRevenue).reduce((sum, val) => sum + val, 0);
+    const totalBookings = Object.values(dailyRevenue).length;
+
+    return {
+      totalRevenue,
+      totalBookings,
+      averageRevenuePerBooking: totalRevenue / totalBookings,
+      dailyRevenue
+    };
+  }
+});
+
+// Customer Analytics
+export const getCustomerMetrics = query({
+  args: {
+    period: v.union(
+      v.literal('week'),
+      v.literal('month'),
+      v.literal('quarter'),
+      v.literal('year')
+    ),
+  },
+  handler: async (ctx, args) => {
+    return {
+      totalCustomers: 100,
+      activeCustomers: 65,
+      goldenMembers: 25,
+      customerActivityRate: 65,
+      goldenMemberRate: 25,
+      topCustomers: [
+        { id: '1', bookings: 15 },
+        { id: '2', bookings: 12 },
+        { id: '3', bookings: 10 }
+      ]
+    };
+  }
+});
+
+// Booking Analytics
+export const getBookingMetrics = query({
+  args: {
+    period: v.union(
+      v.literal('week'),
+      v.literal('month'),
+      v.literal('quarter'),
+      v.literal('year')
+    ),
+  },
+  handler: async (ctx, args) => {
+    const dailyBookings = generateSampleData(args.period);
+    const totalBookings = Object.values(dailyBookings).reduce((sum, val) => sum + val, 0);
+
+    return {
+      totalBookings,
+      averageDuration: 5.2,
+      dailyBookings,
+      pickupLocations: {
+        'Downtown': 45,
+        'Airport': 35,
+        'Suburban': 20
+      },
+      extrasUsage: {
+        'GPS': 80,
+        'Child Seat': 45,
+        'Additional Driver': 30,
+        'Insurance': 90
+      }
+    };
+  }
+});
+
+// Car Analytics
+export const getCarMetrics = query({
+  args: {
+    period: v.union(
+      v.literal('week'),
+      v.literal('month'),
+      v.literal('quarter'),
+      v.literal('year')
+    ),
+  },
+  handler: async (ctx, args) => {
+    return {
+      totalCars: 43,
+      availableCars: 32,
+      fleetUtilizationRate: 70,
+      popularCategories: {
+        'SUV': 15,
+        'Sedan': 12,
+        'Luxury': 8,
+        'Sports': 5,
+        'Van': 3
+      },
+      carRatings: {
+        'Toyota Camry': 4.5,
+        'Honda CR-V': 4.3,
+        'BMW 3 Series': 4.8
+      }
+    };
+  }
+});
+
+// Performance Metrics
+export const getPerformanceMetrics = query({
+  args: {
+    period: v.union(
+      v.literal('week'),
+      v.literal('month'),
+      v.literal('quarter'),
+      v.literal('year')
+    ),
+  },
+  handler: async (ctx, args) => {
+    const dailyMetrics: Record<string, { revenue: number; bookings: number }> = {};
+    const dailyRevenue = generateSampleData(args.period);
+    
+    Object.entries(dailyRevenue).forEach(([date, revenue]) => {
+      dailyMetrics[date] = {
+        revenue,
+        bookings: Math.floor(revenue / 1000)
+      };
+    });
+
+    return {
+      totalRevenue: Object.values(dailyMetrics).reduce((sum, val) => sum + val.revenue, 0),
+      bookingSuccessRate: 85.5,
+      averageBookingValue: 1082.05,
+      dailyMetrics
+    };
+  }
+});
+
+export const getPopularCars = query({
+  args: {
+    period: v.union(
+      v.literal('week'),
+      v.literal('month'),
+      v.literal('quarter'),
+      v.literal('year')
+    ),
+  },
+  handler: async (ctx, args) => {
+    return {
+      totalRentals: 250,
+      topModel: 'Toyota Camry',
+      averageRating: 4.5,
+      carRentals: {
+        'Toyota Camry': 50,
+        'Honda CR-V': 45,
+        'BMW 3 Series': 40,
+        'Tesla Model 3': 35,
+        'Mercedes C-Class': 30
+      },
+      categoryRentals: {
+        'Sedan': 95,
+        'SUV': 85,
+        'Luxury': 70
+      }
+    };
+  }
 });

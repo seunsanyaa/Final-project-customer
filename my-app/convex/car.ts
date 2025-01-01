@@ -190,6 +190,38 @@ export const deleteCar = mutation({
 			throw new Error(`Car with registration number ${args.registrationNumber} does not exist.`);
 		}
 
+		// Find the fleet this car belongs to
+		const fleet = await ctx.db
+			.query("fleets")
+			.filter(q => 
+				q.and(
+					q.eq(q.field("maker"), existingCar.maker),
+					q.eq(q.field("model"), existingCar.model),
+					q.eq(q.field("year"), existingCar.year),
+					q.eq(q.field("trim"), existingCar.trim)
+				)
+			)
+			.first();
+
+		if (fleet) {
+			// Remove the car from the fleet
+			const updatedRegistrationNumbers = fleet.registrationNumber.filter(
+				regNum => regNum !== args.registrationNumber
+			);
+
+			if (updatedRegistrationNumbers.length === 0) {
+				// If this was the last car in the fleet, delete the fleet
+				await ctx.db.delete(fleet._id);
+			} else {
+				// Otherwise update the fleet with the remaining cars
+				await ctx.db.patch(fleet._id, {
+					registrationNumber: updatedRegistrationNumbers,
+					quantity: updatedRegistrationNumbers.length
+				});
+			}
+		}
+
+		// Delete the car
 		await ctx.db.delete(existingCar._id);
 		return `Car with registration number ${args.registrationNumber} has been deleted.`;
 	},
@@ -318,11 +350,7 @@ export const getCarSpecifications = query({
 			)
 			.first();
 
-		if (!specifications) {
-			throw new Error(`No specifications found for car with registration number ${args.registrationNumber}`);
-		}
-
-		return specifications;
+		return specifications || null;
 	},
 });
 
@@ -366,6 +394,32 @@ export const getFilteredCars = query({
 			})
 			.collect();
 
+		// Get all fleets
+		const fleets = await ctx.db.query("fleets").collect();
+
+		// Create a map of unique fleet identifiers to their first AVAILABLE registration number
+		const fleetMap = new Map<string, string>();
+		fleets.forEach(fleet => {
+			const fleetKey = `${fleet.maker}-${fleet.model}-${fleet.year}-${fleet.trim}`;
+			if (!fleetMap.has(fleetKey) && fleet.registrationNumber.length > 0) {
+				// Find the first available car in this fleet
+				const availableCar = cars.find(car => 
+					fleet.registrationNumber.includes(car.registrationNumber) && 
+					car.available === true
+				);
+				if (availableCar) {
+					fleetMap.set(fleetKey, availableCar.registrationNumber);
+				}
+			}
+		});
+
+		// Filter cars to only include the first available car from each fleet
+		const uniqueCars = cars.filter(car => {
+			const fleetKey = `${car.maker}-${car.model}-${car.year}-${car.trim}`;
+			const firstAvailableRegNumber = fleetMap.get(fleetKey);
+			return firstAvailableRegNumber === car.registrationNumber;
+		});
+
 		const specs = await ctx.db.query("specifications").collect();
 
 		const specsMap = specs.reduce((acc, spec) => {
@@ -373,7 +427,7 @@ export const getFilteredCars = query({
 			return acc;
 		}, {} as Record<string, typeof specs[0]>);
 
-		return cars.filter((car) => {
+		return uniqueCars.filter((car) => {
 			const carSpecs = specsMap[car.registrationNumber];
 			
 			// Apply other filters
