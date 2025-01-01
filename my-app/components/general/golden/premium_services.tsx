@@ -34,7 +34,7 @@ export function PremiumServices() {
                 </ul>
               </div>
               <Image
-                src="https://res.cloudinary.com/dbsxjsktb/image/upload/v1730212805/chauffeur_service.jpg"
+                src="https://res.cloudinary.com/dbsxjsktb/image/upload/w_1000,ar_16:9,c_fill,g_auto,e_sharpen/v1735760684/chaufeur_hxpxau.png"
                 alt="Chauffeur Service"
                 width={500}
                 height={400}
@@ -49,13 +49,13 @@ export function PremiumServices() {
             inView3 ? 'animate-fadeInUp' : "opacity-0"}`}>
             <div className="flex justify-between items-center">
               <Image
-                src="https://res.cloudinary.com/dbsxjsktb/image/upload/v1730212805/rewards_program.jpg"
+                src="https://res.cloudinary.com/dbsxjsktb/image/upload/v1735760683/chaufeur2_i53lox.png"
                 alt="Rewards Program"
                 width={500}
                 height={400}
-                className="w-[500px] h-[400px] object-cover rounded-lg"
+                className="w-[500px] h-[600px] object-cover rounded-lg"
               />
-              <div className="text-right ml-8">
+              <div className="text-left ml-20 pl-20">
                 <h2 className="text-4xl md:text-4xl lg:text-6xl font-bold">Exclusive Premium Rewards</h2>
                 <p className="text-muted-foreground mt-4">
                   Join our elite rewards program and enjoy exclusive benefits:
@@ -67,51 +67,6 @@ export function PremiumServices() {
                   <li>Exclusive access to luxury vehicle collection</li>
                   <li>Birthday rewards and special offers</li>
                 </ul>
-              </div>
-            </div>
-          </section>
-
-          {/* Premium Subscription Plans */}
-          <section className="bg-card rounded-lg shadow-lg p-6">
-            <h2 className="text-4xl font-bold text-center mb-8">Premium Subscription Plans</h2>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-              {/* Silver Plan */}
-              <div className="flex flex-col items-center justify-center gap-4 p-6 transition-transform transform hover:scale-105 hover:shadow-lg bg-card hover:bg-gradient-to-r from-blue-500 to-green-500">
-                <h3 className="text-3xl font-semibold text-black">Silver Elite</h3>
-                <p className="text-2xl font-bold text-black">$199/month</p>
-                <ul className="text-black text-center mb-4">
-                  <li>2 Premium rentals per month</li>
-                  <li>Basic chauffeur service</li>
-                  <li>Standard travel kit</li>
-                  <li>10% reward points bonus</li>
-                </ul>
-                <Button className="hover:bg-blue-500 hover:shadow-lg transition-all duration-300 rounded-lg">Subscribe Now</Button>
-              </div>
-
-              {/* Gold Plan */}
-              <div className="flex flex-col items-center justify-center gap-4 p-6 transition-transform transform hover:scale-105 hover:shadow-lg bg-card hover:bg-gradient-to-r from-blue-500 to-green-500">
-                <h3 className="text-3xl font-semibold text-black">Gold Elite</h3>
-                <p className="text-2xl font-bold text-black">$399/month</p>
-                <ul className="text-black text-center mb-4">
-                  <li>4 Premium rentals per month</li>
-                  <li>Priority chauffeur service</li>
-                  <li>Luxury travel kit</li>
-                  <li>25% reward points bonus</li>
-                </ul>
-                <Button className="hover:bg-blue-500 hover:shadow-lg transition-all duration-300 rounded-lg">Subscribe Now</Button>
-              </div>
-
-              {/* Platinum Plan */}
-              <div className="flex flex-col items-center justify-center gap-4 p-6 transition-transform transform hover:scale-105 hover:shadow-lg bg-card hover:bg-gradient-to-r from-blue-500 to-green-500">
-                <h3 className="text-3xl font-semibold text-black">Platinum Elite</h3>
-                <p className="text-2xl font-bold text-black">$799/month</p>
-                <ul className="text-black text-center mb-4">
-                  <li>Unlimited Premium rentals</li>
-                  <li>24/7 dedicated chauffeur</li>
-                  <li>Premium travel kit + extras</li>
-                  <li>50% reward points bonus</li>
-                </ul>
-                <Button className="hover:bg-blue-500 hover:shadow-lg transition-all duration-300 rounded-lg">Subscribe Now</Button>
               </div>
             </div>
           </section>

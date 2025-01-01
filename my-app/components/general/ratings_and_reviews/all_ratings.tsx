@@ -1,8 +1,9 @@
 import { useState } from 'react';
-import { Star, ChevronDown, ChevronUp, BookOpen, StarHalf, ChevronLeft } from 'lucide-react';
+import { Star, ChevronDown, ChevronUp, BookOpen, StarHalf, ChevronLeft, Search } from 'lucide-react';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
+import { Input } from "@/components/ui/input";
 import { useQuery } from 'convex/react';
 import { api } from '@/convex/_generated/api';
 import { useUser } from "@clerk/nextjs";
@@ -34,10 +35,18 @@ export default function AllRatings() {
   const [selectedCarId, setSelectedCarId] = useState<string | null>(null);
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [expandedCar, setExpandedCar] = useState<string | null>(null);
+  const [searchQuery, setSearchQuery] = useState("");
   
   // Get all cars with reviews
   const carsWithReviews: CarWithReviews[] = useQuery(api.car.getCarsWithReviews) || [];
   
+  // Filter cars based on search query
+  const filteredCars = carsWithReviews.filter(car => {
+    const searchTerm = searchQuery.toLowerCase();
+    return car.maker.toLowerCase().includes(searchTerm) || 
+           car.model.toLowerCase().includes(searchTerm);
+  });
+
   // Get detailed car info with reviews when a car is selected
   const selectedCarWithReviews = useQuery(
     api.car.getCarWithReviews,
@@ -155,80 +164,95 @@ export default function AllRatings() {
 
   return (
     <div className="flex-1 container mx-auto px-4 py-8">
-      <h1 className="text-3xl font-bold mb-6">Popular Car Reviews</h1>
-      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-        {carsWithReviews.map((car) => (
-          <Card 
-            key={car._id} 
-            // className="overflow-hidden cursor-pointer hover:shadow-lg transition-shadow"
-            className="w-full mx-auto mt-1 rounded-lg p-1 bg-white shadow-xl" 
-            style={{ border: "none" }}
-            onClick={() => handleCarClick(car)}
-          >
-            <CardHeader className="p-0">
-              {car.pictures && car.pictures.length > 0 ? (
-                <Image
-                  src={car.pictures[0]}
-                  alt={`${car.maker} ${car.model}`}
-                  width={400}
-                  height={300}
-                  className="w-full h-48 object-cover"
-                />
-              ) : (
-                <div className="w-full h-48 bg-muted flex items-center justify-center">
-                  No image available
-                </div>
-              )}
-            </CardHeader>
-            <CardContent className="p-4">
-              <CardTitle>{`${car.maker} ${car.model} ${car.year}`}</CardTitle>
-              <CardDescription className="flex items-center gap-2">
-                Average Rating: 
-                <div className="flex">
-                  {[...Array(5)].map((_, i) => (
-                    <Star
-                      key={i}
-                      className={`w-4 h-4 ${
-                        i < Math.round(car.averageRating || 0) 
-                          ? 'text-customyello fill-customyello' 
-                          : 'text-primary-300'
-                      }`}
+      {!selectedCarId && (
+        <>
+          <h1 className="text-3xl font-bold mb-6">Popular Car Reviews</h1>
+          <div className="relative mb-6">
+            <Input
+              type="text"
+              placeholder="Search by make or model..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="w-[500px] pl-10 shadow-xl rounded-lg" 
+              style={{ border: "none" }}
+            />
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
+          </div>
+          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+            {filteredCars.map((car) => (
+              <Card 
+                key={car._id} 
+                // className="overflow-hidden cursor-pointer hover:shadow-lg transition-shadow"
+                className="w-full mx-auto mt-1 rounded-lg p-1 bg-white shadow-xl" 
+                style={{ border: "none" }}
+                onClick={() => handleCarClick(car)}
+              >
+                <CardHeader className="p-0">
+                  {car.pictures && car.pictures.length > 0 ? (
+                    <Image
+                      src={car.pictures[0]}
+                      alt={`${car.maker} ${car.model}`}
+                      width={400}
+                      height={300}
+                      className="w-full h-48 object-cover"
                     />
-                  ))}
-                </div>
-                <span>({car.averageRating?.toFixed(1)})</span>
-              </CardDescription>
-              <Separator className="my-4" />
-              <div className="space-y-4">
-                {expandedCar === car._id ? (
-                  car.reviews?.map(renderReview)
-                ) : (
-                  car.reviews && car.reviews[0] && renderReview(car.reviews[0])
-                )}
-              </div>
-              {car.reviews && car.reviews.length > 1 && (
-                <Button
-                  variant="ghost"
-                  className="w-full mt-4"
-                  onClick={() => toggleExpand(car._id)}
-                >
-                  {expandedCar === car._id ? (
-                    <>
-                      <ChevronUp className="mr-2 h-4 w-4" />
-                      Show Less
-                    </>
                   ) : (
-                    <>
-                      <ChevronDown className="mr-2 h-4 w-4" />
-                      Show More Reviews ({car.reviews?.length - 1} more)
-                    </>
+                    <div className="w-full h-48 bg-muted flex items-center justify-center">
+                      No image available
+                    </div>
                   )}
-                </Button>
-              )}
-            </CardContent>
-          </Card>
-        ))}
-      </div>
+                </CardHeader>
+                <CardContent className="p-4">
+                  <CardTitle>{`${car.maker} ${car.model} ${car.year}`}</CardTitle>
+                  <CardDescription className="flex items-center gap-2">
+                    Average Rating: 
+                    <div className="flex">
+                      {[...Array(5)].map((_, i) => (
+                        <Star
+                          key={i}
+                          className={`w-4 h-4 ${
+                            i < Math.round(car.averageRating || 0) 
+                              ? 'text-customyello fill-customyello' 
+                              : 'text-primary-300'
+                          }`}
+                        />
+                      ))}
+                    </div>
+                    <span>({car.averageRating?.toFixed(1)})</span>
+                  </CardDescription>
+                  <Separator className="my-4" />
+                  <div className="space-y-4">
+                    {expandedCar === car._id ? (
+                      car.reviews?.map(renderReview)
+                    ) : (
+                      car.reviews && car.reviews[0] && renderReview(car.reviews[0])
+                    )}
+                  </div>
+                  {car.reviews && car.reviews.length > 1 && (
+                    <Button
+                      variant="ghost"
+                      className="w-full mt-4"
+                      onClick={() => toggleExpand(car._id)}
+                    >
+                      {expandedCar === car._id ? (
+                        <>
+                          <ChevronUp className="mr-2 h-4 w-4" />
+                          Show Less
+                        </>
+                      ) : (
+                        <>
+                          <ChevronDown className="mr-2 h-4 w-4" />
+                          Show More Reviews ({car.reviews?.length - 1} more)
+                        </>
+                      )}
+                    </Button>
+                  )}
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        </>
+      )}
     </div>
   )
 }

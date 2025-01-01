@@ -76,16 +76,12 @@ export default function TeamPage() {
                   className="overflow-hidden shadow-xl hover:shadow-2xl transition-all duration-300 border-none bg-white/50 backdrop-blur-sm group cursor-pointer"
                   onClick={() => setSelectedMember(member)}
                 >
-                  <div className="aspect-[4/5] relative">
-                    <Image
-                      src={member.image}
-                      alt={member.name}
-                      fill
-                      className="object-cover group-hover:scale-105 transition-transform duration-500"
-                    />
+                  <div className="aspect-[4/5] relative flex items-center justify-center bg-gradient-to-br from-primary/10 to-primary/30">
+                    <h2 className="text-2xl font-bold text-primary text-center px-4">
+                      {member.name}
+                    </h2>
                   </div>
                   <div className="p-6">
-                    <h3 className="text-lg font-semibold mb-1">{member.name}</h3>
                     <p className="text-sm text-primary/90 font-medium mb-3">{member.role}</p>
                     <p className="text-muted-foreground text-sm mb-4 leading-relaxed line-clamp-3">
                       {member.description}

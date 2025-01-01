@@ -67,13 +67,13 @@ const PremiumCars = () => {
     <>
       <Navi />
       <Separator />
-      <main className="flex flex-col items-center gap-4 p-4 md:p-8">
-        <div className="container mx-auto px-4 py-8">
-          <div className="flex justify-between items-center mb-6">
-            <h1 className="text-3xl font-bold">Premium Collection</h1>
+      <main className="flex flex-col items-center gap-4 p-2 md:p-8">
+        <div className="container mx-auto px-2 md:px-4 py-4 md:py-8">
+          <div className="flex flex-col md:flex-row justify-between items-center mb-4 md:mb-6 gap-4">
+            <h1 className="text-2xl md:text-3xl font-bold">Premium Collection</h1>
             <Button
               onClick={() => setShowPromotionsOnly(!showPromotionsOnly)}
-              className="hover:bg-blue-500 hover:shadow-lg transition-all duration-300 rounded-lg hover:bg-muted"
+              className="w-full md:w-auto hover:bg-blue-500 hover:shadow-lg transition-all duration-300 rounded-lg hover:bg-muted"
             >
               <TagIcon className="w-4 h-4 mr-2" />
               {showPromotionsOnly ? "Show All" : "Only Promotions"}
@@ -81,16 +81,16 @@ const PremiumCars = () => {
           </div>
           <section className="relative w-full h-auto overflow-hidden bg-gradient-to-b from-gray-200 to-white">
             <div className="max-w-full mx-auto h-full">
-              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-3 mt-20 mx-14 mb-20 relative z-0">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6 px-2 md:px-8 py-8 md:py-12 relative z-0">
                 {(displayedCars ?? []).map((car) => (
                   <Card
                     key={car._id}
-                    className="relative flex flex-col items-center justify-center p-0 transition-all duration-300 transform hover:scale-105 hover:shadow-2xl bg-card hover:bg-gradient-to-r from-blue-500 to-green-500 border-none hover:z-50"
+                    className="relative flex flex-col items-center justify-center p-2 md:p-4 transition-all duration-300 transform hover:scale-105 hover:shadow-2xl bg-card hover:bg-gradient-to-r from-blue-500 to-green-500 border-none hover:z-50"
                     style={{ border: "none" }}
                   >
                     {hasActivePromotion(car) && (
-                      <div className="absolute top-2 right-2 bg-white/90 hover:bg-white p-2 rounded-full z-10 transition-colors duration-200 items-center justify-center" style={{ width: '64px', height: '64px' }}>
-                        <TagIcon className="w-8 h-8 text-customyello" />
+                      <div className="absolute top-2 right-2 bg-white/90 hover:bg-white p-2 rounded-full z-10 transition-colors duration-200 items-center justify-center w-12 h-12 md:w-16 md:h-16">
+                        <TagIcon className="w-6 h-6 md:w-8 md:h-8 text-customyello" />
                       </div>
                     )}
                     <Image
@@ -98,16 +98,16 @@ const PremiumCars = () => {
                       alt={`${car.maker} ${car.model}`}
                       width={400}
                       height={200}
-                      className="w-[300px] h-[220px] border-none"
+                      className="w-full max-w-[300px] h-[180px] md:h-[220px] object-cover border-none rounded-lg"
                       style={{ border: "none" }}
                     />
-                    <CardContent className="p-0 text-center border-none" style={{ border: "none" }}>
-                      <h2 className="text-xl font-semibold mb-2">
+                    <CardContent className="p-2 md:p-4 text-center border-none w-full" style={{ border: "none" }}>
+                      <h2 className="text-lg md:text-xl font-semibold mb-2">
                         {car.maker} {car.model}
                       </h2>
-                      <p className="text-muted-foreground mb-4">Year: {car.year}</p>
+                      <p className="text-sm md:text-base text-muted-foreground mb-4">Year: {car.year}</p>
                       <Link href={`/carinfo?id=${car.registrationNumber}`}>
-                        <Button className="hover:bg-blue-500 hover:shadow-lg transition-all duration-300 rounded-lg mt-0 mb-5 hover:bg-muted">
+                        <Button className="w-full md:w-auto hover:bg-blue-500 hover:shadow-lg transition-all duration-300 rounded-lg mt-0 mb-2 md:mb-5 hover:bg-muted">
                           Book Now
                         </Button>
                       </Link>

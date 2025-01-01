@@ -39,18 +39,18 @@ export function GoldenLanding() {
             inView1 ? 'animate-fadeInUp' : 'opacity-0'
           }`}>
           <div className="container px-4 md:px-6 mx-auto max-w-8xl">
-            <div className='bg-card rounded-lg shadow-2xl p-6'>
-              <div className="flex flex-col md:flex-row justify-center items-center gap-8">
-                <div className="text-center max-w-[1000px]">
-                  <h1 className="text-4xl md:text-4xl lg:text-6xl font-bold">
+            <div className='bg-card rounded-lg shadow-2xl p-4 md:p-6'>
+              <div className="flex flex-col md:flex-row justify-center items-center gap-4 md:gap-8">
+                <div className="text-center max-w-[1000px] w-full">
+                  <h1 className="text-3xl md:text-4xl lg:text-6xl font-bold">
                     Subscribe today and experience luxury
                   </h1>
-                  <p className="text-muted-foreground mt-4">
+                  <p className="text-muted-foreground mt-2 md:mt-4 text-sm md:text-base">
                     Unlock exclusive perks, premium vehicles, and personalized service with our Golden Membership.
                   </p>
-                  <div className="mt-6">
+                  <div className="mt-4 md:mt-6">
                     <Link href={isGoldenMember ? '/User_Account' : '/Golden/subscribe'}>
-                      <Button className="inline-flex h-10 items-center justify-center rounded-md px-8 text-sm font-medium shadow transition-colors hover:bg-customyello hover:text-black">
+                      <Button className="w-full md:w-auto inline-flex h-10 items-center justify-center rounded-md px-4 md:px-8 text-sm font-medium shadow transition-colors hover:bg-customyello hover:text-black">
                         {isGoldenMember ? 'Manage Subscription' : 'Subscribe Now'}
                       </Button>
                     </Link>
@@ -61,19 +61,19 @@ export function GoldenLanding() {
                   alt="Luxury Car"
                   width={700}
                   height={400}
-                  className="w-full md:w-[700px] h-[500px] md:h-[400px] object-cover rounded-lg"
+                  className="w-full md:w-[700px] h-[300px] md:h-[400px] object-cover rounded-lg"
                   priority
                 />
               </div>
               
               {/* Image Gallery */}
-              <div className="flex flex-col md:flex-row justify-center items-center gap-4 mt-2">
+              <div className="flex flex-col md:flex-row justify-center items-center gap-4 mt-4 md:mt-8">
                 <Image
                   src="https://res.cloudinary.com/dbsxjsktb/image/upload/v1732911061/desktop-wallpaper-2021-rolls-rolls-royce-2021-removebg_hbwbio.png"
                   alt="Rolls Royce"
                   width={1500}
                   height={500}
-                  className="w-full md:w-[80%] h-auto max-h-[500px] object-contain rounded-lg"
+                  className="w-full md:w-[80%] h-[200px] md:h-auto max-h-[500px] object-contain rounded-lg"
                 />
               </div>
             </div>
