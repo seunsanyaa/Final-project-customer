@@ -50,6 +50,7 @@ export default function UserPromotions() {
   const rewardPoints = useQuery(api.customers.getRewardPointsByUserId, { 
     userId: user?.id || "" 
   });
+  const updateRewardPoints = useMutation(api.customers.addRewardPoints);
 
   const { width, height } = useWindowSize();
   const [showConfetti, setShowConfetti] = useState(false);
@@ -177,10 +178,12 @@ export default function UserPromotions() {
 
         <main className="flex-1 bg-background py-8 px-4 sm:px-6 lg:px-8">
           <div className="max-w-screen mx-auto">
-            <div className="flex justify-end mb-4">
-              <span className="text-sm font-medium">
-                Reward Points: {rewardPoints ?? 0}
-              </span>
+            <div className="flex justify-between items-center mb-6">
+              <h1 className="text-3xl font-bold">My Promotions & Rewards</h1>
+              <div className="bg-blue-100 p-4 rounded-lg">
+                <div className="text-lg font-semibold">Reward Points Balance</div>
+                <div className="text-3xl font-bold text-blue-600">{rewardPoints ?? 0}</div>
+              </div>
             </div>
             <Card className="w-full mx-auto mt-1 rounded-lg p-1 bg-white shadow-lg" style={{ border: "none" }}>
               <CardHeader>
@@ -300,6 +303,29 @@ export default function UserPromotions() {
                     </CardContent>
                   </Card>
                 ))}
+              </CardContent>
+            </Card>
+
+            <Card className="w-full mx-auto mt-6 rounded-lg p-1 bg-white shadow-lg" style={{ border: "none" }}>
+              <CardHeader>
+                <CardTitle>Rewards History</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4">
+                  {bookings?.map((booking) => (
+                    <div key={booking._id} className="flex justify-between items-center p-4 border-b">
+                      <div>
+                        <div className="font-medium">Booking #{booking._id}</div>
+                        <div className="text-sm text-gray-600">
+                          {new Date(booking.startDate).toLocaleDateString()}
+                        </div>
+                      </div>
+                      <div className="text-green-600 font-medium">
+                        +{Math.floor(booking.totalCost * 0.1)} points
+                      </div>
+                    </div>
+                  ))}
+                </div>
               </CardContent>
             </Card>
           </div>

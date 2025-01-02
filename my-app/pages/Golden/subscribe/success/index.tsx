@@ -24,6 +24,7 @@ export default function SubscriptionSuccess() {
   const createSubscription = useMutation(api.customers.createSubscription);
   const createPayment = useMutation(api.payment.createPayment);
   const upgradeCustomer = useMutation(api.customers.upgradeCustomer);
+  const addRewardPoints = useMutation(api.customers.addRewardPoints);
 
   useEffect(() => {
     const processSubscription = async () => {
@@ -82,6 +83,15 @@ export default function SubscriptionSuccess() {
           isSubscription: true
         });
 
+        // Add reward points for subscription payment
+        const rewardPoints = Math.floor(amount * 0.1); // 10% of payment as reward points
+        if (rewardPoints > 0) {
+          await addRewardPoints({
+            userId: user.id,
+            points: rewardPoints
+          });
+        }
+
         // 4. Update subscription metadata
         const metadataResponse = await fetch('/api/update-subscription-metadata', {
           method: 'POST',
@@ -126,7 +136,8 @@ export default function SubscriptionSuccess() {
     paymentIntentId,
     router,
     updatePaymentSession,
-    upgradeCustomer
+    upgradeCustomer,
+    addRewardPoints
   ]);
 
   if (error) {

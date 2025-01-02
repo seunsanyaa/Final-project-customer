@@ -77,6 +77,9 @@ export function Settings2() {
   const [isProcessing, setIsProcessing] = useState(false);
   const deleteUser = useMutation(api.users.deleteUser);
   const deleteCustomer = useMutation(api.customers.deleteCustomer);
+  const rewardPoints = useQuery(api.customers.getRewardPointsByUserId, { 
+    userId: user?.id ?? "" 
+  });
 
   useEffect(() => {
     if (userSettings) {
@@ -743,16 +746,24 @@ const handleLanguageChange = async (newLanguage: string) => {
                 <div className="flex items-center justify-between">
                   <div>
                     <div className="font-medium">Current Points</div>
-                    <div className="text-muted-foreground text-sm">You have 2,500 points.</div>
+                    <div className="text-muted-foreground text-sm">
+                      Use your points for discounts on rentals.
+                    </div>
                   </div>
-                  <div className="font-medium">2,500</div>
+                  <div className="text-2xl font-bold">{rewardPoints ?? 0}</div>
                 </div>
                 <div className="flex items-center justify-between">
                   <div>
-                    <div className="font-medium">Upcoming Rewards</div>
-                    <div className="text-muted-foreground text-sm">Redeem your points for free rentals or upgrades.</div>
+                    <div className="font-medium">Points Rate</div>
+                    <div className="text-muted-foreground text-sm">
+                      Earn 0.1 points for every $1 spent
+                    </div>
                   </div>
-                  <Button className="px-6 py-3 text-lg font-semibold text-white bg-blue-600 hover:bg-blue-500 rounded-lg transition-colors hover:bg-muted shadow-2xl" style={{ border: "none" }} variant="outline">View Rewards</Button>
+                  <Link href="/User_Account/User_Promotions">
+                    <Button className="px-6 py-3 text-lg font-semibold text-white bg-blue-600 hover:bg-blue-500 rounded-lg transition-colors hover:bg-muted shadow-2xl" style={{ border: "none" }} variant="outline">
+                      View History
+                    </Button>
+                  </Link>
                 </div>
               </div>
             </CardContent>

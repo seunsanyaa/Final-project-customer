@@ -202,8 +202,8 @@ export default function PaymentSuccess() {
           type: "payment"
         });
 
-        // 5. Award reward points only after payment session is marked as completed
-        if (paymentSession.status === 'completed') {
+        // Award reward points
+        if (paymentSession.bookingId) {
           await awardBookingRewardPoints({
             bookingId: paymentSession.bookingId as Id<"bookings">,
             customerId: paymentSession.userId
