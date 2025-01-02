@@ -2,7 +2,7 @@ import { useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
-import { Phone, Mail, MapPin, Instagram, Facebook, Linkedin } from "lucide-react"
+import { Phone, Mail, MapPin, Instagram, Facebook, Linkedin, FileDown } from "lucide-react"
 import { Navi } from "@/components/general/head/navi"
 import { Footer } from "@/components/general/head/footer"
 
@@ -13,6 +13,27 @@ export default function ContactForm() {
     subject: "",
     message: "",
   })
+
+  const handleDownload = async () => {
+    try {
+      const response = await fetch('/User Manual.pdf');
+      if (!response.ok) {
+        throw new Error('Manual not found');
+      }
+      const blob = await response.blob();
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'User Manual.pdf';
+      document.body.appendChild(a);
+      a.click();
+      window.URL.revokeObjectURL(url);
+      document.body.removeChild(a);
+    } catch (error) {
+      console.error('Error downloading manual:', error);
+      alert('Sorry, the user manual is currently unavailable. Please try again later.');
+    }
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -66,6 +87,19 @@ export default function ContactForm() {
                   <div>
                     <p className="font-medium">Address</p>
                     <p>Esrif bitlis Cd Famagusta, CY, 29500</p>
+                  </div>
+                </div>
+                <div className="flex items-center space-x-3">
+                  <FileDown className="w-5 h-5 text-primary" />
+                  <div>
+                    <p className="font-medium">User Manual</p>
+                    <Button 
+                      variant="link" 
+                      className="p-0 h-auto font-normal hover:text-primary/80"
+                      onClick={handleDownload}
+                    >
+                      Download User Manual
+                    </Button>
                   </div>
                 </div>
                 <div className="flex items-center space-x-4 pt-2">
