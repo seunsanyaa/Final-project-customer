@@ -161,8 +161,7 @@ export default defineSchema({
 		promotionImage: v.string(),
 		promotionType: v.union(
 			v.literal('discount'),
-			v.literal('offer'),
-			v.literal('upgrade'),
+			v.literal('reward_points'),
 			v.literal('permenant')
 		),
 		promotionValue: v.number(),

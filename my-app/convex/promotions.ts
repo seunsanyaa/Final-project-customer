@@ -1,6 +1,3 @@
-
-
-
 import { v } from 'convex/values';
 import { mutation, query } from './_generated/server';
 import { Promotion } from '../types/Promotion';
@@ -21,7 +18,7 @@ export const createPromotion = mutation({
     promotionTitle: v.string(),
     promotionDescription: v.string(),
     promotionImage: v.string(),
-    promotionType: v.union(v.literal('discount'), v.literal('offer'), v.literal('upgrade'), v.literal('permenant')),
+    promotionType: v.union(v.literal('discount'), v.literal('reward_points'), v.literal('permenant')),
     promotionValue: v.number(),
     promotionStartDate: v.optional(v.string()),
     promotionEndDate: v.optional(v.string()),
@@ -34,7 +31,7 @@ export const createPromotion = mutation({
   },
   handler: async (ctx, args) => {
     // Validate that permanent promotions don't have start/end dates
-    if (args.promotionType === 'permenant') {
+    if (args.promotionType === 'permenant' || args.promotionType === 'reward_points') {
       if (args.promotionStartDate || args.promotionEndDate || (!args.minimumRentals && !args.minimumMoneySpent)) {
         throw new Error('Permanent promotions cannot have start/end dates and must have minimum rentals and minimum money spent');
       }
@@ -75,7 +72,7 @@ export const updatePromotion = mutation({
     promotionTitle: v.optional(v.string()),
     promotionDescription: v.optional(v.string()),
     promotionImage: v.optional(v.string()),
-    promotionType: v.optional(v.union(v.literal('discount'), v.literal('offer'), v.literal('upgrade'), v.literal('permenant'))),
+    promotionType: v.optional(v.union(v.literal('discount'), v.literal('reward_points'), v.literal('permenant'))),
     promotionValue: v.optional(v.number()),
     promotionStartDate: v.optional(v.string()),
     promotionEndDate: v.optional(v.string()),
@@ -135,7 +132,11 @@ export const getAllPromotions = query({
           q.and(
             q.eq(q.field('status'), 'active'),
             q.eq(q.field('promotionType'), 'permenant')
-          )
+          ),
+          q.and(
+            q.eq(q.field('status'), 'active'),
+            q.eq(q.field('promotionType'), 'reward_points')
+          ) 
         )
       )
       .collect();
@@ -193,6 +194,12 @@ export const redeemPromo = mutation({
       throw new Error('Customer not found');
     }
 
+    // Get the promotion
+    const promotion = await ctx.db.get(args.promotionId);
+    if (!promotion) {
+      throw new Error('Promotion not found');
+    }
+
     // Get existing promotions array or initialize empty array
     const existingPromos = customer.promotions || [];
 
@@ -201,10 +208,24 @@ export const redeemPromo = mutation({
       return { status: 'already_redeemed' };
     }
 
-    // Add the new promotion ID to the array
-    await ctx.db.patch(customer._id, {
-      promotions: [...existingPromos, args.promotionId],
-    });
+    // Handle reward points promotions
+    if (promotion.promotionType === 'reward_points') {
+      const requiredPoints = promotion.minimumMoneySpent || 0;
+      if (customer.rewardPoints < requiredPoints) {
+        throw new Error('Insufficient reward points');
+      }
+      
+      // Deduct reward points
+      await ctx.db.patch(customer._id, {
+        promotions: [...existingPromos, args.promotionId],
+        rewardPoints: customer.rewardPoints - requiredPoints
+      });
+    } else {
+      // Handle regular promotions
+      await ctx.db.patch(customer._id, {
+        promotions: [...existingPromos, args.promotionId],
+      });
+    }
 
     return { status: 'success' };
   },
@@ -276,9 +297,15 @@ export const getPermanentPromotions = query({
     return await ctx.db
       .query('promotions')
       .filter((q) => 
-        q.and(
-          q.eq(q.field('status'), 'active'),
-          q.eq(q.field('promotionType'), 'permenant')
+        q.or(
+          q.and(
+            q.eq(q.field('status'), 'active'),
+            q.eq(q.field('promotionType'), 'permenant')
+          ),
+          q.and(
+            q.eq(q.field('status'), 'active'),
+            q.eq(q.field('promotionType'), 'reward_points')
+          )
         )
       )
       .collect();
@@ -367,13 +394,28 @@ export const deactivatePromo = mutation({
       throw new Error("Customer not found");
     }
 
+    // Get the promotion
+    const promotion = await ctx.db.get(promotionId);
+    if (!promotion) {
+      throw new Error("Promotion not found");
+    }
+
     // Remove the promotion from the customer's active promotions
     const updatedPromotions = customer.promotions?.filter(id => id !== promotionId) || [];
 
-    // Update the customer record
-    await ctx.db.patch(customer._id, {
-      promotions: updatedPromotions
-    });
+    // Handle reward points refund for reward_points type promotions
+    if (promotion.promotionType === 'reward_points') {
+      const refundPoints = promotion.minimumMoneySpent || 0;
+      await ctx.db.patch(customer._id, {
+        promotions: updatedPromotions,
+        rewardPoints: customer.rewardPoints + refundPoints
+      });
+    } else {
+      // Handle regular promotions
+      await ctx.db.patch(customer._id, {
+        promotions: updatedPromotions
+      });
+    }
 
     return true;
   },

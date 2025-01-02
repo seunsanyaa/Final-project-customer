@@ -200,7 +200,7 @@ export default function UserPromotions() {
                       <p className="text-muted-foreground mb-4">{promotion.promotionDescription}</p>
                       <div className="space-y-6">
                         {/* Show Money Spent Progress Bar if minimumMoneySpent is set and greater than 0 */}
-                        {promotion.minimumMoneySpent && promotion.minimumMoneySpent > 0 && (
+                        {promotion.minimumMoneySpent && promotion.minimumMoneySpent > 0 && promotion.promotionType !== 'reward_points' && (
                           <div className="mb-6">
                             <div className="flex justify-between items-center mb-2">
                               <span className="text-sm font-medium">Spending Progress</span>
@@ -220,11 +220,43 @@ export default function UserPromotions() {
                                 }}
                               />
                             </div>
-                            <p className="text-sm text-muted-foreground mt-2">
-                              ${Math.max(0, Math.ceil(((promotion.minimumMoneySpent ?? 0) - totalMoneySpent) * 100) / 100)} more to unlock
-                            </p>
+                            {Math.max(0, ((promotion.minimumMoneySpent ?? 0) - totalMoneySpent)) > 0 && (
+                              <p className="text-sm text-muted-foreground mt-2">
+                                ${Math.max(0, Math.ceil(((promotion.minimumMoneySpent ?? 0) - totalMoneySpent) * 100) / 100)} more to unlock
+                              </p>
+                            )}
                           </div>
                         )}
+
+                        {/* Show Reward Points Cost for reward_points type promotions */}
+                        {promotion.promotionType === 'reward_points' && promotion.minimumMoneySpent && promotion.minimumMoneySpent > 0 && (
+                          <div className="mb-6">
+                            <div className="flex justify-between items-center mb-2">
+                              <span className="text-sm font-medium">Required Reward Points</span>
+                              <span className="text-sm font-medium">
+                                {rewardPoints ?? 0} / {promotion.minimumMoneySpent} points
+                              </span>
+                            </div>
+                            <div className="w-full h-4 bg-gray-200 rounded-full border border-blue-700" style={{ backgroundColor: '#E5E7EB', borderRadius: '0.375rem' }}>
+                              <div 
+                                className="h-full bg-blue-500 rounded-full transition-all duration-500"
+                                style={{ 
+                                  width: `${Math.min(((rewardPoints ?? 0) / (promotion.minimumMoneySpent || 1)) * 100, 100)}%`,
+                                  borderRadius: '0.375rem',
+                                  border: '1px solid #2563EB',
+                                  backgroundColor: '#3B82F6',
+                                  transition: 'width 0.5s ease-in-out'
+                                }}
+                              />
+                            </div>
+                            {Boolean(promotion.minimumMoneySpent - (rewardPoints ?? 0)) && (
+                              <p className="text-sm text-muted-foreground mt-2">
+                                {Math.max(0, promotion.minimumMoneySpent - (rewardPoints ?? 0))} more points needed
+                              </p>
+                            )}
+                          </div>
+                        )}
+
                         {/* Show Bookings Progress Bar if minimumRentals is set and greater than 0 */}
                         {promotion.minimumRentals && promotion.minimumRentals > 0 && (
                           <div className="mb-6">
@@ -246,9 +278,11 @@ export default function UserPromotions() {
                                 }}
                               />
                             </div>
-                            <p className="text-sm text-muted-foreground mt-2">
-                              {Math.max(0, (promotion.minimumRentals || 0) - (bookings?.length || 0))} more bookings to unlock
-                            </p>
+                            {Math.max(0, (promotion.minimumRentals || 0) - (bookings?.length || 0)) > 0 && (
+                              <p className="text-sm text-muted-foreground mt-2">
+                                {Math.max(0, (promotion.minimumRentals || 0) - (bookings?.length || 0))} more bookings to unlock
+                              </p>
+                            )}
                           </div>
                         )}
 
@@ -264,15 +298,18 @@ export default function UserPromotions() {
                             <Button
                               className="px-6 py-3 text-sm font-semibold text-white bg-blue-600 hover:bg-blue-500 rounded-lg transition-colors hover:bg-muted shadow-2xl"
                               disabled={Boolean(
-                                (promotion.minimumMoneySpent && promotion.minimumMoneySpent > 0 && totalMoneySpent < promotion.minimumMoneySpent) || 
+                                (promotion.promotionType === 'reward_points' && promotion.minimumMoneySpent && (rewardPoints ?? 0) < promotion.minimumMoneySpent) ||
+                                (promotion.promotionType !== 'reward_points' && promotion.minimumMoneySpent && promotion.minimumMoneySpent > 0 && totalMoneySpent < promotion.minimumMoneySpent) || 
                                 (promotion.minimumRentals && promotion.minimumRentals > 0 && (bookings?.length || 0) < promotion.minimumRentals)
                               )}
                               onClick={() => handleClaimReward(promotion._id)}
                             >
-                              {((!promotion.minimumMoneySpent || totalMoneySpent >= promotion.minimumMoneySpent) && 
-                                (!promotion.minimumRentals || (bookings?.length || 0) >= promotion.minimumRentals))
-                                ? 'Activate Benefit' 
-                                : 'Complete Requirements'}
+                              {promotion.promotionType === 'reward_points' 
+                                ? `Redeem for ${promotion.minimumMoneySpent} points`
+                                : ((!promotion.minimumMoneySpent || totalMoneySpent >= promotion.minimumMoneySpent) && 
+                                   (!promotion.minimumRentals || (bookings?.length || 0) >= promotion.minimumRentals))
+                                  ? 'Activate Benefit' 
+                                  : 'Complete Requirements'}
                             </Button>
                           </div>
                         )}

@@ -49,7 +49,7 @@ const MapComponent = dynamic(
 type Promotion = {
   _id: Id<"promotions">;
   _creationTime: number;
-  promotionType: 'discount' | 'offer' | 'upgrade' | 'permenant';
+  promotionType: 'discount' | 'reward_points' | 'permenant';
   promotionValue: number;
   promotionTitle: string;
   promotionDescription: string;
@@ -64,11 +64,21 @@ type Promotion = {
   minimumMoneySpent?: number;
 };
 
-// Add this near your other type definitions
 type OfficeLocation = {
   name: string;
   address: string;
-  coordinates: { lat: number; lng: number; }
+  coordinates: { lat: number; lng: number; };
+};
+
+type InsuranceOption = {
+  price: number;
+  coverage: string;
+};
+
+type InsuranceOptions = {
+  basic: InsuranceOption;
+  premium: InsuranceOption;
+  comprehensive: InsuranceOption;
 };
 
 // Update the useCurrency hook to include client-side check
@@ -107,6 +117,36 @@ export function NewBooking3() {
   const { isAuthenticated } = useConvexAuth();
   const { user } = useUser();
   const bookingSummaryRef = useRef<HTMLDivElement>(null);
+  const customerData = useQuery(api.customers.getCustomerByUserId, { userId: user?.id ?? "" });
+
+  // Insurance options with age-based pricing
+  const insuranceOptions = useMemo(() => {
+    const getBasePriceByAge = (age: number | undefined) => {
+      if (!age) return 10; // Default price if age is not available
+      if (age >= 20 && age <= 30) return 10;
+      if (age >= 31 && age <= 40) return 9;
+      if (age >= 41 && age <= 50) return 8;
+      if (age >= 51 && age <= 60) return 7;
+      return 10; // Default price for other age ranges
+    };
+
+    const basePrice = getBasePriceByAge(customerData?.age);
+
+    return {
+      basic: { 
+        price: basePrice, 
+        coverage: 'Basic coverage for accidents and theft' 
+      },
+      premium: { 
+        price: basePrice * 2, 
+        coverage: 'Premium coverage including natural disasters and third-party damage' 
+      },
+      comprehensive: { 
+        price: basePrice * 3, 
+        coverage: 'Full coverage with zero deductible and roadside assistance' 
+      }
+    };
+  }, [customerData?.age]);
   
   // 2. All state hooks
   const [paymentMethod, setPaymentMethod] = useState<string | null>(null);
@@ -740,13 +780,6 @@ export function NewBooking3() {
         setShowDropoffMap(false);
       })
       .catch(error => console.error('Error:', error));
-  };
-
-  // Add insurance type options
-  const insuranceOptions = {
-    basic: { price: 10, coverage: 'Basic coverage for accidents and theft' },
-    premium: { price: 20, coverage: 'Premium coverage including natural disasters and third-party damage' },
-    comprehensive: { price: 30, coverage: 'Full coverage with zero deductible and roadside assistance' }
   };
 
   // Add this function to your handlers
