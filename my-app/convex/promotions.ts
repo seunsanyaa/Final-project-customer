@@ -1,6 +1,3 @@
-
-
-
 import { v } from 'convex/values';
 import { mutation, query } from './_generated/server';
 import { Promotion } from '../types/Promotion';
@@ -330,7 +327,12 @@ export const getApplicablePromotions = query({
       if (promo.promotionType === 'permenant') {
         // Check requirements based on what's defined
         if (promo.minimumMoneySpent && promo.minimumMoneySpent > 0) {
-          if (totalSpent < promo.minimumMoneySpent) return false;
+          // For the 30% reward points promotion, check reward points instead of money spent
+          if (promo.promotionTitle === '30% Off Reward Points') {
+            if ((customer?.rewardPoints ?? 0) < promo.minimumMoneySpent) return false;
+          } else {
+            if (totalSpent < promo.minimumMoneySpent) return false;
+          }
         }
         
         if (promo.minimumRentals && promo.minimumRentals > 0) {
@@ -343,10 +345,10 @@ export const getApplicablePromotions = query({
           return false;
         }
 
-        return isTargeted;
+        return true; // Changed to true since we want to show permanent promotions regardless of target
       }
 
-      return isTargeted;
+      return promo.target === 'all' || isTargeted;
     });
   },
 });
@@ -376,6 +378,37 @@ export const deactivatePromo = mutation({
     });
 
     return true;
+  },
+});
+
+// Add this new mutation to create the reward points promotion
+export const createRewardPointsPromotion = mutation({
+  handler: async (ctx) => {
+    // Check if the promotion already exists
+    const existingPromotion = await ctx.db
+      .query('promotions')
+      .filter(q => q.eq(q.field('promotionTitle'), '30% Off Reward Points'))
+      .first();
+
+    if (existingPromotion) {
+      return existingPromotion._id;
+    }
+
+    // Create the new promotion
+    const promotionId = await ctx.db.insert('promotions', {
+      promotionTitle: '30% Off Reward Points',
+      promotionDescription: 'Use them for a 30% offer for our loyal customers. Thanks for renting with us!',
+      promotionImage: '',
+      promotionType: 'permenant',
+      promotionValue: 30,
+      status: 'active',
+      goldenMembersOnly: false,
+      target: 'all',
+      specificTarget: [],
+      minimumMoneySpent: 300, // Using this field to represent minimum reward points
+    });
+
+    return promotionId;
   },
 });
 

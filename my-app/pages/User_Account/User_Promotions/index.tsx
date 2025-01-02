@@ -205,14 +205,14 @@ export default function UserPromotions() {
                             <div className="flex justify-between items-center mb-2">
                               <span className="text-sm font-medium">Spending Progress</span>
                               <span className="text-sm font-medium">
-                                ${totalMoneySpent.toFixed(2)} / ${(promotion.minimumMoneySpent || 0).toFixed(2)}
+                                {rewardPoints ?? 0} / 300 points
                               </span>
                             </div>
                             <div className="w-full h-4 bg-gray-200 rounded-full border border-blue-700" style={{ backgroundColor: '#E5E7EB', borderRadius: '0.375rem' }}>
                               <div 
                                 className="h-full bg-blue-500 rounded-full transition-all duration-500"
                                 style={{ 
-                                  width: `${Math.min((totalMoneySpent / (promotion.minimumMoneySpent || 1)) * 100, 100)}%`,
+                                  width: `${Math.min(((rewardPoints ?? 0) / 300) * 100, 100)}%`,
                                   borderRadius: '0.375rem',
                                   border: '1px solid #2563EB',
                                   backgroundColor: '#3B82F6',
@@ -221,7 +221,7 @@ export default function UserPromotions() {
                               />
                             </div>
                             <p className="text-sm text-muted-foreground mt-2">
-                              ${Math.max(0, Math.ceil(((promotion.minimumMoneySpent ?? 0) - totalMoneySpent) * 100) / 100)} more to unlock
+                              {Math.max(0, 300 - (rewardPoints ?? 0))} more points to unlock
                             </p>
                           </div>
                         )}
@@ -264,7 +264,7 @@ export default function UserPromotions() {
                             <Button
                               className="px-6 py-3 text-sm font-semibold text-white bg-blue-600 hover:bg-blue-500 rounded-lg transition-colors hover:bg-muted shadow-2xl"
                               disabled={Boolean(
-                                (promotion.minimumMoneySpent && promotion.minimumMoneySpent > 0 && totalMoneySpent < promotion.minimumMoneySpent) || 
+                                (promotion.minimumMoneySpent && promotion.minimumMoneySpent > 0 && (rewardPoints ?? 0) < 300) || 
                                 (promotion.minimumRentals && promotion.minimumRentals > 0 && (bookings?.length || 0) < promotion.minimumRentals)
                               )}
                               onClick={() => handleClaimReward(promotion._id)}
